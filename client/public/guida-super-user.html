@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Guida super user — Notifiche Canali Irrigui</title>
+    <!--
+      PAGINA GENERATA — non modificarla a mano.
+      La fonte è in docs/, si rigenera con: npm run guide:build
+    -->
+    <style>
+  :root { color-scheme: light; --verde: #16a34a; --testo: #1f2937; --grigio: #4b5563; --bordo: #e5e7eb; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #f9fafb;
+    color: var(--testo);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+  }
+  .foglio {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 5rem;
+  }
+  header.intestazione {
+    background: #fff;
+    border-bottom: 1px solid var(--bordo);
+    padding: 1.25rem;
+  }
+  header.intestazione .dentro {
+    max-width: 52rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  header.intestazione strong { color: var(--verde); font-size: 1.05rem; }
+  header.intestazione span { color: var(--grigio); font-size: 0.85rem; }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 1.5rem 0 0.5rem; }
+  h2 {
+    font-size: 1.4rem;
+    margin: 2.75rem 0 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bordo);
+  }
+  h3 { font-size: 1.1rem; margin: 1.75rem 0 0.5rem; }
+  h4 { font-size: 1rem; margin: 1.25rem 0 0.5rem; color: var(--grigio); }
+  p, li { color: var(--grigio); }
+  li { margin: 0.25rem 0; }
+  a { color: var(--verde); }
+  strong { color: var(--testo); }
+  hr { border: 0; border-top: 1px solid var(--bordo); margin: 2.5rem 0; }
+  code {
+    background: #f3f4f6;
+    border: 1px solid var(--bordo);
+    border-radius: 0.25rem;
+    padding: 0.05rem 0.3rem;
+    font-size: 0.85em;
+  }
+  pre {
+    background: #fff;
+    border: 1px solid var(--bordo);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  pre code { background: none; border: 0; padding: 0; font-size: 0.82rem; }
+  blockquote {
+    margin: 1.25rem 0;
+    padding: 0.75rem 1rem;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0.375rem;
+  }
+  blockquote p { margin: 0.4rem 0; color: #78350f; }
+  blockquote p:first-child { margin-top: 0; }
+  blockquote p:last-child { margin-bottom: 0; }
+  /* Le tabelle sono larghe e la pagina si legge anche da telefono: scorre la
+     tabella dentro il suo contenitore, non tutto il corpo della pagina. */
+  .tabella { overflow-x: auto; margin: 1.25rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; background: #fff; }
+  th, td { border: 1px solid var(--bordo); padding: 0.5rem 0.7rem; text-align: left; vertical-align: top; }
+  th { background: #f3f4f6; color: var(--testo); font-weight: 600; }
+  td { color: var(--grigio); }
+  footer.piede {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+    color: #9ca3af;
+    font-size: 0.8rem;
+  }
+</style>
+  </head>
+  <body>
+    <header class="intestazione">
+      <div class="dentro">
+        <strong>Notifiche Canali Irrigui</strong>
+        <span>Guida per Admin e Super Admin</span>
+      </div>
+    </header>
+    <main class="foglio">
+<h1 id="guida-super-user--notifiche-canali-irrigui">Guida super user — Notifiche Canali Irrigui</h1>
+<p>Guida per <strong>Admin</strong> e <strong>Super Admin</strong>: le sezioni di configurazione, la gestione
+degli accessi, l&#39;integrazione con il consorzio e le regole operative da
+rispettare.</p>
+<p>Le sezioni operative quotidiane (Dashboard, Invia notifica, Storico,
+Anagrafiche, Template) sono descritte in dettaglio nella
+<a href="/guida-utente.html">Guida utente</a>, che vale anche per gli amministratori: qui non
+si ripetono, se ne richiamano solo le implicazioni amministrative.</p>
+<hr>
+<h2 id="indice">Indice</h2>
+<ol>
+<li><a href="#1-il-modello-dei-permessi">Il modello dei permessi</a></li>
+<li><a href="#2-gestione-utenti">Gestione Utenti</a></li>
+<li><a href="#3-gestione-codici">Gestione Codici</a></li>
+<li><a href="#4-le-due-sorgenti-di-credenziali">Le due sorgenti di credenziali</a></li>
+<li><a href="#5-impostazioni--email">Impostazioni → Email</a></li>
+<li><a href="#6-impostazioni--pec">Impostazioni → PEC</a></li>
+<li><a href="#7-impostazioni--sms">Impostazioni → SMS</a></li>
+<li><a href="#8-impostazioni--webservice-le-anagrafiche-del-consorzio">Impostazioni → WebService (le anagrafiche del consorzio)</a></li>
+<li><a href="#9-impostazioni--active-directory">Impostazioni → Active Directory</a></li>
+<li><a href="#10-impostazioni--utenti-di-test">Impostazioni → Utenti di test</a></li>
+<li><a href="#11-cosa-deve-sapere-un-amministratore-sullinvio">Cosa deve sapere un amministratore sull&#39;invio</a></li>
+<li><a href="#12-manutenzione-ordinaria">Manutenzione ordinaria</a></li>
+<li><a href="#13-limiti-noti-e-cose-da-decidere">Limiti noti e cose da decidere</a></li>
+<li><a href="#14-diagnosi-rapida">Diagnosi rapida</a></li>
+</ol>
+<hr>
+<h2 id="1-il-modello-dei-permessi">1. Il modello dei permessi</h2>
+<h3 id="i-quattro-ruoli">I quattro ruoli</h3>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Ruolo</th>
+<th>Accesso</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Super Admin</strong></td>
+<td>Tutto, compresa la scheda <strong>Active Directory</strong></td>
+<td>Unico che può creare altri Super Admin</td>
+</tr>
+<tr>
+<td><strong>Admin</strong></td>
+<td>Tutto tranne la scheda Active Directory</td>
+<td>Non può assegnare il ruolo Super Admin</td>
+</tr>
+<tr>
+<td><strong>Utente</strong></td>
+<td>Tutte le pagine tranne <strong>Gestione Utenti</strong>, in scrittura</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Osservatore</strong></td>
+<td>Le stesse pagine, <strong>in sola lettura</strong></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<h3 id="come-funziona-davvero-il-blocco">Come funziona davvero il blocco</h3>
+<p>Due regole valgono a livello centrale, non pagina per pagina — è utile saperlo
+per non cercare permessi che non esistono:</p>
+<ul>
+<li><strong>Ogni chiamata all&#39;API è protetta per impostazione predefinita.</strong> Una
+funzione nuova nasce già chiusa a chi non ha fatto l&#39;accesso.</li>
+<li><strong>L&#39;Osservatore è bloccato in scrittura da un unico controllo centrale</strong>: ogni
+operazione che non sia una lettura viene rifiutata con un 403, qualunque
+pagina la generi. Nascondere i pulsanti è comodità; il blocco vero è dietro.</li>
+</ul>
+<p>Allo stesso modo, nascondere la scheda Active Directory agli Admin è comodità:
+le rotte che la servono accettano solo il Super Admin.</p>
+<h3 id="che-cosa-vede-un-utente">Che cosa vede un Utente</h3>
+<p>Non esiste un elenco di pagine da concedere: chi ha un&#39;utenza vede
+l&#39;applicazione. <strong>Le pagine riservate sono due, Gestione Utenti e Gestione
+Codici</strong>, e le vedono solo Admin e Super Admin.</p>
+<p>Fino alla versione precedente c&#39;erano i <em>gruppi</em>, insiemi di pagine da assegnare
+a Utenti e Osservatori. Sono stati tolti: nessun gruppo era mai stato creato, e
+quello che un Utente vede oggi è esattamente ciò che vedeva prima. A limitare
+restano il <strong>ruolo</strong> e i due blocchi centrali descritti qui sopra.</p>
+<blockquote>
+<p><strong>Attenzione a Impostazioni</strong>: un Utente la vede, ma il salvataggio delle
+schede email, PEC, SMS e web service richiede il ruolo Admin — le apre e non
+le può salvare. Il pulsante <em>Aggiorna ora</em> resta invece alla sua portata.</p>
+</blockquote>
+<blockquote>
+<p>Per dare la <strong>sola consultazione</strong> dello Storico si usa il ruolo
+<strong>Osservatore</strong>, che guarda, filtra ed esporta ma non può spedire.</p>
+</blockquote>
+<p>Per sospendere qualcuno senza cancellarne l&#39;utenza si usa <strong>Account attivo</strong>
+nella scheda Utenti.</p>
+<hr>
+<h2 id="2-gestione-utenti">2. Gestione Utenti</h2>
+<p>Menù <em>Strumenti → Gestione Utenti</em>. Due schede.</p>
+<h3 id="scheda-utenti">Scheda Utenti</h3>
+<p>Tabella con <em>Username</em>, <em>Ruolo</em>, <em>Sorgente</em>, <em>Stato</em>, <em>Ultima login</em>.</p>
+<p><strong>Nuovo utente / Modifica</strong> apre una finestra con:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Username</strong></td>
+<td>Con sorgente Active Directory <strong>deve coincidere esattamente</strong> con quello di dominio</td>
+</tr>
+<tr>
+<td><strong>Sorgente credenziali</strong></td>
+<td><em>Locale (password nell&#39;app)</em> oppure <em>Active Directory</em> — vedi il capitolo seguente</td>
+</tr>
+<tr>
+<td><strong>Password</strong></td>
+<td>Compare <strong>solo</strong> per la sorgente Locale. In modifica: vuota = non cambia</td>
+</tr>
+<tr>
+<td><strong>Ruolo</strong></td>
+<td>Un Admin non vede l&#39;opzione <em>Super Admin</em></td>
+</tr>
+<tr>
+<td><strong>Account attivo</strong></td>
+<td>Solo in modifica. Disattivare blocca l&#39;accesso senza perdere lo storico</td>
+</tr>
+</tbody></table></div>
+<p>L&#39;icona cestino elimina l&#39;utenza, con conferma.</p>
+<blockquote>
+<p><strong>Disattivare è quasi sempre meglio che eliminare</strong>: le comunicazioni inviate
+restano firmate con lo username nello Storico, e un&#39;utenza cancellata e
+ricreata non è la stessa riga.</p>
+</blockquote>
+<h3 id="scheda-richieste-di-accesso">Scheda Richieste di accesso</h3>
+<p>Qui compare <strong>chi ha superato l&#39;autenticazione su Active Directory ma non è fra
+gli utenti abilitati</strong>: la persona esiste sul dominio, la password era giusta,
+ma in questa applicazione non ha un&#39;utenza.</p>
+<p>Per ogni richiesta: lo <strong>username esatto scritto da AD</strong>, il numero di tentativi
+e la data dell&#39;ultimo.</p>
+<ul>
+<li><strong>Abilita</strong> apre la creazione utente <strong>già compilata</strong> con quello username e
+con sorgente <em>Active Directory</em>. È il modo giusto di creare un&#39;utenza di
+dominio: elimina il rischio di scrivere <code>mrossi</code> dove AD ha <code>m.rossi</code>.</li>
+<li><strong>Scarta</strong> elimina la richiesta, con conferma. <strong>Non è recuperabile</strong>: quello
+username torna disponibile solo se la persona ritenta l&#39;accesso.</li>
+</ul>
+<blockquote>
+<p>Questa scheda è il surrogato della ricerca su Active Directory, che
+l&#39;applicazione non può offrire perché il consorzio non concede un account di
+servizio. Senza di essa, un operatore legittimo resterebbe davanti a «non sei
+abilitato» senza che nessuno sappia perché.</p>
+</blockquote>
+<hr>
+<h2 id="3-gestione-codici">3. Gestione Codici</h2>
+<p>Menù <strong>Strumenti → Gestione Codici</strong>, solo Admin e Super Admin. Serve a
+togliere dalla circolazione un impianto o una roggia madre senza aspettare che
+lo faccia il consorzio.</p>
+<p>Due schede:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Scheda</th>
+<th>Cosa elenca</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Impianti</strong></td>
+<td>Tutte le madri del registro degli impianti: rogge a scorrimento, impianti, pozzi, le madri <code>S</code> e quelle <em>non classificate</em> create dal sync</td>
+</tr>
+<tr>
+<td><strong>Rogge Madri</strong></td>
+<td>Le rogge madri <code>R</code> della seconda gerarchia</td>
+</tr>
+</tbody></table></div>
+<p>Ogni riga ha codice, descrizione e l&#39;interruttore <strong>Attivo</strong>.</p>
+<p><strong>Un codice spento:</strong></p>
+<ul>
+<li>sparisce da <strong>Invia notifica</strong>: la madre non si può selezionare e non
+riceve comunicazioni;</li>
+<li>sparisce da <strong>Anagrafiche</strong>: le sue righe e i legami sulle sue tratte non si
+vedono più;</li>
+<li><strong>resta nello Storico</strong> e nella Dashboard: le comunicazioni già partite si
+vedono tutte, anche quelle verso codici che oggi sono spenti.</li>
+</ul>
+<p>Riaccenderlo rimette tutto com&#39;era, subito. Al primo rilascio <strong>sono tutti
+accesi</strong>, e un codice nuovo che arriva col sync nasce acceso.</p>
+<blockquote>
+<p><strong>Una tratta sta spesso in due gerarchie</strong>: <code>R01D01S02</code> è sotto l&#39;impianto
+<code>IM01A</code> e sotto la roggia madre <code>R01</code>. Spegnere <code>IM01A</code> la toglie dalle
+schede Scorrimento/Impianti/Pozzi, ma resta in «Rogge Madri» finché <code>R01</code> è
+accesa — e con lei i suoi legami in Anagrafiche. Per toglierla del tutto si
+spengono entrambe le madri.</p>
+</blockquote>
+<p>Se qualcuno sta componendo una comunicazione mentre un codice viene spento,
+l&#39;invio viene <strong>rifiutato per intero</strong> col nome del codice: basta aggiornare la
+pagina e rifare la selezione.</p>
+<hr>
+<h2 id="4-le-due-sorgenti-di-credenziali">4. Le due sorgenti di credenziali</h2>
+<p>Ogni utenza dichiara <strong>in anticipo</strong> chi valida la sua password: l&#39;applicazione
+(hash locale) oppure il domain controller. <strong>Non è un ripiego a cascata</strong>, ed è
+la regola di sicurezza più importante dell&#39;applicazione.</p>
+<p>Il motivo è concreto: se si provasse prima la password locale e poi, fallendo,
+Active Directory, un&#39;utenza locale con lo stesso username di una persona di
+dominio <strong>vincerebbe per sempre</strong> — anche dopo che il consorzio ha disabilitato
+quell&#39;account. Il licenziamento non chiuderebbe l&#39;accesso.</p>
+<p>Conseguenze pratiche:</p>
+<ul>
+<li><strong>Locale</strong> ⇒ deve avere una password nell&#39;applicazione.</li>
+<li><strong>Active Directory</strong> ⇒ <strong>non</strong> ha una password nell&#39;applicazione. Il campo
+sparisce dalla finestra, ed è corretto.</li>
+<li>Cambiare sorgente a un&#39;utenza esistente è permesso, ma il sistema pretende che
+il risultato sia coerente: passando ad AD la password locale viene rimossa,
+passando a Locale bisogna fornirne una.</li>
+</ul>
+<h3 id="la-regola-operativa-da-non-violare">La regola operativa da non violare</h3>
+<blockquote>
+<p><strong>Deve sempre esistere almeno un Super Admin con sorgente Locale.</strong></p>
+</blockquote>
+<p>È l&#39;unico che riesce a entrare quando il domain controller non risponde. Il
+codice <strong>non lo impedisce</strong>: nulla vieta di convertire ad AD anche l&#39;ultimo Super
+Admin locale, e a quel punto un guasto di rete chiude fuori tutti. È una regola
+da rispettare, non un controllo automatico.</p>
+<h3 id="altre-due-cose-vere">Altre due cose vere</h3>
+<ul>
+<li>Un <strong>bind LDAP con password vuota riesce</strong> su molti server (è
+l&#39;<em>unauthenticated bind</em> della specifica). L&#39;applicazione rifiuta le password
+vuote in due punti distinti, prima ancora di parlare con il dominio.</li>
+<li><strong>La sessione dura 8 ore e non richiede AD durante la sua vita.</strong> Chi viene
+disabilitato sul dominio a metà giornata resta operativo fino alla scadenza
+della sessione. Per chiuderlo subito si disattiva l&#39;utenza qui in <em>Gestione
+Utenti</em>.</li>
+</ul>
+<hr>
+<h2 id="5-impostazioni--email">5. Impostazioni → Email</h2>
+<p>Scheda <strong>Email</strong>: la casella di posta <strong>ordinaria</strong> da cui partono le
+comunicazioni ai conduttori senza indirizzo PEC.</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Servizio</strong></td>
+<td><em>Gmail</em> oppure <em>SMTP Personalizzato</em></td>
+</tr>
+<tr>
+<td><strong>Email</strong></td>
+<td>L&#39;indirizzo mittente</td>
+</tr>
+<tr>
+<td><strong>App Password</strong> / <strong>Password</strong></td>
+<td>Con Gmail serve una <strong>App Password</strong>, non la password dell&#39;account</td>
+</tr>
+<tr>
+<td><strong>Server SMTP</strong>, <strong>Porta SMTP</strong>, <strong>Connessione Sicura (TLS)</strong></td>
+<td>Solo con SMTP personalizzato</td>
+</tr>
+</tbody></table></div>
+<p>Due pulsanti: <strong>Test Connessione</strong> (prova le credenziali scritte a schermo,
+senza salvare) e <strong>Salva Configurazione</strong>.</p>
+<p>Due regole del salvataggio, valide anche per PEC e SMS:</p>
+<ul>
+<li><strong>I segreti non tornano mai indietro al browser.</strong> L&#39;interfaccia sa solo se
+una password <em>è impostata</em>, non qual è.</li>
+<li><strong>Salvare con il campo password vuoto conserva quella già memorizzata.</strong> Non
+la cancella: è l&#39;unico modo sensato, visto che non si può rimostrare.</li>
+</ul>
+<p>Le credenziali salvate qui <strong>vincono sulle variabili d&#39;ambiente</strong> del server, che
+restano solo come valore di partenza.</p>
+<hr>
+<h2 id="6-impostazioni--pec">6. Impostazioni → PEC</h2>
+<p>Scheda <strong>PEC</strong>: la <strong>seconda casella</strong>, per i conduttori con indirizzo
+certificato. Gli stessi campi della scheda Email, con credenziali proprie e un
+test SMTP proprio. Il valore predefinito è <strong>SMTP sulla porta 465 con TLS</strong>: i
+gestori PEC italiani espongono un server proprio, non un servizio noto.</p>
+<h3 id="perché-è-una-scheda-a-parte-e-non-un-dettaglio">Perché è una scheda a parte, e non un dettaglio</h3>
+<p>L&#39;anagrafica distingue i destinatari, e fra i conduttori attivi sono circa
+<strong>1775 posta ordinaria contro 1479 PEC</strong>. Da una casella ordinaria una PEC non
+ha valore legale — niente ricevuta di accettazione né di consegna — e molte
+caselle PEC rifiutano del tutto la posta non certificata.</p>
+<p>Da qui la regola che ogni amministratore deve conoscere:</p>
+<blockquote>
+<p><strong>Se la selezione contiene destinatari PEC e la PEC non è configurata, l&#39;invio
+viene rifiutato per intero, prima di scrivere qualsiasi cosa.</strong> L&#39;operatore
+vede un messaggio del tipo <em>«Configurazione PEC assente: 47 destinatari su 120
+vanno raggiunti via PEC — imposta le credenziali PEC in Impostazioni»</em>.</p>
+</blockquote>
+<p>Non si ripiega sulla casella ordinaria: sarebbe una comunicazione che il
+consorzio crede fatta e che invece non vale. <strong>Vale il simmetrico</strong> per la posta
+ordinaria non configurata.</p>
+<p>Il canale effettivamente usato viene <strong>fotografato sul singolo destinatario</strong> e
+mostrato nel dettaglio dello Storico (colonna <em>Canale</em>): l&#39;anagrafica viene
+riscritta a ogni caricamento, e «questa comunicazione è andata per PEC?» è la
+domanda che conta.</p>
+<p><strong>L&#39;operatore lo vede prima di premere.</strong> La tabella dei conduttori di <em>Invia
+notifica</em> ha una colonna <strong>Canali</strong> (badge viola <em>PEC</em>, testo <em>Email</em>, più il
+badge <em>SMS</em> di chi ha un numero; ordinabile) e sopra la tabella il conteggio
+<strong>«N via PEC»</strong>: è lo stesso numero che comparirebbe nel rifiuto. Chi segnala <em>«mi ha bloccato l&#39;invio senza
+preavviso»</em> aveva il preavviso a schermo.</p>
+<blockquote>
+<p>Resta un punto cieco: <strong>la scheda <em>Anagrafiche → Destinatari</em> non ha quella
+colonna</strong>, perché la sua sorgente non porta il tipo di indirizzo. Per sapere
+se un singolo conduttore è PEC lo si cerca in <em>Invia notifica</em>, dopo aver
+selezionato una sua tratta.</p>
+</blockquote>
+<hr>
+<h2 id="7-impostazioni--sms">7. Impostazioni → SMS</h2>
+<p>Scheda <strong>SMS</strong>: credenziali del fornitore <strong>Register.it (sfera.net)</strong> — <em>Client
+ID</em> e <em>Password</em> — con <strong>Test Connessione</strong> e <strong>Salva Configurazione</strong>. Il test
+interroga il credito residuo e non spende un SMS.</p>
+<blockquote>
+<p><strong>Il canale SMS è attivo.</strong> In <em>Invia notifica</em> l&#39;operatore spunta «Invia
+anche via SMS» — <strong>spenta di default</strong>, perché ogni messaggio ha un costo —
+e a quel punto il testo SMS diventa obbligatorio e parte davvero, verso chi
+ha un numero di cellulare in anagrafica: circa metà dei conduttori attivi.
+Senza queste credenziali, spuntare la casella <strong>rifiuta l&#39;invio per
+intero</strong>, con lo stesso meccanismo della PEC assente.</p>
+</blockquote>
+<hr>
+<h2 id="8-impostazioni--webservice-le-anagrafiche-del-consorzio">8. Impostazioni → WebService (le anagrafiche del consorzio)</h2>
+<p>Scheda <strong>WebService</strong>: da qui si configura da dove arrivano i dati del
+consorzio. È la sezione da cui dipende tutto il resto.</p>
+<h3 id="il-principio">Il principio</h3>
+<p>Le tabelle dell&#39;anagrafica — conduttori, madri, tratte e legami — sono una
+<strong>copia</strong> del web service del consorzio, e vengono <strong>sostituite per intero</strong> a
+ogni caricamento. I conduttori si sostituiscono per conto loro; madri, tratte e
+legami <strong>tutti insieme</strong>: se anche una sola delle sette entità che li riempiono
+non si riesce a leggere, restano quelli del caricamento precedente e il
+caricamento risulta <em>parziale</em>, con il motivo scritto. <strong>La madre di ogni tratta
+è un dato del consorzio</strong>: non si ricava dal codice.</p>
+<p>Da settembre 2026 (issue #49) ci sono anche le <strong>rogge madri</strong>, una seconda
+gerarchia che convive con quella di sopra senza sostituirla: codici R da 3
+con un nome proprio (per esempio «R08 — Roggia Serio e derivate»), e le loro
+figlie — il consorzio ne ha mandati 26 nell&#39;elenco allegato alla mail del
+16/09/2026, ma non ancora caricati: non prenderlo come il numero definitivo
+finché non compare qui sotto, nei conteggi del primo caricamento riuscito.
+Le riempiono altre due entità, e <strong>si sostituiscono per conto loro</strong>:
+se una delle due manca, la gerarchia rogge madri resta quella del caricamento
+precedente, ma questo <strong>non</strong> blocca l&#39;aggiornamento delle sette di sopra —
+sono due gruppi indipendenti apposta, per non far dipendere l&#39;anagrafica
+principale da un web service che il consorzio potrebbe attivare più tardi.</p>
+<blockquote>
+<p><strong>Nessuna modifica fatta a mano su quei dati sopravvive al caricamento
+successivo.</strong> Se un indirizzo è sbagliato, va corretto nel gestionale del
+consorzio.</p>
+</blockquote>
+<p>Il caricamento automatico gira <strong>ogni notte alle 03:00</strong>. Il pulsante <em>Aggiorna
+ora</em> fa esattamente la stessa cosa, subito.</p>
+<h3 id="i-campi">I campi</h3>
+<ul>
+<li><strong>Autenticazione</strong>: la credenziale del web service. Come le password, resta
+memorizzata: lasciarla vuota non la cancella.</li>
+<li><strong>URL base del web service</strong>: l&#39;indirizzo comune a tutte le entità (per
+esempio <code>http://192.168.0.100</code>). Un&#39;entità in modalità HTTP senza un URL
+proprio usa la base più il suo percorso, che il campo mostra in grigio.</li>
+<li>Per <strong>ciascuna delle dieci entità</strong> (Destinatari; Impianti (aggreganti IM);
+Impianti a orari (S); Tratte e loro impianto; Tratte a orari (S); Legami live —
+tratte R; Legami live — tratte S; Legami stagione irrigua — tratte R; Rogge
+madri (codici R da 3); Tratte delle rogge madri (R)):<ul>
+<li><strong>Modalità</strong>: <code>HTTP</code> oppure <code>File JSON</code>;</li>
+<li>in modalità HTTP, l&#39;<strong>URL</strong>: va compilato solo se quell&#39;entità sta a un
+indirizzo diverso dalla base, e quando c&#39;è <strong>vale lui</strong>;</li>
+<li>in modalità File JSON, il <strong>percorso</strong> del file, con il pulsante <strong>Carica
+file</strong> per caricarne uno dal proprio PC;</li>
+<li>il pulsante <strong>Prova</strong>, che verifica quella singola sorgente e scrive l&#39;esito
+sotto.</li>
+</ul>
+</li>
+</ul>
+<p>Il caricamento di un file JSON viene <strong>validato riga per riga</strong> prima di essere
+accettato: un file rifiutato <strong>non tocca</strong> quello già presente. A caricamento
+riuscito modalità e percorso si impostano da soli.</p>
+<p>In fondo alla scheda: <em>«Ultimo caricamento riuscito: <data>»</em> e, subito sotto,
+<strong>i numeri di quel caricamento</strong>: quanti destinatari, madri, tratte e legami
+sono stati scritti, quante righe sono state <strong>scartate</strong> e quante madri e tratte
+<em>non classificate</em> ha creato l&#39;applicazione. Se quel caricamento è parziale,
+sotto compaiono anche i motivi. Poi i pulsanti <strong>Aggiorna ora</strong> e <strong>Salva
+configurazione</strong>.</p>
+<h3 id="ordine-di-lavoro-consigliato">Ordine di lavoro consigliato</h3>
+<ol>
+<li>Impostare modalità e URL/file di ogni entità.</li>
+<li><strong>Prova</strong> su ciascuna, una alla volta.</li>
+<li><strong>Salva configurazione</strong>.</li>
+<li><strong>Aggiorna ora</strong>, e poi controllare la sezione <em>Anagrafiche</em>: il riquadro
+ambra in cima dice se qualcosa è andato storto o se qualche entità non è mai
+stata caricata.</li>
+</ol>
+<h3 id="cose-vere-dei-dati-del-consorzio-che-sembrano-guasti">Cose vere dei dati del consorzio, che sembrano guasti</h3>
+<p>Numeri del caricamento di settembre 2026: si ritrovano nei conteggi sotto
+<em>Aggiorna ora</em>.</p>
+<ul>
+<li><strong>Righe scartate a ogni caricamento.</strong> L&#39;elenco <em>Tratte e loro impianto</em>
+mescola tre raggruppamenti del consorzio (<code>IM</code>, <code>NM</code>, <code>ZM</code>): l&#39;applicazione
+usa solo gli impianti <code>IM</code> e scarta le altre righe, 373. Allo stesso modo
+scarta i legami sui codici che iniziano per <code>N</code>, che il consorzio ha chiesto
+di ignorare. Non è un guasto.</li>
+<li><strong>Madri non classificate.</strong> Alcuni legami puntano a codici che nessun impianto
+contiene. L&#39;applicazione li raccoglie sotto madri <em>non classificate</em> che
+portano le prime tre lettere del codice: nell&#39;elenco del 25/09/2026 ne resta
+una sola, <code>R28</code>, con una tratta. Su richiesta del consorzio <strong>non compaiono
+in Invia notifica → Scorrimento</strong>; la loro tratta si raggiunge da <em>Rogge
+Madri</em>. Spariscono da sole quando il consorzio assegna quei codici a un
+impianto.</li>
+<li><strong>Conduttori nei legami che non stanno fra i destinatari.</strong> I legami citano
+codici di conduttore che l&#39;elenco dei destinatari non contiene (2.772 legami
+stagione nell&#39;elenco del 25/09/2026): non ricevono niente, perché
+l&#39;applicazione non ha né un indirizzo né un numero, e su richiesta del
+consorzio non compaiono nemmeno nelle schede <em>Legame</em> di Anagrafiche.</li>
+<li><strong>Una tratta non si attribuisce dal codice.</strong> Tratte che iniziano allo stesso
+modo stanno sotto impianti diversi — quelle che iniziano per <code>R08</code> sotto 13
+impianti. La madre giusta è nella colonna <em>Codice madre</em> di <em>Anagrafiche →
+Impianti</em>.</li>
+<li><strong>Le rogge madri non coprono tutti i codici R.</strong> Una tratta R il cui codice
+da 3 non è fra le rogge madri dell&#39;elenco del consorzio resta fuori dal
+bottone <em>Rogge Madri</em> di Invia notifica, e continua a comparire sotto il suo
+impianto nelle altre sezioni. In <em>Anagrafiche → Rogge madri</em> compare lo
+stesso, con le sue prime 3 cifre come madre e «-» come descrizione. Non è un
+dato perso, è una lista che il consorzio stesso tiene più corta.</li>
+</ul>
+<p>Se un operatore segnala «Invia notifica è quasi tutta vuota», la prima cosa da
+guardare è quali entità risultano caricate.</p>
+<hr>
+<h2 id="9-impostazioni--active-directory">9. Impostazioni → Active Directory</h2>
+<p>Scheda visibile <strong>solo al Super Admin</strong>. È l&#39;unica sezione dell&#39;applicazione con
+questo livello, e la ragione è precisa: <strong>chi modifica host e certificato decide
+quale macchina riceve le password di dominio del personale.</strong></p>
+<p>A differenza di email, PEC e web service, <strong>qui non c&#39;è nessun ripiego su
+variabili d&#39;ambiente</strong>: i dati del domain controller si inseriscono
+dall&#39;interfaccia, in sede.</p>
+<h3 id="i-campi">I campi</h3>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Autenticazione Active Directory attiva</strong></td>
+<td>L&#39;interruttore generale</td>
+</tr>
+<tr>
+<td><strong>Domain controller</strong></td>
+<td>Es. <code>dc01.consorzio.local</code></td>
+</tr>
+<tr>
+<td><strong>Porta</strong></td>
+<td>636 per LDAPS, 389 per StartTLS</td>
+</tr>
+<tr>
+<td><strong>Suffisso di dominio</strong></td>
+<td>Viene aggiunto allo username: <code>m.rossi@consorzio.local</code></td>
+</tr>
+<tr>
+<td><strong>Sicurezza del canale</strong></td>
+<td><em>LDAPS (consigliato, porta 636)</em>, <em>StartTLS (porta 389)</em>, <em>Nessuna cifratura</em></td>
+</tr>
+<tr>
+<td><strong>Certificato della CA interna (PEM)</strong></td>
+<td>Il certificato del DC è quasi sempre emesso dalla CA del dominio, che il server non conosce: va incollato qui</td>
+</tr>
+<tr>
+<td><strong>Non verificare il certificato del server</strong></td>
+<td>Ultima risorsa</td>
+</tr>
+<tr>
+<td><strong>Timeout (millisecondi)</strong></td>
+<td></td>
+</tr>
+</tbody></table></div>
+<p>Due avvisi compaiono da soli e vanno letti, non chiusi con un&#39;alzata di spalle:</p>
+<ul>
+<li><strong>Nessuna cifratura</strong>: le password di dominio viaggiano in chiaro sulla rete.</li>
+<li><strong>Verifica del certificato disattivata</strong>: chiunque risponda su quell&#39;indirizzo
+riceve le password di dominio del personale. Da usare solo dopo aver provato
+a incollare il certificato della CA.</li>
+</ul>
+<h3 id="prova-connessione">Prova connessione</h3>
+<p>Sotto ai campi, dopo aver <strong>salvato</strong>:</p>
+<ul>
+<li>si può indicare uno username e una password di dominio (facoltativi, <strong>non
+vengono salvati</strong>) per provare anche l&#39;autenticazione;</li>
+<li><strong>la prova usa la configurazione già salvata</strong>, non quella scritta e non
+ancora salvata: salvare prima di premere.</li>
+</ul>
+<p>L&#39;esito arriva su due righe indipendenti — <em>il server risponde</em> e <em>le credenziali
+sono valide</em> — perché sono due domande diverse: un DC raggiungibile con
+credenziali sbagliate non è una contraddizione.</p>
+<h3 id="cosa-aspettarsi-al-collaudo">Cosa aspettarsi al collaudo</h3>
+<p>La macchina di sviluppo non vede il domain controller del consorzio: <strong>il primo
+contatto con AD vero avviene al collaudo, in sede</strong>, ed è lì che si compilano
+questi quattro dati. Da qui la scelta di tenere la scheda montata anche quando
+si guarda un&#39;altra tab: il certificato PEM incollato non si perde cambiando
+scheda.</p>
+<hr>
+<h2 id="10-impostazioni--utenti-di-test">10. Impostazioni → Utenti di test</h2>
+<p>Scheda visibile <strong>solo al Super Admin</strong>, con lo stesso livello della scheda
+Active Directory: chi censisce un utente di test decide che a <strong>ogni</strong>
+comunicazione del consorzio, qualunque roggia, parta una copia verso un
+indirizzo o un numero che ha scelto lui. Non è un dettaglio da lasciare a un
+Admin qualunque.</p>
+<p><strong>A cosa serve.</strong> Prima di un invio importante — o semplicemente per restare
+sicuri che il canale email o SMS funzioni — si aggiunge una persona come
+utente di test. Finché quell&#39;utente è <strong>attivo</strong>, riceve una copia di ogni
+comunicazione inviata dall&#39;applicazione, indipendentemente da quali rogge o
+conduttori sono stati selezionati.</p>
+<p><strong>È un interruttore per persona, non generale.</strong> Ogni riga della tabella ha il
+proprio interruttore Attivo/Non attivo: si può tenere censita una persona e
+spegnerla temporaneamente, senza cancellarla.</p>
+<p><strong>Un utente di test ha bisogno di almeno un recapito</strong>, email o telefono: la
+maschera non fa salvare una riga senza nessuno dei due, perché non
+raggiungerebbe nessuno pur comparendo come censita. Chi ha inserito solo un
+numero di telefono, però, riceve davvero qualcosa solo quando l&#39;invio ha
+anche la spunta SMS: con la sola email spedita, quella persona resta fuori.</p>
+<p><strong>Come si fa un invio di sola prova.</strong> Nella pagina <em>Invia notifica</em> si
+compone la comunicazione come sempre, ma <strong>si toglie la spunta a tutti i
+conduttori</strong>. Con almeno un utente di test attivo e raggiungibile il bottone
+resta acceso: la comunicazione parte solo verso gli utenti di test, nessun
+conduttore la riceve. È il modo per collaudare testo, canale (email o PEC) e
+allegati senza disturbare nessuno.</p>
+<p><strong>Una prova si comporta come un invio vero fino in fondo</strong>, comprese le
+conseguenze sulle rogge: se il tipo scelto è apertura o chiusura, le rogge
+selezionate risultano aperte o chiuse in Dashboard esattamente come per un
+invio reale, e la comunicazione compare nello Storico con un badge <strong>Prova</strong>.
+È voluto — un collaudo che si comportasse diversamente da un invio vero non
+proverebbe niente — ed è il motivo per cui esiste il pulsante seguente.</p>
+<p><strong>«Elimina le comunicazioni di prova».</strong> In fondo alla scheda, il pulsante
+mostra quante comunicazioni risultano «di prova» — cioè andate ai soli utenti
+di test, nessun conduttore vero — e le cancella tutte insieme dallo Storico.
+<strong>Cancellarle riapre anche le rogge che avevano chiuso</strong>, perché lo stato di
+una roggia si ricalcola sempre da quello che resta registrato. Una
+comunicazione con anche un solo conduttore vero fra i destinatari non viene
+mai toccata da questo pulsante, nemmeno se contiene anche utenti di test:
+non è considerata «di prova». L&#39;operazione non si può annullare.</p>
+<hr>
+<h2 id="11-cosa-deve-sapere-un-amministratore-sullinvio">11. Cosa deve sapere un amministratore sull&#39;invio</h2>
+<p>Il flusso completo è nella <a href="/guida-utente.html#5-invia-notifica">Guida utente</a>.
+Qui i punti che generano segnalazioni.</p>
+<p><strong>La risposta arriva prima della fine della spedizione.</strong> La notifica viene
+registrata, l&#39;applicazione risponde subito e le email continuano a partire in
+sottofondo. Con Gmail una email costa circa un secondo: aspettare l&#39;ultima
+farebbe scadere la connessione e l&#39;operatore, vedendo un errore, riproverebbe —
+due comunicazioni identiche a tutti. Per la stessa ragione la tabella dei
+conduttori si svuota appena l&#39;invio parte.</p>
+<p><strong>Una comunicazione per conduttore, sempre.</strong> Chi è legato a più tratte
+selezionate riceve una sola email, con tutti i codici nella sua fotografia. Due
+conduttori <em>diversi</em> che condividono un indirizzo ricevono invece un messaggio a
+testa.</p>
+<p><strong>L&#39;email parte sempre — ordinaria o PEC — l&#39;SMS solo se richiesto.</strong> Il testo
+SMS scritto dall&#39;operatore viene registrato con la comunicazione e mostrato nel
+dettaglio dello Storico, ma parte davvero solo se in <em>Invia notifica</em> era
+spuntata «Invia anche via SMS» (spenta di default) e solo verso chi ha un
+numero in anagrafica. Chi segnala «ho scritto l&#39;SMS e non è arrivato» — pur
+avendo spuntato l&#39;invio via SMS — va verificato sul numero: se manca in
+anagrafica, è il comportamento previsto.</p>
+<p><strong>I conduttori cessati non ricevono mai.</strong> Il filtro è applicato in lettura, non
+nel caricamento: il mirror resta una copia fedele e conserva i cessati, che
+servono ancora a risolvere i legami nelle Anagrafiche.</p>
+<p><strong>Lo stato aperta/chiusa si ricava dalle notifiche inviate.</strong> Non esiste nessun
+campo da modificare, in nessuna pagina. Per correggere uno stato sbagliato si
+invia la notifica opposta sugli stessi codici. Regole:</p>
+<ul>
+<li>una <strong>tratta eredita dalla madre</strong>, non il contrario: chiudere il pozzo <code>IM27A</code>
+chiude le sue tratte, chiudere una tratta non chiude il pozzo;</li>
+<li><strong>ripetere non azzera</strong>: una seconda chiusura su un codice già chiuso lascia la
+data della prima;</li>
+<li>la Dashboard conta le chiusure <strong>proprie</strong>: una tratta chiusa solo perché è
+chiusa la madre non entra nel conteggio.</li>
+</ul>
+<p><strong>Chi ha inviato viene preso dalla sessione</strong>, non da quello che il client
+dichiara: nello Storico la firma non è modificabile.</p>
+<hr>
+<h2 id="12-manutenzione-ordinaria">12. Manutenzione ordinaria</h2>
+<h3 id="controlli-periodici">Controlli periodici</h3>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Ogni</th>
+<th>Cosa</th>
+<th>Dove</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Giorno</td>
+<td><em>«Ultimo aggiornamento anagrafiche»</em> è verde</td>
+<td>Intestazione di qualunque pagina</td>
+</tr>
+<tr>
+<td>Giorno</td>
+<td>Nessun riquadro ambra di errore</td>
+<td>Anagrafiche</td>
+</tr>
+<tr>
+<td>Settimana</td>
+<td>Le <strong>Richieste di accesso</strong> in attesa</td>
+<td>Gestione Utenti → Richieste</td>
+</tr>
+<tr>
+<td>Mese</td>
+<td>Utenze di persone che non sono più in servizio</td>
+<td>Gestione Utenti, colonna <em>Ultima login</em></td>
+</tr>
+</tbody></table></div>
+<p><strong>Questi controlli sono a mano perché non arriva nessun avviso.</strong> L&#39;applicazione
+non manda email di esito del caricamento notturno (vedi <em>Limiti noti</em>): se
+nessuno guarda l&#39;intestazione, un caricamento fermo da giorni non lo segnala
+nessuno, e le comunicazioni continuano a partire verso indirizzi vecchi.</p>
+<h3 id="backup-del-database">Backup del database</h3>
+<p>Il backup è <strong>automatico</strong>, ogni giorno alle <strong>22:30</strong> (ora del server), e tiene
+le <strong>ultime 30 copie</strong>. Ogni dump viene verificato <em>prima</em> di ruotare i
+precedenti: se fallisce, lo script esce in errore e <strong>non cancella nulla</strong> — una
+rotazione non elimina mai copie buone in cambio di una rotta.</p>
+<blockquote>
+<p><strong>I backup stanno solo sul disco di questo server: non sopravvivono a un
+guasto hardware.</strong> Portarne una copia altrove è una decisione ancora aperta.</p>
+</blockquote>
+<p>Dettagli operativi, comandi e ripristino: <code>README.md</code> nel repository, sezione
+<em>Backup del database</em>.</p>
+<h3 id="dopo-un-intervento-tecnico">Dopo un intervento tecnico</h3>
+<p>Un aggiornamento dell&#39;applicazione <strong>non risincronizza le anagrafiche</strong>: se
+l&#39;intervento riguardava il caricamento dei dati, va lanciato <em>Aggiorna ora</em>.</p>
+<hr>
+<h2 id="13-limiti-noti-e-cose-da-decidere">13. Limiti noti e cose da decidere</h2>
+<p>Non sono dimenticanze: sono scelte prese o questioni aperte. Vale la pena
+conoscerle prima che diventino segnalazioni.</p>
+<ul>
+<li><strong>L&#39;SMS non ha conferma di consegna.</strong> Il fornitore (Register.it, sfera.net)
+dice solo quanti messaggi ha accettato: la colonna <em>SMS</em> del dettaglio
+Storico distingue <em>Inviato</em> da <em>Fallito</em>, ma non saprà mai dire <em>Consegnato</em>.
+Chi non ha un numero in anagrafica — circa metà dei conduttori attivi —
+risulta <em>Fallito</em> come chi non ha indirizzo email.</li>
+<li><strong>Nessuno viene avvisato per email dell&#39;esito del caricamento notturno.</strong> Il
+riepilogo esiste già lato server ed è pronto a partire dopo ogni corsa delle
+03:00, ma <strong>manca la schermata per indicare i destinatari</strong>: senza indirizzi
+configurati non viene spedito nulla. Finché è così, che il caricamento sia
+andato a buon fine lo si controlla a mano — vedi <em>Manutenzione ordinaria</em>.</li>
+<li><strong>Il limite di Gmail è 500 email al giorno</strong>, sotto la dimensione di un invio
+ampio. Con la casella attuale un invio a tutti i conduttori non passa in un
+giorno solo.</li>
+<li><strong>Il pixel di tracciamento delle aperture</strong> non funziona finché non è
+configurato l&#39;indirizzo pubblico dell&#39;applicazione: le email partono senza, con
+un avviso nei log.</li>
+<li><strong>Una notifica interrotta da un riavvio del server resta in stato «in invio»</strong>
+e nessuno la chiude. Se nello Storico compare una comunicazione ferma in quello
+stato, è quasi certamente successo questo.</li>
+<li><strong>La sessione dura 8 ore e non ricontrolla Active Directory</strong>: chi viene
+disabilitato sul dominio resta operativo fino alla scadenza. Per chiuderlo
+subito si disattiva l&#39;utenza.</li>
+<li><strong>Deve sempre esistere almeno un Super Admin locale.</strong> Il codice non lo
+impone.</li>
+</ul>
+<hr>
+<h2 id="14-diagnosi-rapida">14. Diagnosi rapida</h2>
+<p><strong>Un operatore dice che «Invia notifica» è quasi tutta vuota.</strong>
+Guardare <em>Anagrafiche</em>: quali entità risultano caricate e cosa dice il riquadro
+ambra. Poi <em>Impostazioni → WebService</em>: <strong>Prova</strong> su ogni entità, quindi
+<em>Aggiorna ora</em>. Ricordare però che gli export incompleti del consorzio sono una
+condizione nota, non necessariamente un guasto.</p>
+<p><strong>Un invio viene rifiutato con «Configurazione PEC assente».</strong>
+Configurare la scheda <strong>PEC</strong> in Impostazioni. Non esiste un modo di forzare la
+posta ordinaria: è il comportamento voluto.</p>
+<p><strong>Una persona non riesce ad accedere.</strong>
+Chiedere il <strong>colore</strong> del messaggio. Rosso = password. Ambra = leggere il testo,
+che dice già cosa fare. Se dice <em>«Utente non abilitato»</em>, la richiesta è già in
+<em>Gestione Utenti → Richieste di accesso</em>: si abilita da lì, così lo username è
+quello esatto di dominio.</p>
+<p><strong>Tutti sono chiusi fuori e l&#39;accesso locale funziona.</strong>
+Il domain controller non risponde. Entrare con il Super Admin <strong>locale</strong> e
+controllare <em>Impostazioni → Active Directory → Prova connessione</em>.</p>
+<p><strong>Lo stato di una tratta è sbagliato.</strong>
+Non c&#39;è nulla da modificare: si invia la notifica opposta sugli stessi codici.
+Se lo stato sbagliato deriva da una notifica errata, il collegamento «Chiusa dal
+<data>» in Dashboard porta alla comunicazione che l&#39;ha causato.</p>
+<p><strong>Una notifica è ferma «in invio».</strong>
+Molto probabilmente un riavvio l&#39;ha interrotta. Verificare nel dettaglio dello
+Storico quanti destinatari risultano raggiunti prima di decidere se ripetere
+l&#39;invio ai soli mancanti — <strong>non si rispedisce a tutti alla cieca</strong>.</p>
+
+    </main>
+    <footer class="piede">
+      Pagina generata da <code>docs/</code> — per correggerla si modifica il Markdown e si rilancia <code>npm run guide:build</code>.
+    </footer>
+  </body>
+</html>

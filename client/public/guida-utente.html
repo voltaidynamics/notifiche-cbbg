@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Guida utente — Notifiche Canali Irrigui</title>
+    <!--
+      PAGINA GENERATA — non modificarla a mano.
+      La fonte è in docs/, si rigenera con: npm run guide:build
+    -->
+    <style>
+  :root { color-scheme: light; --verde: #16a34a; --testo: #1f2937; --grigio: #4b5563; --bordo: #e5e7eb; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #f9fafb;
+    color: var(--testo);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+  }
+  .foglio {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 5rem;
+  }
+  header.intestazione {
+    background: #fff;
+    border-bottom: 1px solid var(--bordo);
+    padding: 1.25rem;
+  }
+  header.intestazione .dentro {
+    max-width: 52rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  header.intestazione strong { color: var(--verde); font-size: 1.05rem; }
+  header.intestazione span { color: var(--grigio); font-size: 0.85rem; }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 1.5rem 0 0.5rem; }
+  h2 {
+    font-size: 1.4rem;
+    margin: 2.75rem 0 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bordo);
+  }
+  h3 { font-size: 1.1rem; margin: 1.75rem 0 0.5rem; }
+  h4 { font-size: 1rem; margin: 1.25rem 0 0.5rem; color: var(--grigio); }
+  p, li { color: var(--grigio); }
+  li { margin: 0.25rem 0; }
+  a { color: var(--verde); }
+  strong { color: var(--testo); }
+  hr { border: 0; border-top: 1px solid var(--bordo); margin: 2.5rem 0; }
+  code {
+    background: #f3f4f6;
+    border: 1px solid var(--bordo);
+    border-radius: 0.25rem;
+    padding: 0.05rem 0.3rem;
+    font-size: 0.85em;
+  }
+  pre {
+    background: #fff;
+    border: 1px solid var(--bordo);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+  pre code { background: none; border: 0; padding: 0; font-size: 0.82rem; }
+  blockquote {
+    margin: 1.25rem 0;
+    padding: 0.75rem 1rem;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0.375rem;
+  }
+  blockquote p { margin: 0.4rem 0; color: #78350f; }
+  blockquote p:first-child { margin-top: 0; }
+  blockquote p:last-child { margin-bottom: 0; }
+  /* Le tabelle sono larghe e la pagina si legge anche da telefono: scorre la
+     tabella dentro il suo contenitore, non tutto il corpo della pagina. */
+  .tabella { overflow-x: auto; margin: 1.25rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; background: #fff; }
+  th, td { border: 1px solid var(--bordo); padding: 0.5rem 0.7rem; text-align: left; vertical-align: top; }
+  th { background: #f3f4f6; color: var(--testo); font-weight: 600; }
+  td { color: var(--grigio); }
+  footer.piede {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+    color: #9ca3af;
+    font-size: 0.8rem;
+  }
+</style>
+  </head>
+  <body>
+    <header class="intestazione">
+      <div class="dentro">
+        <strong>Notifiche Canali Irrigui</strong>
+        <span>Guida per Utente e Osservatore</span>
+      </div>
+    </header>
+    <main class="foglio">
+<h1 id="guida-utente--notifiche-canali-irrigui">Guida utente — Notifiche Canali Irrigui</h1>
+<p>Guida per chi usa l&#39;applicazione tutti i giorni: <strong>Utente</strong> e <strong>Osservatore</strong>.
+Le funzioni riservate agli amministratori (Gestione Utenti, Impostazioni) sono
+descritte nella <a href="/guida-super-user.html">Guida super user</a>.</p>
+<hr>
+<h2 id="indice">Indice</h2>
+<ol>
+<li><a href="#1-che-cosa-fa-lapplicazione">Che cosa fa l&#39;applicazione</a></li>
+<li><a href="#2-accedere">Accedere</a></li>
+<li><a href="#3-muoversi-nellapplicazione">Muoversi nell&#39;applicazione</a></li>
+<li><a href="#4-dashboard">Dashboard</a></li>
+<li><a href="#5-invia-notifica">Invia notifica</a></li>
+<li><a href="#6-storico-notifiche">Storico notifiche</a></li>
+<li><a href="#7-anagrafiche">Anagrafiche</a></li>
+<li><a href="#8-template">Template</a></li>
+<li><a href="#9-il-vocabolario-dellapplicazione">Il vocabolario dell&#39;applicazione</a></li>
+<li><a href="#10-problemi-frequenti">Problemi frequenti</a></li>
+</ol>
+<hr>
+<h2 id="1-che-cosa-fa-lapplicazione">1. Che cosa fa l&#39;applicazione</h2>
+<p>L&#39;applicazione serve a <strong>comunicare ai conduttori</strong> che cosa succede sulle
+rogge, sugli impianti e sui pozzi da cui derivano: una chiusura, una
+riapertura, una manutenzione, un allarme di inquinamento.</p>
+<h3 id="con-quale-mezzo-arriva-la-comunicazione">Con quale mezzo arriva la comunicazione</h3>
+<p><strong>La comunicazione parte sempre per email.</strong> I canali di posta sono però
+<strong>due</strong>, e non li sceglie chi invia: il sistema guarda l&#39;anagrafica di ogni
+conduttore e manda la comunicazione dalla <strong>casella ordinaria</strong> oppure dalla
+<strong>PEC</strong>. Fra i conduttori attivi la PEC è quasi la metà.</p>
+<p><strong>Si può aggiungere anche l&#39;SMS, ma solo spuntandolo.</strong> In <em>Invia notifica</em>,
+sotto al testo email, c&#39;è un secondo riquadro, <em>Testo SMS</em>, e sotto ancora la
+spunta <strong>«Invia anche via SMS»</strong>: <strong>spenta di default</strong>, perché ogni SMS ha un
+costo. Se la si spunta, il testo SMS diventa <strong>obbligatorio</strong> e parte davvero,
+attraverso il fornitore configurato in Impostazioni — ma solo verso chi ha un
+numero di cellulare in anagrafica, <strong>circa la metà</strong> dei conduttori attivi: chi
+non ce l&#39;ha non riceve l&#39;SMS, e lo si vede nel dettaglio dello Storico.</p>
+<p>Il flusso è sempre lo stesso:</p>
+<pre><code>scelgo cosa è successo  →  scelgo su quali tratte  →  scelgo con quale legame
+      (tipo e classificazione)      (rogge/impianti/pozzi)      (live o stagione)
+                                          ↓
+                             vedo l&#39;elenco dei conduttori
+                                          ↓
+              scrivo titolo, testo email e testo SMS  →  riepilogo  →  invio
+                                          ↓
+                              lo Storico registra tutto
+</code></pre>
+<p>Due cose da sapere subito, perché spiegano molte cose dell&#39;interfaccia:</p>
+<ul>
+<li><strong>L&#39;anagrafica del consorzio è di sola lettura.</strong> Conduttori, rogge, indirizzi
+e legami arrivano dal web service del consorzio e vengono ricaricati ogni
+notte alle 03:00. Nessuna pagina dell&#39;applicazione li può modificare: se un
+indirizzo è sbagliato, si corregge nel gestionale del consorzio e arriva qui
+al caricamento successivo.</li>
+<li><strong>Lo stato &quot;aperta/chiusa&quot; di una tratta non è un dato: è una conseguenza.</strong>
+Non esiste nessun campo da spuntare. Una tratta risulta chiusa perché
+qualcuno ha inviato una notifica di <strong>Chiusura</strong> che la riguardava, e torna
+aperta quando parte una notifica di <strong>Apertura</strong>. Le notifiche di tipo
+<strong>Altro</strong> non cambiano nulla.</li>
+</ul>
+<hr>
+<h2 id="2-accedere">2. Accedere</h2>
+<p>Nella pagina di login si inseriscono <strong>Username</strong> e <strong>Password</strong>, poi <em>Accedi</em>.</p>
+<p>Le credenziali possono essere di due tipi, e lo decide l&#39;amministratore quando
+crea l&#39;utenza:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Sorgente</th>
+<th>Che password si usa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Locale</strong></td>
+<td>La password creata dall&#39;amministratore dentro l&#39;applicazione</td>
+</tr>
+<tr>
+<td><strong>Active Directory</strong></td>
+<td>La stessa password con cui si accede al PC del consorzio</td>
+</tr>
+</tbody></table></div>
+<p>Con Active Directory lo <strong>username deve essere identico a quello di dominio</strong>
+(<code>m.rossi</code> e <code>mrossi</code> sono due cose diverse).</p>
+<h3 id="leggere-il-messaggio-di-errore">Leggere il messaggio di errore</h3>
+<p>Il colore del riquadro dice che cosa fare, prima ancora del testo:</p>
+<ul>
+<li><strong>Rosso — «Credenziali non valide»</strong>: la password potrebbe essere sbagliata.
+Riprovare ha senso.</li>
+<li><strong>Ambra — tutto il resto</strong>: riprovare <em>non</em> serve. Il messaggio dice che cosa
+fare:<ul>
+<li><em>«Utente non abilitato. Contatta un amministratore per richiedere
+l&#39;accesso.»</em> → la password di dominio era giusta, ma l&#39;utenza non è ancora
+stata abilitata in questa applicazione. La richiesta è già arrivata
+all&#39;amministratore: basta segnalarglielo.</li>
+<li><em>«Account disabilitato»</em> → l&#39;utenza esiste ma è stata disattivata.</li>
+<li><em>«Account di dominio disabilitato»</em> / <em>«bloccato per troppi tentativi»</em> →
+serve un sistemista. <strong>Con l&#39;account bloccato, riprovare allunga il
+blocco.</strong></li>
+<li><em>«La tua password di dominio è scaduta»</em> → si cambia dal PC, poi si rientra.</li>
+<li><em>«Active Directory non è raggiungibile»</em> → problema di rete o di server,
+non di credenziali.</li>
+</ul>
+</li>
+</ul>
+<h3 id="uscire">Uscire</h3>
+<p>Il pulsante con la freccia (<strong>Esci</strong>) in alto a destra, oppure quello in fondo
+al menù laterale. <strong>La sessione dura 8 ore</strong>, poi va rifatto l&#39;accesso.</p>
+<hr>
+<h2 id="3-muoversi-nellapplicazione">3. Muoversi nell&#39;applicazione</h2>
+<h3 id="il-menù-laterale">Il menù laterale</h3>
+<p>Su computer sta a sinistra ed è diviso in due gruppi:</p>
+<ul>
+<li><strong>Moduli principali</strong> — Dashboard, Invia Notifica, Storico Notifiche,
+Anagrafiche, Template</li>
+<li><strong>Strumenti</strong> — Gestione Utenti, Impostazioni</li>
+</ul>
+<p><strong>Si vedono solo le voci a cui si ha accesso.</strong> In pratica cambia una voce sola:
+<em>Gestione Utenti</em> compare agli amministratori e a nessun altro.</p>
+<p>Su telefono il menù diventa una barra in basso con le prime cinque voci, più il
+pulsante ☰ in alto a destra per l&#39;elenco completo.</p>
+<h3 id="lintestazione-uguale-in-ogni-pagina">L&#39;intestazione, uguale in ogni pagina</h3>
+<p>In cima a ogni sezione, sempre nello stesso posto:</p>
+<ul>
+<li><strong>Titolo</strong> della sezione e sua descrizione.</li>
+<li><strong>«Ultimo aggiornamento anagrafiche: …»</strong> — quando sono stati caricati per
+l&#39;ultima volta i dati del consorzio. <strong>Verde</strong> = aggiornati nelle ultime 24
+ore. <strong>Ambra</strong> = più vecchi di 24 ore (o mai caricati): l&#39;ultima corsa
+notturna non è andata a buon fine, e conviene segnalarlo prima di spedire una
+comunicazione importante.</li>
+<li><strong>«Attenzione, dati in corso di aggiornamento»</strong> — compare solo mentre un
+caricamento sta davvero girando. Durante quel periodo gli elenchi possono
+cambiare sotto gli occhi.</li>
+<li><strong>Guida</strong> — apre questa guida in una scheda nuova. Il pulsante porta alla
+guida giusta per il proprio ruolo: chi è Admin o Super Admin apre la <em>Guida
+super user</em>, che aggiunge i capitoli sulla configurazione.</li>
+<li><strong>Area personale</strong> — nome utente e ruolo.</li>
+<li><strong>Esci</strong>.</li>
+</ul>
+<h3 id="i-ruoli">I ruoli</h3>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Ruolo</th>
+<th>Che cosa può fare</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Utente</strong></td>
+<td>Tutte le pagine tranne <em>Gestione Utenti</em>, in scrittura: può inviare notifiche, creare template</td>
+</tr>
+<tr>
+<td><strong>Osservatore</strong></td>
+<td>Le stesse pagine, ma <strong>in sola lettura</strong>: può guardare, filtrare, esportare in CSV — non può inviare né modificare nulla</td>
+</tr>
+<tr>
+<td><strong>Admin / Super Admin</strong></td>
+<td>Tutto, comprese le sezioni di configurazione (vedi la guida super user)</td>
+</tr>
+</tbody></table></div>
+<p>Se si è <strong>Osservatore</strong> e si prova a fare un&#39;operazione di modifica,
+l&#39;applicazione la rifiuta: è un blocco voluto, non un errore.</p>
+<hr>
+<h2 id="4-dashboard">4. Dashboard</h2>
+<p>È la pagina d&#39;ingresso: la fotografia della rete in questo momento.</p>
+<h3 id="tratte-chiuse">Tratte chiuse</h3>
+<p>Il numero grande è <strong>quante tratte risultano chiuse adesso</strong> — i codici a 9
+caratteri che iniziano per R o per S — e sotto c&#39;è l&#39;elenco, una riga per
+tratta:</p>
+<ul>
+<li>il <strong>codice</strong> e la descrizione;</li>
+<li><strong>«Con la madre <codice>»</strong> quando la tratta è chiusa perché è stata chiusa
+l&#39;intera madre (è il caso tipico dei pozzi): la madre non compare come riga a
+sé, compaiono tutte le sue tratte;</li>
+<li>quando il codice ha una roggia madre nella seconda gerarchia, il suo nome
+comparirà sotto, come riferimento — non è un dato in più da controllare, solo
+a chi conosce la tratta col nome della roggia più che con quello del codice;</li>
+<li><strong>«Chiusa dal <data>»</strong>: la data è un collegamento e porta alla notifica che
+ha prodotto quella chiusura.</li>
+</ul>
+<p>Il conteggio è per tratta: una notifica che chiude quattro tratte lo fa salire
+di quattro, e chiudere un pozzo con venti tratte lo fa salire di venti. Una
+tratta chiusa due volte — da sé e con la sua madre — conta una volta sola.</p>
+<h3 id="ultime-notifiche">Ultime notifiche</h3>
+<p>Le sei comunicazioni più recenti, con data, ora e numero di destinatari. La
+freccia a destra apre il dettaglio.</p>
+<h3 id="i-due-grafici">I due grafici</h3>
+<p><strong>Chiusure</strong> e <strong>Notifiche</strong> degli ultimi 30 giorni, un barra per giorno.</p>
+<h3 id="il-badge-esempio">Il badge «esempio»</h3>
+<p>Quando una sezione non ha ancora dati veri (nessuna chiusura registrata, nessuna
+notifica inviata) mostra dei <strong>dati di esempio</strong> con l&#39;etichetta arancione
+<code>ESEMPIO</code>. Servono a far vedere come si presenterà la sezione: <strong>non sono dati
+reali</strong>. Spariscono da soli alla prima chiusura o alla prima notifica vera.</p>
+<hr>
+<h2 id="5-invia-notifica">5. Invia notifica</h2>
+<p>È la sezione più importante. Si compila dall&#39;alto verso il basso, e ogni passo
+sblocca il successivo.</p>
+<h3 id="passo-1--la-sezione-rogge-madri-scorrimento-impianti-o-pozzi">Passo 1 — La sezione: Rogge Madri, Scorrimento, Impianti o Pozzi</h3>
+<p>Quattro riquadri in cima, <strong>«Rogge Madri» per primo a sinistra</strong>. Il riquadro
+attivo è verde.</p>
+<p><strong>Attenzione</strong>: cambiare sezione <strong>azzera tutta la selezione fatta finora</strong>
+(madri, tratte, elenco conduttori). I testi già scritti restano.</p>
+<p>La differenza fra le quattro sezioni non è estetica:</p>
+<ul>
+<li><strong>Rogge Madri</strong>: la seconda gerarchia del consorzio, i codici R da 3 con
+nome proprio (per esempio «R08 — Roggia Serio e derivate»; l&#39;elenco del
+25/09/2026 ne conta 64). Si scelgono le
+loro tratte come nelle altre sezioni con tratte; una riga mostra <strong>due</strong>
+madri, quella roggia madre — con cui si sta selezionando — e, quando c&#39;è, il
+suo impianto: chiudere l&#39;impianto chiude comunque la tratta anche vista da
+qui.</li>
+<li><strong>Scorrimento</strong> e <strong>Impianti</strong>: si scelgono le singole <strong>tratte</strong>, raggruppate
+per impianto. In Scorrimento compaiono solo impianti con codice <code>IM…</code>.</li>
+<li><strong>Pozzi</strong>: <strong>non si scelgono le tratte</strong>. Si sceglie il pozzo, e la
+comunicazione vale per tutti i suoi conduttori. È scritto anche a schermo:
+<em>«La comunicazione vale per l&#39;intero pozzo: le sue tratte non si scelgono una
+a una.»</em></li>
+</ul>
+<p>Se compare <em>«Nessuna roggia madre caricata. I due web service delle rogge
+madri non sono ancora configurati in Impostazioni → WebService»</em>, la sezione
+«Rogge Madri» non è un guasto della pagina: quei due dati arrivano da due web
+service distinti da quelli di Scorrimento e Impianti, e un amministratore deve
+ancora collegarli. Le stesse tratte restano comunque raggiungibili dalle
+sezioni Scorrimento e Impianti.</p>
+<h3 id="passo-2--classificazione-della-comunicazione">Passo 2 — Classificazione della comunicazione</h3>
+<p>Due tendine, <strong>entrambe obbligatorie</strong>. Stanno in alto, prima delle tratte,
+perché descrivono l&#39;evento: chi comunica una chiusura per inquinamento lo sa
+prima ancora di sapere quali tratte toccherà.</p>
+<p><strong>Tipo</strong> — che cosa succede alla tratta:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Valore</th>
+<th>Effetto sullo stato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Apertura</strong> (badge verde)</td>
+<td>I codici selezionati risultano <strong>aperti</strong></td>
+</tr>
+<tr>
+<td><strong>Chiusura</strong> (badge rosso)</td>
+<td>I codici selezionati risultano <strong>chiusi</strong></td>
+</tr>
+<tr>
+<td><strong>Altro</strong> (badge grigio)</td>
+<td><strong>Non cambia nulla</strong>: comunicazione informativa</td>
+</tr>
+</tbody></table></div>
+<p><code>Altro</code> non è un ripiego per pigrizia: esiste apposta per le comunicazioni che
+non sono né un&#39;apertura né una chiusura, così non si è costretti a dichiarare
+il falso.</p>
+<p><strong>Classificazione</strong> — perché succede:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Valore</th>
+<th>Badge</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ordinaria</strong></td>
+<td>blu</td>
+</tr>
+<tr>
+<td><strong>Straordinaria</strong></td>
+<td>giallo</td>
+</tr>
+<tr>
+<td><strong>Inquinamento</strong></td>
+<td>viola</td>
+</tr>
+</tbody></table></div>
+<p>Finché una delle due tendine è vuota, resta bordata di ambra e il pulsante di
+invio rimane spento.</p>
+<h3 id="passo-3--scegliere-madri-e-tratte">Passo 3 — Scegliere madri e tratte</h3>
+<p><strong>A sinistra: la madre</strong> (Roggia madre / Impianto / Pozzo).</p>
+<ul>
+<li>C&#39;è un campo <em>Cerca…</em> che filtra su codice e nome.</li>
+<li>Si possono selezionare <strong>più madri insieme</strong>; il contatore in alto a destra
+dice quante.</li>
+<li>Accanto a una madre già chiusa compare il badge rosso <strong>Chiusa</strong>. Le voci
+aperte non hanno badge: aperta è il caso normale.</li>
+<li>I codici che il consorzio ha legato a dei conduttori ma non ha ancora
+assegnato a nessun impianto (per esempio <code>R28</code>) <strong>non compaiono</strong> in
+Scorrimento, su richiesta del consorzio: si raggiungono dalla sezione
+<strong>Rogge Madri</strong>.</li>
+<li>Cambiare la selezione delle madri <strong>svuota le tratte già spuntate</strong> e la
+tabella dei conduttori.</li>
+</ul>
+<p><strong>A destra: le tratte</strong> (per Rogge Madri, Scorrimento e Impianti — non per Pozzi).</p>
+<ul>
+<li>Finché non si sceglie una madre, l&#39;elenco dice <em>«Seleziona prima una o più
+rogge madri a sinistra»</em>.</li>
+<li>Ogni tratta appartiene a <strong>una sola madre</strong> — una roggia, un impianto o un
+pozzo — e quale sia lo indica il consorzio: <strong>non si ricava dal codice</strong>.
+Tratte con codici che iniziano allo stesso modo possono stare sotto impianti
+diversi.</li>
+<li>In testa, in un riquadro verde, c&#39;è <strong>«Tutta la roggia» / «Tutto
+l&#39;impianto»</strong>: una voce <em>Tutte le tratte di <codice></em> per ciascuna madre
+scelta. È il modo per <strong>avvisare tutti quelli di una madre</strong>: spuntarla
+accende tutte le sue tratte, anche quelle che la ricerca sta nascondendo; se
+erano già tutte accese, le spegne. Spuntare le tratte una per una fino
+all&#39;ultima porta alla stessa selezione, e nessuno riceve la comunicazione due
+volte.</li>
+<li>Sotto, le singole tratte con codice, descrizione e badge <strong>Chiusa</strong> dove serve.</li>
+<li><strong>Seleziona tutti / Deseleziona tutti</strong> agiscono sull&#39;elenco <strong>filtrato dalla
+ricerca</strong>: se si sta cercando <code>D010</code>, «Seleziona tutti» spunta solo quelle.</li>
+<li>Il contatore dice <code>&lt;spuntate&gt; / &lt;visibili&gt; selezionate</code>.</li>
+</ul>
+<h3 id="passo-4--mostra-conduttori-e-la-scelta-del-legame">Passo 4 — «Mostra Conduttori» e la scelta del legame</h3>
+<p>Il pulsante <strong>Mostra Conduttori</strong> si accende quando c&#39;è almeno una tratta (o, per
+i pozzi, almeno un pozzo) selezionata.</p>
+<p>Si apre la finestra <strong>«Con quale legame?»</strong> con due opzioni:</p>
+<ul>
+<li><strong>Legame live</strong></li>
+<li><strong>Legame stagione irrigua</strong></li>
+</ul>
+<p>Il consorzio lega i conduttori alle tratte in due modi distinti, e sono due
+elenchi diversi. <strong>Non c&#39;è un valore preselezionato</strong>, di proposito: questa
+scelta decide <em>chi riceve la comunicazione</em>, e va fatta guardandola.</p>
+<p>Sotto ogni opzione compare il conteggio: <em>«N conduttori su questa selezione»</em>.
+Se dice:</p>
+<ul>
+<li><em>«Nessun legame di questo tipo caricato nell&#39;anagrafica»</em> → quell&#39;export non è
+ancora arrivato dal consorzio. Non è un guasto della pagina.</li>
+<li><em>«Nessun conduttore su questa selezione»</em> → l&#39;elenco esiste, ma su queste
+tratte non c&#39;è nessuno.</li>
+</ul>
+<p>Scelto il legame, compare la tabella dei conduttori.</p>
+<h3 id="passo-5--la-tabella-dei-conduttori">Passo 5 — La tabella dei conduttori</h3>
+<p>Accanto al titolo <em>Conduttori</em> c&#39;è il badge del legame scelto e il link
+<strong>Cambia</strong> per rifare la scelta.</p>
+<p>Le colonne sono sei: <em>Inviare</em>, <em>Destinatario</em>, <em>Tratta</em>, <em>Numero</em>, <em>Mail</em>,
+<em>Canali</em>.</p>
+<p><strong>Canali</strong> dice su quali recapiti questa comunicazione raggiunge quella persona,
+e ce ne può essere più d&#39;uno:</p>
+<ul>
+<li>da quale delle due caselle partirà la mail: badge viola <strong>PEC</strong>, oppure
+<strong>Email</strong> per la posta ordinaria. Non si sceglie — lo decide l&#39;anagrafica del
+conduttore;</li>
+<li>il badge <strong>SMS</strong>, che compare quando il conduttore ha un numero. È azzurro
+pieno se la spunta «Invia anche via SMS» è accesa (l&#39;SMS parte davvero),
+grigio e vuoto se è spenta (il numero c&#39;è, ma non verrà usato).</li>
+</ul>
+<p>È «—» solo per chi non ha né indirizzo né numero: quella persona non riceverà
+nulla, da nessun canale.</p>
+<p>Sopra la tabella, accanto al conteggio, compare <strong>«— N via PEC»</strong> quando fra gli
+spuntati c&#39;è almeno un destinatario certificato. È il numero che conta: se la
+PEC non è configurata, <strong>l&#39;invio viene rifiutato per intero</strong> proprio su quel
+gruppo (vedi <em>Se l&#39;invio viene rifiutato</em>, più sotto). Vederlo prima è l&#39;unico
+modo per accorgersene quando si può ancora fare qualcosa. Ordinando per
+<em>Canali</em> le PEC salgono in cima (e chi non ha indirizzo scende in fondo, dove
+sta davvero), e si vede subito di chi si tratta.</p>
+<p>La colonna <strong>Numero</strong> è il cellulare dell&#39;anagrafica: serve solo se si spunta
+«Invia anche via SMS» più sotto — è lo stesso numero che fa comparire il badge
+<em>SMS</em> fra i <em>Canali</em> — ed è normale che sia «—» per molti conduttori: circa la
+metà non ha un numero censito.</p>
+<ul>
+<li><strong>Una riga per conduttore, sempre.</strong> Chi è legato a tre tratte selezionate
+compare una volta sola e riceve <strong>una sola</strong> email; nella colonna <em>Tratta</em> si
+vedono tutti i codici che lo riguardano.</li>
+<li>La colonna <strong>Inviare</strong> ha una spunta per riga: togliendola, quel conduttore
+non riceve nulla.</li>
+<li><strong>Tutte le colonne sono ordinabili</strong>: si clicca l&#39;intestazione, si riclicca per
+invertire.</li>
+<li>Il campo <em>Cerca nome o email…</em> filtra la tabella. <strong>Il filtro tocca solo
+quello che si vede</strong>: chi resta fuori dalla ricerca ma è spuntato riceverà
+comunque la comunicazione.</li>
+<li>Il contatore sopra la tabella è sempre sull&#39;<strong>insieme intero</strong>: <em>«12 di 40
+conduttori riceveranno la comunicazione — 5 in elenco per «rossi»»</em>.</li>
+<li><strong>Seleziona tutti / Deseleziona tutti</strong> agiscono sulle sole righe visibili
+nella ricerca corrente.</li>
+</ul>
+<blockquote>
+<p><strong>La tabella è una fotografia scattata al momento del clic.</strong> Se si cambia
+categoria, madre o tratta, o se nel frattempo finisce un caricamento delle
+anagrafiche, la tabella si svuota e va rifatta: è voluto, evita di spedire ai
+contatti di prima proprio dopo averli aggiornati.</p>
+</blockquote>
+<p>Nella tabella non compaiono i <strong>conduttori cessati</strong>: chi non è più attivo
+nell&#39;anagrafica del consorzio non riceve mai una comunicazione.</p>
+<h3 id="passo-6--titolo-e-testi">Passo 6 — Titolo e testi</h3>
+<p>Sotto la tabella:</p>
+<ul>
+<li><strong>Titolo della comunicazione</strong> — diventa <strong>l&#39;oggetto dell&#39;email</strong>. Parte già
+compilato con <em>«CBBG - Comunicazione Importante»</em>, si può cambiare. Non può
+restare vuoto.</li>
+<li><strong>Testo email</strong> — il corpo del messaggio. Obbligatorio.</li>
+<li><strong>Carica template</strong> — la tendina accanto al testo email: carica un modello
+già pronto e riempie in un colpo solo oggetto, testo email e testo SMS. I
+template si gestiscono nella sezione <a href="#8-template">Template</a>. <em>Un template
+senza testo SMS non cancella quello eventualmente già scritto a mano.</em></li>
+<li><strong>Testo SMS</strong> — <strong>facoltativo</strong>, a meno di spuntare «Invia anche via SMS»
+qui sotto: in quel caso diventa obbligatorio. Sotto al campo c&#39;è un contatore
+<code>nn/160 caratteri</code>: oltre i 160 il messaggio potrebbe essere spezzato in più
+SMS.</li>
+<li><strong>Invia anche via SMS</strong> — la spunta che fa davvero partire l&#39;SMS, <strong>spenta
+di default</strong> perché ogni messaggio ha un costo. Accesa, mostra quanti dei
+destinatari selezionati hanno un numero: solo a quelli arriverà, gli altri
+restano senza.</li>
+</ul>
+<blockquote>
+<p><strong>Senza la spunta «Invia anche via SMS», l&#39;SMS non parte.</strong> Il testo si può
+scrivere comunque: resta registrato e si rilegge nel dettaglio dello
+Storico, ma parte solo se la spunta è accesa al momento dell&#39;invio.</p>
+</blockquote>
+<h3 id="passo-7--lavviso-risulta-già-chiusa">Passo 7 — L&#39;avviso «risulta già chiusa»</h3>
+<p>Se fra i codici selezionati ce ne sono già nello stato che si sta per
+comunicare, compare una riga ambra:</p>
+<blockquote>
+<p><em>«3 delle voci selezionate risultano già chiuse. La comunicazione parte lo
+stesso.»</em></p>
+</blockquote>
+<p><strong>Non è un blocco</strong>: ripetere una comunicazione può essere legittimo. È un
+promemoria, perché una chiusura mandata due volte per distrazione è una email in
+più a tutti i conduttori di quella tratta.</p>
+<h3 id="passo-8--riepilogo-e-conferma">Passo 8 — Riepilogo e conferma</h3>
+<p>Il pulsante <strong>Invia notifica</strong> resta spento finché non sono soddisfatte tutte e
+tre le condizioni, e il motivo è scritto accanto:</p>
+<ul>
+<li>almeno un destinatario — un conduttore spuntato, <strong>oppure</strong> un utente di
+test in ricezione (vedi sotto: con almeno uno attivo, si può inviare anche
+senza aver spuntato nessun conduttore);</li>
+<li>Tipo e Classificazione scelti (<em>«Scegli Tipo e Classificazione»</em>);</li>
+<li>titolo e testo email scritti (<em>«Scrivi titolo e messaggio»</em>), e anche il
+testo SMS se si è spuntato «Invia anche via SMS» (<em>«Scrivi il testo SMS»</em>).</li>
+</ul>
+<p>Se c&#39;è almeno un <strong>utente di test</strong> attivo e raggiungibile — li censisce un
+superadmin dalla scheda Utenti di test di Impostazioni, e ricevono ogni
+comunicazione inviata — accanto al bottone compare una riga ambra:</p>
+<ul>
+<li><em>«Più N utenti di test in copia (nomi)»</em> se c&#39;è anche almeno un conduttore
+spuntato: la comunicazione parte ai destinatari veri e, in copia, a quei
+nomi;</li>
+<li><em>«Nessun conduttore selezionato: la comunicazione partirà ai soli N utenti
+di test (nomi)»</em> se si sono tolte le spunte a tutti i conduttori — è il modo
+per collaudare un invio reale senza raggiungere nessun conduttore vero.</li>
+</ul>
+<p>Cliccando <strong>Invia notifica</strong> si apre il <strong>Riepilogo invio notifica</strong>, l&#39;ultima
+occasione per annullare. Contiene:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Voce</th>
+<th>Che cosa dice</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Titolo</strong></td>
+<td>L&#39;oggetto dell&#39;email, con i badge di Tipo e Classificazione</td>
+</tr>
+<tr>
+<td><strong>Codici interessati</strong></td>
+<td>L&#39;elenco completo dei codici, non il numero. <code>(tutte)</code> segnala una madre presa per intero</td>
+</tr>
+<tr>
+<td><strong>Tipo di legame</strong></td>
+<td>Live o Stagione irrigua</td>
+</tr>
+<tr>
+<td><strong>Dati del consorzio aggiornati al</strong></td>
+<td>In ambra se più vecchi di 24 ore: è il momento buono per annullare e chiedere un aggiornamento</td>
+</tr>
+<tr>
+<td><strong>Utenti associati / da notificare</strong></td>
+<td>Quanti sono in tabella e quanti riceveranno davvero</td>
+</tr>
+<tr>
+<td><strong>Messaggio</strong></td>
+<td>Il testo email per intero</td>
+</tr>
+<tr>
+<td><strong>Testo SMS</strong></td>
+<td>Solo se scritto: con «Invia anche via SMS» spuntata dice a quanti parte, altrimenti <em>«non verrà spedito, solo registrato»</em></td>
+</tr>
+</tbody></table></div>
+<p><strong>Conferma invio</strong> fa partire la comunicazione.</p>
+<h3 id="passo-9--dopo-linvio">Passo 9 — Dopo l&#39;invio</h3>
+<p>Compare il messaggio <strong>«Invio avviato — Comunicazione in partenza verso N
+destinatari. L&#39;esito di ogni mail si vede nello Storico notifiche.»</strong></p>
+<p>Cosa succede:</p>
+<ul>
+<li><strong>La tabella dei conduttori si svuota</strong> subito. È voluto: lasciarla lì
+significherebbe lasciare armato il pulsante, e chi non ha visto il messaggio
+riclicca spedendo tutto una seconda volta. I testi scritti restano.</li>
+<li><strong>La spedizione prosegue in sottofondo.</strong> La risposta arriva appena la
+notifica è registrata, non quando l&#39;ultima email è partita: su un invio ampio
+ci vogliono minuti.</li>
+<li><strong>L&#39;esito email per email si legge nello Storico</strong>, nel dettaglio della
+notifica.</li>
+</ul>
+<h3 id="se-linvio-viene-rifiutato">Se l&#39;invio viene rifiutato</h3>
+<p>Compare un messaggio rosso <strong>«Invio non riuscito»</strong> con la ragione. La più
+frequente:</p>
+<blockquote>
+<p><em>«Configurazione PEC assente: 47 destinatari su 120 vanno raggiunti via PEC —
+imposta le credenziali PEC in Impostazioni»</em></p>
+</blockquote>
+<p>Metà dei conduttori attivi ha un indirizzo <strong>PEC</strong>, e le comunicazioni PEC
+partono da una casella dedicata. Il numero non arriva a sorpresa: è lo stesso
+che la tabella dei conduttori mostra come <strong>«N via PEC»</strong> prima ancora di
+premere <em>Invia notifica</em>. Se quella casella non è configurata <strong>l&#39;invio
+si ferma per intero</strong> e non parte nulla: non si ripiega sulla posta ordinaria,
+perché una PEC spedita da una casella normale non ha valore legale. Vale il
+simmetrico per la posta ordinaria. La configurazione la fa un amministratore in
+<em>Impostazioni</em>.</p>
+<hr>
+<h2 id="6-storico-notifiche">6. Storico notifiche</h2>
+<p>L&#39;archivio di tutte le comunicazioni inviate, con il dettaglio di chi le ha
+ricevute. È anche il posto dove si verifica <strong>se le email sono davvero partite</strong>.</p>
+<h3 id="filtri-di-ricerca">Filtri di ricerca</h3>
+<p>Sette filtri, che si combinano fra loro:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Filtro</th>
+<th>Come funziona</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Utente</strong></td>
+<td>Tendina con chi ha inviato almeno una comunicazione</td>
+</tr>
+<tr>
+<td><strong>Data inizio / Data fine</strong></td>
+<td>Intervallo di date</td>
+</tr>
+<tr>
+<td><strong>Tratta</strong></td>
+<td>Testo libero: cerca su codice <strong>e</strong> descrizione della tratta</td>
+</tr>
+<tr>
+<td><strong>Tipo</strong></td>
+<td>Apertura / Chiusura / Altro</td>
+</tr>
+<tr>
+<td><strong>Classificazione</strong></td>
+<td>Ordinaria / Straordinaria / Inquinamento</td>
+</tr>
+<tr>
+<td><strong>Destinatario</strong></td>
+<td>Testo libero sul nome del conduttore</td>
+</tr>
+</tbody></table></div>
+<p>I filtri <strong>non si applicano mentre si scrive</strong>: si compilano e si preme
+<strong>Applica filtri</strong>. <strong>Resetta</strong> li svuota tutti.</p>
+<h3 id="la-tabella">La tabella</h3>
+<p>Colonne: <em>ID Notifica</em>, <em>Utente</em>, <em>Data e ora</em>, <em>N° Tratte</em>, <em>N° Destinatari</em>,
+<em>Tipo</em>, <em>Classificazione</em>, <em>Legame</em>. Tutte <strong>ordinabili</strong> cliccando
+l&#39;intestazione; l&#39;ordinamento predefinito è per data, dalla più recente.</p>
+<p><strong>Legame</strong> dice con quale elenco sono stati scelti i destinatari: badge
+<strong>Live</strong> oppure <strong>Stagione irrigua</strong>, come scelto nel popup «Con quale legame?»
+al momento dell&#39;invio. È «—» sulle comunicazioni partite prima che il legame si
+potesse scegliere.</p>
+<p>In fondo il conteggio dei record trovati.</p>
+<p><strong>Esporta CSV</strong> scarica esattamente le righe visibili, con i filtri applicati.
+Il file si apre correttamente in Excel italiano, accenti compresi.</p>
+<p>Anche qui, se non è mai stata inviata nessuna comunicazione, si vedono <strong>dati di
+esempio</strong> con il badge <code>ESEMPIO</code>, che rispondono ai filtri come farebbero i dati
+veri.</p>
+<h3 id="il-dettaglio-di-una-notifica">Il dettaglio di una notifica</h3>
+<p>Si clicca una riga qualunque. Si apre una finestra con:</p>
+<ul>
+<li><strong>Intestazione</strong>: ID, utente, data e ora, badge Tipo, Classificazione e
+Legame.</li>
+<li><strong>Oggetto</strong> e <strong>Messaggio inviato</strong>: il testo <em>effettivamente spedito</em> per
+quella comunicazione, non il template da cui derivava.</li>
+<li><strong>Testo SMS</strong>, se era stato scritto.</li>
+<li><strong>La tabella dei destinatari</strong>, una riga per persona:</li>
+</ul>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Colonna</th>
+<th>Significato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Codice / Descrizione Conduttore</strong></td>
+<td>Chi ha ricevuto, come risultava all&#39;anagrafica <em>in quel momento</em></td>
+</tr>
+<tr>
+<td><strong>Codice / Descrizione Roggia</strong></td>
+<td>Su quali tratte è passata la comunicazione</td>
+</tr>
+<tr>
+<td><strong>SMS</strong></td>
+<td>Esito SMS — <em>Inviato</em> o <em>Fallito</em> solo se «Invia anche via SMS» era spuntata; vuoto se quella comunicazione non l&#39;aveva</td>
+</tr>
+<tr>
+<td><strong>Mail</strong></td>
+<td>Esito dell&#39;invio email</td>
+</tr>
+<tr>
+<td><strong>Canale</strong></td>
+<td>Badge viola <strong>PEC</strong> oppure <strong>Email</strong>. È «—» sulle notifiche più vecchie, precedenti ai due canali</td>
+</tr>
+</tbody></table></div>
+<ul>
+<li><strong>Esporta dettaglio CSV</strong> scarica l&#39;elenco completo dei destinatari di quella
+notifica.</li>
+</ul>
+<p>I dati del destinatario sono una <strong>fotografia scattata all&#39;invio</strong>: se il
+conduttore cambia indirizzo il mese dopo, lo Storico continua a dire dove era
+stata mandata la comunicazione. È il comportamento voluto.</p>
+<hr>
+<h2 id="7-anagrafiche">7. Anagrafiche</h2>
+<p>La copia dei dati del consorzio caricata a sistema. <strong>Sola lettura, sempre</strong>:
+non c&#39;è nessun pulsante di modifica, in nessuna scheda, per nessun ruolo.</p>
+<h3 id="le-cinque-schede">Le cinque schede</h3>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Scheda</th>
+<th>Contenuto</th>
+<th>Colonne</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Impianti</strong></td>
+<td>Tutte le tratte — di rogge, impianti e pozzi — con il loro impianto</td>
+<td>Codice impianto, Descrizione impianto, Codice roggia figlia, Descrizione roggia figlia, <strong>Stato</strong></td>
+</tr>
+<tr>
+<td><strong>Rogge madri</strong></td>
+<td>La seconda gerarchia del consorzio: le rogge madri a codice R da 3 (64 nell&#39;elenco del 25/09/2026) e le loro tratte</td>
+<td>Codice madre, Descrizione madre, Codice roggia figlia, Descrizione roggia figlia, <strong>Stato</strong>: la madre è la roggia madre, non l&#39;impianto</td>
+</tr>
+<tr>
+<td><strong>Destinatari</strong></td>
+<td>I conduttori attivi, anche quelli senza nessun contatto</td>
+<td>Codice destinatario, Descrizione destinatario, Numero, Mail</td>
+</tr>
+<tr>
+<td><strong>Legame Live</strong></td>
+<td>Chi è legato a quale tratta secondo l&#39;elenco <em>live</em>; solo i conduttori presenti in anagrafica</td>
+<td>Codice/Descrizione destinatario, Codice/Descrizione roggia figlia</td>
+</tr>
+<tr>
+<td><strong>Legame Stagione Irrigua</strong></td>
+<td>Lo stesso, secondo l&#39;elenco <em>stagione irrigua</em></td>
+<td>idem</td>
+</tr>
+</tbody></table></div>
+<p>Nelle intestazioni <em>roggia figlia</em> vuol dire <strong>tratta</strong>. Nella scheda <strong>Impianti</strong>
+la <em>madre</em> è quella che il consorzio assegna alla tratta: per le tratte che
+iniziano per <code>R</code> è un impianto con codice <code>IM…</code>, salvo quelle raccolte sotto
+una madre <em>non classificata</em>. Nella scheda <strong>Rogge madri</strong> la <em>madre</em> è invece
+la roggia madre stessa (un codice R da 3, per esempio <code>R08</code>): è <strong>un&#39;altra
+classificazione dello stesso consorzio</strong>, mantenuta a parte, e le due liste non
+coincidono sempre — una tratta può comparire sotto un impianto nella prima
+scheda e non avere nessuna roggia madre nella seconda, o viceversa. Non è un
+errore di una delle due tabelle: sono due elenchi diversi che il consorzio
+tiene entrambi.</p>
+<p>La colonna <strong>Stato</strong> della scheda Impianti è calcolata, non caricata: dice
+<em>Aperta</em> o <em>Chiusa</em> secondo le notifiche inviate. Una tratta senza eventi propri
+eredita lo stato della madre.</p>
+<p>Nella scheda <strong>Destinatari</strong>, <em>Numero</em> è il cellulare e <em>Mail</em> l&#39;indirizzo di
+posta. Due cose che la tabella <strong>non</strong> dice, e che è bene sapere prima di
+cercarle:</p>
+<ul>
+<li><strong>non distingue PEC e posta ordinaria</strong> — l&#39;indirizzo si vede, il tipo no.
+Questa scheda serve a consultare l&#39;anagrafica, non a preparare un invio: il
+canale di ciascun destinatario si legge nella colonna <em>Canale</em> di <em>Invia
+notifica</em>, e quello davvero usato per una comunicazione già partita nel
+dettaglio dello Storico;</li>
+<li><strong>il numero serve solo se in <em>Invia notifica</em> si spunta «Invia anche via
+SMS»</strong>: senza quella spunta il canale SMS non parte, e il numero resta un
+dato consultabile. Se manca è perché il consorzio non lo ha in anagrafica,
+e per quel conduttore l&#39;SMS non può arrivare.</li>
+</ul>
+<h3 id="cercare-e-ordinare">Cercare e ordinare</h3>
+<p>Ogni colonna ha:</p>
+<ul>
+<li>l&#39;<strong>intestazione cliccabile</strong> per ordinare (e riordinare al contrario);</li>
+<li>un campo <strong>Cerca…</strong> proprio, sotto l&#39;intestazione.</li>
+</ul>
+<p>I campi si combinano: si può cercare <code>S45</code> fra i codici madre <em>e</em> <code>Adda</code> fra le
+descrizioni. Dentro un campo contano le <strong>singole parole, in qualunque ordine</strong>:
+<code>mario rossi</code> trova «Rossi Mario». In fondo alla tabella: <em>«N di M record»</em>.</p>
+<p>Tre segnaposto, chiesti dal consorzio:</p>
+<ul>
+<li>nella scheda <strong>Rogge madri</strong>, una roggia madre che non ha figlie compare con
+una sola riga, con <strong>«-»</strong> come figlia; una figlia la cui roggia madre non è
+nell&#39;elenco del consorzio compare con le sue prime 3 cifre come madre e
+<strong>«-»</strong> come descrizione;</li>
+<li>nelle schede <strong>Legame</strong>, una tratta che nessuna anagrafica conosce ha come
+descrizione <strong>il suo codice</strong>; i legami verso un conduttore che non è in
+anagrafica non si mostrano.</li>
+</ul>
+<h3 id="il-riquadro-ambra-degli-avvisi">Il riquadro ambra degli avvisi</h3>
+<p>Sopra le schede può comparire un riquadro con bordo arancione. Segnala che
+l&#39;ultimo caricamento dati ha avuto problemi:</p>
+<ul>
+<li><strong>«Ultimo caricamento parziale»</strong> con i conteggi per entità;</li>
+<li><strong>«L&#39;ultimo tentativo di caricamento (<data>) non è riuscito»</strong> con l&#39;elenco
+degli errori;</li>
+<li><strong>«Non configurate, mai caricate: …»</strong> — quelle entità non sono ancora state
+collegate al web service, ed è il motivo per cui la loro tabella è vuota.</li>
+</ul>
+<p>Il riquadro tace mentre un caricamento è in corso.</p>
+<p>Se una tabella è vuota e dice <em>«Nessun impianto caricato. Lancia un aggiornamento
+dati»</em>, l&#39;aggiornamento lo fa un amministratore da <em>Impostazioni → WebService →
+Aggiorna ora</em>.</p>
+<hr>
+<h2 id="8-template">8. Template</h2>
+<p>I messaggi preimpostati che si caricano in <em>Invia notifica</em>.</p>
+<h3 id="lelenco">L&#39;elenco</h3>
+<p>Colonne <em>ID</em>, <em>Nome</em>, <em>Oggetto Mail</em>, <em>Messaggio</em>, <em>Utente</em>, <em>Tipo</em>, <em>Azioni</em> —
+tutte ordinabili. Sopra la tabella:</p>
+<ul>
+<li><strong>Cerca template…</strong> — testo libero;</li>
+<li><strong>Tutti i tipi</strong> — filtra per Apertura / Chiusura / Altro;</li>
+<li><strong>Tutti gli utenti</strong> — filtra per chi l&#39;ha creato (c&#39;è anche <em>Non indicato</em>).</li>
+</ul>
+<p>Cliccando una riga si apre il <strong>dettaglio</strong>: nome, tipo, utente, data di
+creazione, ultima modifica (chi e quando), oggetto e corpo per intero. Dal
+dettaglio si passa direttamente alla modifica.</p>
+<h3 id="creare-o-modificare-un-template">Creare o modificare un template</h3>
+<p>Pulsante <strong>Nuovo template</strong>, oppure l&#39;icona matita sulla riga.</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Nome</strong> *</td>
+<td>Come comparirà nella tendina di <em>Invia notifica</em></td>
+</tr>
+<tr>
+<td><strong>Tipo</strong> *</td>
+<td>Apertura, Chiusura o Altro. Serve <strong>solo a filtrare l&#39;elenco</strong>: non decide se una roggia risulta aperta o chiusa — quello lo fa il Tipo scelto al momento dell&#39;invio</td>
+</tr>
+<tr>
+<td><strong>Oggetto Email</strong> *</td>
+<td>Diventa il titolo proposto quando si carica il template</td>
+</tr>
+<tr>
+<td><strong>Corpo Email</strong> *</td>
+<td>Il testo. Ammette variabili come <code>{{nome_tratta}}</code>, <code>{{data}}</code></td>
+</tr>
+<tr>
+<td><strong>Testo SMS</strong> *</td>
+<td>La versione corta, precaricata in <em>Invia notifica</em> insieme a titolo e testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS»</td>
+</tr>
+</tbody></table></div>
+<p>L&#39;icona cestino elimina il template, con una conferma. L&#39;eliminazione <strong>non
+tocca le comunicazioni già inviate</strong>: il loro testo resta nello Storico.</p>
+<hr>
+<h2 id="9-il-vocabolario-dellapplicazione">9. Il vocabolario dell&#39;applicazione</h2>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Termine</th>
+<th>Significato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Conduttore</strong></td>
+<td>Chi deriva acqua da una tratta: il destinatario delle comunicazioni</td>
+</tr>
+<tr>
+<td><strong>Madre</strong></td>
+<td>La roggia, l&#39;impianto o il pozzo sotto cui stanno le tratte (es. <code>IM44A</code>, <code>S45</code>). Le madri si dividono in tre categorie — Rogge, Impianti, Pozzi — e sia la categoria sia le tratte di ogni madre le indica il consorzio</td>
+</tr>
+<tr>
+<td><strong>Tratta</strong> (nelle Anagrafiche <em>roggia figlia</em>)</td>
+<td>Un tratto di canale da cui i conduttori derivano acqua, con un codice di 9 caratteri (es. <code>R34D02S01</code>). <strong>A quale madre appartenga lo dice il consorzio</strong>, non le prime lettere del codice</td>
+</tr>
+<tr>
+<td><strong>Tutte le tratte di …</strong></td>
+<td>La voce di <em>Invia notifica</em> che spunta in un colpo tutte le tratte di una madre. Per i pozzi non serve: si sceglie direttamente il pozzo</td>
+</tr>
+<tr>
+<td><strong>Non classificata</strong></td>
+<td>Una madre creata dall&#39;applicazione per raccogliere i codici che il consorzio lega a dei conduttori ma non ha ancora assegnato a nessun impianto. Non esiste nell&#39;anagrafica del consorzio</td>
+</tr>
+<tr>
+<td><strong>Legame live</strong></td>
+<td>Uno dei due elenchi con cui il consorzio associa conduttori e tratte</td>
+</tr>
+<tr>
+<td><strong>Legame stagione irrigua</strong></td>
+<td>L&#39;altro elenco</td>
+</tr>
+<tr>
+<td><strong>Tipo</strong></td>
+<td>Apertura / Chiusura / Altro — che cosa succede alla tratta</td>
+</tr>
+<tr>
+<td><strong>Classificazione</strong></td>
+<td>Ordinaria / Straordinaria / Inquinamento — perché succede</td>
+</tr>
+<tr>
+<td><strong>PEC</strong></td>
+<td>Posta Elettronica Certificata: circa metà dei conduttori attivi ha un indirizzo PEC e viene raggiunta da una casella dedicata</td>
+</tr>
+<tr>
+<td><strong>Canale</strong></td>
+<td>Da quale delle due caselle parte (o è partita) una comunicazione: <em>PEC</em> o <em>Email</em>. Lo sceglie il sistema, destinatario per destinatario. È una colonna nel dettaglio dello Storico; in <em>Invia notifica</em> si chiama <em>Canali</em> e accanto alla casella mostra anche il badge <strong>SMS</strong> di chi ha un numero</td>
+</tr>
+<tr>
+<td><strong>Testo SMS</strong></td>
+<td>La versione corta del messaggio. Si scrive sempre, ma <strong>parte solo se si spunta «Invia anche via SMS»</strong> in <em>Invia notifica</em> — altrimenti resta registrata e basta</td>
+</tr>
+<tr>
+<td><strong>Anagrafiche / mirror</strong></td>
+<td>La copia locale dei dati del consorzio, ricaricata ogni notte alle 03:00</td>
+</tr>
+<tr>
+<td><strong>Impianti / Pozzi</strong></td>
+<td>Le altre due categorie di madri, accanto alle rogge. I pozzi si comunicano per madre intera</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="10-problemi-frequenti">10. Problemi frequenti</h2>
+<p><strong>«Mostra Conduttori» è spento.</strong>
+Non c&#39;è nessuna tratta selezionata (o, per i pozzi, nessun pozzo). Per rogge e
+impianti serve almeno una spunta nella colonna di destra.</p>
+<p><strong>Ho selezionato un pozzo ma non vedo nessuna tratta.</strong>
+È corretto: per i pozzi le tratte non si mostrano. La comunicazione vale per
+l&#39;intero pozzo, e i suoi conduttori li risolve il sistema.</p>
+<p><strong>La tabella dei conduttori è sparita da sola.</strong>
+È successa una di queste tre cose: si è cambiata la selezione, è finito un
+caricamento delle anagrafiche, oppure una comunicazione è appena partita. Si
+rifà con <em>Mostra Conduttori</em>.</p>
+<p><strong>Il pulsante «Invia notifica» resta spento.</strong>
+Accanto al pulsante c&#39;è scritto perché: mancano Tipo e Classificazione, oppure
+titolo e testo (testo SMS compreso, se «Invia anche via SMS» è spuntata),
+oppure non c&#39;è nessun destinatario — nessun conduttore spuntato e nessun
+utente di test in ricezione.</p>
+<p><strong>L&#39;elenco dei conduttori è vuoto.</strong>
+Con l&#39;altro legame potrebbe non esserlo: si prova <em>Cambia</em> accanto al badge del
+legame. Se entrambi sono vuoti, su quelle tratte non risulta nessun conduttore
+attivo.</p>
+<p><strong>Il conduttore dice che non gli è arrivato nessun SMS.</strong>
+Due cause possibili: quella comunicazione è partita senza la spunta «Invia
+anche via SMS» (il testo si scrive comunque, ma senza la spunta non parte),
+oppure quel conduttore non ha un numero di cellulare in anagrafica — succede
+a circa metà dei conduttori attivi. Il dettaglio dello Storico dice qual è il
+caso: colonna SMS vuota nel primo, <em>Fallito</em> nel secondo.</p>
+<p><strong>Nel dettaglio dello Storico la colonna SMS è vuota.</strong>
+Vuol dire che quella comunicazione non aveva la spunta «Invia anche via SMS»:
+il testo, se scritto, resta registrato ma non è mai partito. Se invece la
+spunta c&#39;era e la colonna dice <em>Fallito</em>, il conduttore non aveva un numero.</p>
+<p><strong>La voce «Gestione Utenti» non c&#39;è.</strong>
+È riservata ad Admin e Super Admin. Le altre voci si vedono tutte.</p>
+<p><strong>«Accesso non autorizzato» e vengo rimandato alla Dashboard.</strong>
+Stessa cosa: si è aperto l&#39;indirizzo della Gestione Utenti senza esserlo.</p>
+<p><strong>«Ultimo aggiornamento anagrafiche» è in ambra da giorni.</strong>
+Il caricamento notturno non sta andando a buon fine. Va segnalato a un
+amministratore: i contatti che si stanno usando potrebbero essere vecchi.</p>
+<p><strong>Ho inviato ma nello Storico la notifica sembra ferma.</strong>
+La spedizione prosegue in sottofondo e su un invio ampio richiede minuti. Si
+riapre il dettaglio dopo qualche minuto per vedere gli esiti aggiornati.
+<strong>Non si rinvia la stessa comunicazione</strong>: si spedirebbe due volte a tutti.</p>
+<p><strong>Ho sbagliato la comunicazione già inviata.</strong>
+Non si può ritirare una email spedita. Si manda una comunicazione di rettifica —
+e se aveva chiuso o aperto qualcosa per errore, la si corregge inviando la
+notifica opposta sugli stessi codici.</p>
+
+    </main>
+    <footer class="piede">
+      Pagina generata da <code>docs/</code> — per correggerla si modifica il Markdown e si rilancia <code>npm run guide:build</code>.
+    </footer>
+  </body>
+</html>

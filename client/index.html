@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#16a34a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Gestione Pozzi" />
+    <title>Gestione Pozzi - Sistema Agricolo</title>
+    <style>
+      /* Prevent zoom on input focus on iOS Safari */
+      @media screen and (-webkit-min-device-pixel-ratio:0) {
+        select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"] {
+          font-size: 16px;
+        }
+      }
+      
+      /* Hide scrollbars but keep functionality */
+      * {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      *::-webkit-scrollbar {
+        display: none;
+      }
+      
+      /* PWA loading styles */
+      body {
+        margin: 0;
+        padding: 0;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
+    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+  </body>
+</html>
