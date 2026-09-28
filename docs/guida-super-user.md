@@ -36,8 +36,8 @@ si ripetono, se ne richiamano solo le implicazioni amministrative.
 
 | Ruolo | Accesso | Note |
 |---|---|---|
-| **Super Admin** | Tutto, compresa la scheda **Active Directory** | Unico che può creare altri Super Admin |
-| **Admin** | Tutto tranne la scheda Active Directory | Non può assegnare il ruolo Super Admin |
+| **Super Admin** | Tutto, comprese le schede **Active Directory** e **Utenti di test** | Unico che può creare altri Super Admin (al massimo due) |
+| **Admin** | Tutto tranne le schede Active Directory e Utenti di test | Non può assegnare il ruolo Super Admin, né modificare o eliminare un Super Admin |
 | **Utente** | Tutte le pagine tranne **Gestione Utenti**, in scrittura | |
 | **Osservatore** | Le stesse pagine, **in sola lettura** | |
 
@@ -52,8 +52,8 @@ per non cercare permessi che non esistono:
   operazione che non sia una lettura viene rifiutata con un 403, qualunque
   pagina la generi. Nascondere i pulsanti è comodità; il blocco vero è dietro.
 
-Allo stesso modo, nascondere la scheda Active Directory agli Admin è comodità:
-le rotte che la servono accettano solo il Super Admin.
+Allo stesso modo, nascondere agli Admin le schede Active Directory e Utenti di
+test è comodità: le rotte che le servono accettano solo il Super Admin.
 
 ### Che cosa vede un Utente
 
@@ -66,9 +66,11 @@ a Utenti e Osservatori. Sono stati tolti: nessun gruppo era mai stato creato, e
 quello che un Utente vede oggi è esattamente ciò che vedeva prima. A limitare
 restano il **ruolo** e i due blocchi centrali descritti qui sopra.
 
-> **Attenzione a Impostazioni**: un Utente la vede, ma il salvataggio delle
-> schede email, PEC, SMS e web service richiede il ruolo Admin — le apre e non
-> le può salvare. Il pulsante *Aggiorna ora* resta invece alla sua portata.
+> **Attenzione a Impostazioni**: un Utente la vede, ma le schede email, PEC, SMS
+> e web service richiedono il ruolo Admin per **leggere** la configurazione
+> salvata, provarla e salvarla — un Utente le apre vuote, o coi valori
+> predefiniti, e non può farci niente. Il pulsante *Aggiorna ora* resta invece
+> alla sua portata.
 
 > Per dare la **sola consultazione** dello Storico si usa il ruolo
 > **Osservatore**, che guarda, filtra ed esporta ma non può spedire.
@@ -96,7 +98,20 @@ Tabella con *Username*, *Ruolo*, *Sorgente*, *Stato*, *Ultima login*.
 | **Ruolo** | Un Admin non vede l'opzione *Super Admin* |
 | **Account attivo** | Solo in modifica. Disattivare blocca l'accesso senza perdere lo storico |
 
-L'icona cestino elimina l'utenza, con conferma.
+Username di almeno 3 caratteri, password di almeno 8. Lo stato si cambia anche
+direttamente dall'interruttore nella colonna *Stato*. L'icona cestino elimina
+l'utenza, con conferma.
+
+Regole che l'applicazione fa rispettare da sé:
+
+- **Al massimo due Super Admin.**
+- **Un Admin non può modificare, disattivare né eliminare un Super Admin**: su
+  quelle righe i pulsanti non compaiono.
+- **Nessuno può eliminare la propria utenza né cambiarsi il ruolo**, e
+  l'interruttore di stato non compare sulla propria riga.
+- **L'ultimo Super Admin locale attivo non si tocca**: non si può convertire ad
+  Active Directory, cambiargli ruolo, disattivarlo né eliminarlo (messaggio
+  *«Deve restare almeno un superadmin locale…»*). Vedi il capitolo 4.
 
 > **Disattivare è quasi sempre meglio che eliminare**: le comunicazioni inviate
 > restano firmate con lo username nello Storico, e un'utenza cancellata e
@@ -114,8 +129,11 @@ e la data dell'ultimo.
 - **Abilita** apre la creazione utente **già compilata** con quello username e
   con sorgente *Active Directory*. È il modo giusto di creare un'utenza di
   dominio: elimina il rischio di scrivere `mrossi` dove AD ha `m.rossi`.
-- **Scarta** elimina la richiesta, con conferma. **Non è recuperabile**: quello
-  username torna disponibile solo se la persona ritenta l'accesso.
+- L'icona cestino scarta la richiesta, dopo conferma col pulsante **Scarta**.
+  **Non è recuperabile**: quello username ricompare solo se la persona ritenta
+  l'accesso.
+
+Creando l'utenza, la richiesta sparisce da sola dall'elenco.
 
 > Questa scheda è il surrogato della ricerca su Active Directory, che
 > l'applicazione non può offrire perché il consorzio non concede un account di
@@ -137,7 +155,9 @@ Due schede:
 | **Impianti** | Tutte le madri del registro degli impianti: rogge a scorrimento, impianti, pozzi, le madri `S` e quelle *non classificate* create dal sync |
 | **Rogge Madri** | Le rogge madri `R` della seconda gerarchia |
 
-Ogni riga ha codice, descrizione e l'interruttore **Attivo**.
+Ogni riga ha codice, descrizione e l'interruttore **Attivo**. Sopra la tabella
+c'è il campo *Cerca per codice o descrizione*, e l'etichetta di ogni scheda dice
+quanti codici sono spenti (*«(N spenti)»*).
 
 **Un codice spento:**
 
@@ -187,10 +207,12 @@ Conseguenze pratiche:
 
 > **Deve sempre esistere almeno un Super Admin con sorgente Locale.**
 
-È l'unico che riesce a entrare quando il domain controller non risponde. Il
-codice **non lo impedisce**: nulla vieta di convertire ad AD anche l'ultimo Super
-Admin locale, e a quel punto un guasto di rete chiude fuori tutti. È una regola
-da rispettare, non un controllo automatico.
+È l'unico che riesce a entrare quando il domain controller non risponde.
+**L'applicazione lo impone**: rifiuta di convertire ad AD, cambiare ruolo,
+disattivare o eliminare l'ultimo Super Admin locale attivo, con il messaggio
+*«Deve restare almeno un superadmin locale…»*. Resta una regola operativa
+tenerne la **password** conosciuta e aggiornata: un'utenza locale di cui nessuno
+ricorda la password non fa entrare nessuno.
 
 ### Altre due cose vere
 
@@ -211,13 +233,14 @@ comunicazioni ai conduttori senza indirizzo PEC.
 
 | Campo | Note |
 |---|---|
-| **Servizio** | *Gmail* oppure *SMTP Personalizzato* |
+| **Servizio Email** | *Gmail* oppure *SMTP Personalizzato* |
 | **Email** | L'indirizzo mittente |
 | **App Password** / **Password** | Con Gmail serve una **App Password**, non la password dell'account |
 | **Server SMTP**, **Porta SMTP**, **Connessione Sicura (TLS)** | Solo con SMTP personalizzato |
 
 Due pulsanti: **Test Connessione** (prova le credenziali scritte a schermo,
-senza salvare) e **Salva Configurazione**.
+senza salvare; con il campo password vuoto usa quella già memorizzata) e
+**Salva Configurazione**.
 
 Due regole del salvataggio, valide anche per PEC e SMS:
 
@@ -268,7 +291,8 @@ badge *SMS* di chi ha un numero; ordinabile) e sopra la tabella il conteggio
 preavviso»* aveva il preavviso a schermo.
 
 > Resta un punto cieco: **la scheda *Anagrafiche → Destinatari* non ha quella
-> colonna**, perché la sua sorgente non porta il tipo di indirizzo. Per sapere
+> colonna**: il tipo di indirizzo è nell'anagrafica, ma quella scheda non lo
+> mostra. Per sapere
 > se un singolo conduttore è PEC lo si cerca in *Invia notifica*, dopo aver
 > selezionato una sua tratta.
 
@@ -277,8 +301,10 @@ preavviso»* aveva il preavviso a schermo.
 ## 7. Impostazioni → SMS
 
 Scheda **SMS**: credenziali del fornitore **Register.it (sfera.net)** — *Client
-ID* e *Password* — con **Test Connessione** e **Salva Configurazione**. Il test
-interroga il credito residuo e non spende un SMS.
+ID* e *Password* — con **Prova credenziali** e **Salva Configurazione**. La
+prova interroga il credito residuo e non spende un SMS. Se fallisce con
+credenziali giuste, l'IP del server non è ancora abilitato nella whitelist del
+pannello Register.it: la scheda lo ricorda.
 
 > **Il canale SMS è attivo.** In *Invia notifica* l'operatore spunta «Invia
 > anche via SMS» — **spenta di default**, perché ogni messaggio ha un costo —
@@ -307,9 +333,9 @@ caricamento risulta *parziale*, con il motivo scritto. **La madre di ogni tratta
 Da settembre 2026 (issue #49) ci sono anche le **rogge madri**, una seconda
 gerarchia che convive con quella di sopra senza sostituirla: codici R da 3
 con un nome proprio (per esempio «R08 — Roggia Serio e derivate»), e le loro
-figlie — il consorzio ne ha mandati 26 nell'elenco allegato alla mail del
-16/09/2026, ma non ancora caricati: non prenderlo come il numero definitivo
-finché non compare qui sotto, nei conteggi del primo caricamento riuscito.
+figlie. L'elenco del 22/09/2026 porta 69 righe e 64 codici distinti: 5 codici
+arrivano due volte con nomi diversi, e l'applicazione tiene il primo e lo conta
+(*«Rogge madri ripetute nell'elenco»*).
 Le riempiono altre due entità, e **si sostituiscono per conto loro**:
 se una delle due manca, la gerarchia rogge madri resta quella del caricamento
 precedente, ma questo **non** blocca l'aggiornamento delle sette di sopra —
@@ -325,8 +351,9 @@ ora* fa esattamente la stessa cosa, subito.
 
 ### I campi
 
-- **Autenticazione**: la credenziale del web service. Come le password, resta
-  memorizzata: lasciarla vuota non la cancella.
+- **Stringa di autenticazione**: la credenziale del web service, inviata a ogni
+  chiamata. Come le password, resta memorizzata: lasciarla vuota non la
+  cancella.
 - **URL base del web service**: l'indirizzo comune a tutte le entità (per
   esempio `http://192.168.0.100`). Un'entità in modalità HTTP senza un URL
   proprio usa la base più il suo percorso, che il campo mostra in grigio.
@@ -340,7 +367,8 @@ ora* fa esattamente la stessa cosa, subito.
   - in modalità File JSON, il **percorso** del file, con il pulsante **Carica
     file** per caricarne uno dal proprio PC;
   - il pulsante **Prova**, che verifica quella singola sorgente e scrive l'esito
-    sotto.
+    sotto. **Prova usa la configurazione salvata**, non quella a schermo: dopo
+    una modifica si salva prima di provare.
 
 Il caricamento di un file JSON viene **validato riga per riga** prima di essere
 accettato: un file rifiutato **non tocca** quello già presente. A caricamento
@@ -356,8 +384,8 @@ configurazione**.
 ### Ordine di lavoro consigliato
 
 1. Impostare modalità e URL/file di ogni entità.
-2. **Prova** su ciascuna, una alla volta.
-3. **Salva configurazione**.
+2. **Salva configurazione**.
+3. **Prova** su ciascuna, una alla volta.
 4. **Aggiorna ora**, e poi controllare la sezione *Anagrafiche*: il riquadro
    ambra in cima dice se qualcosa è andato storto o se qualche entità non è mai
    stata caricata.
@@ -386,8 +414,16 @@ Numeri del caricamento di settembre 2026: si ritrovano nei conteggi sotto
   consorzio non compaiono nemmeno nelle schede *Legame* di Anagrafiche.
 - **Una tratta non si attribuisce dal codice.** Tratte che iniziano allo stesso
   modo stanno sotto impianti diversi — quelle che iniziano per `R08` sotto 13
-  impianti. La madre giusta è nella colonna *Codice madre* di *Anagrafiche →
+  impianti. La madre giusta è nella colonna *Codice impianto* di *Anagrafiche →
   Impianti*.
+- **Tratte S scartate (non gruppi di consegna).** Delle figlie di `S45` servono
+  solo i gruppi di consegna: sfiati, scarichi, nodi e saracinesche (91 righe) si
+  scartano, perché non hanno mai conduttori.
+- **Impianti con tipo irrigazione sconosciuto.** Un impianto con un tipo che la
+  decodifica del consorzio non prevede non sparisce: finisce fra le rogge
+  (*Scorrimento*) e si conta.
+- **Rogge madri ripetute nell'elenco.** Lo stesso codice con due nomi diversi:
+  si tiene il primo e si conta, così che qualcuno lo sappia.
 - **Le rogge madri non coprono tutti i codici R.** Una tratta R il cui codice
   da 3 non è fra le rogge madri dell'elenco del consorzio resta fuori dal
   bottone *Rogge Madri* di Invia notifica, e continua a comparire sotto il suo
@@ -402,11 +438,11 @@ guardare è quali entità risultano caricate.
 
 ## 9. Impostazioni → Active Directory
 
-Scheda visibile **solo al Super Admin**. È l'unica sezione dell'applicazione con
-questo livello, e la ragione è precisa: **chi modifica host e certificato decide
+Scheda visibile **solo al Super Admin**, come *Utenti di test*: sono le uniche
+due con questo livello. Per Active Directory la ragione è precisa: **chi modifica host e certificato decide
 quale macchina riceve le password di dominio del personale.**
 
-A differenza di email, PEC e web service, **qui non c'è nessun ripiego su
+A differenza di email, PEC e SMS, **qui non c'è nessun ripiego su
 variabili d'ambiente**: i dati del domain controller si inseriscono
 dall'interfaccia, in sede.
 
@@ -471,6 +507,12 @@ conduttori sono stati selezionati.
 proprio interruttore Attivo/Non attivo: si può tenere censita una persona e
 spegnerla temporaneamente, senza cancellarla.
 
+**I campi**: *Nome* (obbligatorio), *Email* con il suo canale — *Email
+ordinaria* o *PEC* — e *Telefono*. Un utente di test **PEC** si comporta come un
+conduttore PEC: se la PEC non è configurata, l'invio viene rifiutato per intero.
+In *Invia notifica* ogni operatore vede i nomi degli utenti di test che
+riceveranno la copia.
+
 **Un utente di test ha bisogno di almeno un recapito**, email o telefono: la
 maschera non fa salvare una riga senza nessuno dei due, perché non
 raggiungerebbe nessuno pur comparendo come censita. Chi ha inserito solo un
@@ -481,8 +523,8 @@ anche la spunta SMS: con la sola email spedita, quella persona resta fuori.
 compone la comunicazione come sempre, ma **si toglie la spunta a tutti i
 conduttori**. Con almeno un utente di test attivo e raggiungibile il bottone
 resta acceso: la comunicazione parte solo verso gli utenti di test, nessun
-conduttore la riceve. È il modo per collaudare testo, canale (email o PEC) e
-allegati senza disturbare nessuno.
+conduttore la riceve. È il modo per collaudare testo e canale (email, PEC,
+SMS) senza disturbare nessuno.
 
 **Una prova si comporta come un invio vero fino in fondo**, comprese le
 conseguenze sulle rogge: se il tipo scelto è apertura o chiusura, le rogge
@@ -539,8 +581,9 @@ invia la notifica opposta sugli stessi codici. Regole:
   chiude le sue tratte, chiudere una tratta non chiude il pozzo;
 - **ripetere non azzera**: una seconda chiusura su un codice già chiuso lascia la
   data della prima;
-- la Dashboard conta le chiusure **proprie**: una tratta chiusa solo perché è
-  chiusa la madre non entra nel conteggio.
+- la Dashboard conta le **tratte**: chiudere una madre vi porta tutte le sue
+  tratte (con la dicitura *«Con la madre …»*), la madre non compare come riga a
+  sé, e una tratta chiusa sia da sola sia con la madre conta una volta.
 
 **Chi ha inviato viene preso dalla sessione**, non da quello che il client
 dichiara: nello Storico la firma non è modificabile.
@@ -576,6 +619,45 @@ rotazione non elimina mai copie buone in cambio di una rotta.
 Dettagli operativi, comandi e ripristino: `README.md` nel repository, sezione
 *Backup del database*.
 
+### Installare e aggiornare l'applicazione
+
+Si fa tutto dal server, con lo script `deploy.sh` nella cartella
+dell'applicazione. Va lanciato da un terminale (una sessione SSH), con l'utente di
+sistema che fa girare l'applicazione, **non da root**:
+
+```
+cd notifiche-canali-irrigui
+./deploy.sh
+```
+
+Compare un menu:
+
+| Voce | Quando si usa | Cosa fa |
+|---|---|---|
+| **1) Prima installazione** | Una volta sola, subito dopo il `git clone` | Installa ciò che manca sul server (Node.js, PostgreSQL, pm2…), chiede la **porta** su cui pubblicare l'applicazione, crea database e configurazione, chiede username e password del primo **Super Admin**, avvia l'applicazione e la fa ripartire da sola a ogni riavvio del server, programma il backup notturno |
+| **2) Aggiorna** | Quando il fornitore comunica che c'è una nuova versione | Fa un backup del database, scarica la nuova versione, la compila, aggiorna il database e riavvia l'applicazione |
+| **3) Stato** | Per un controllo, o prima di chiamare l'assistenza | Dice se l'applicazione è accesa e risponde, se il database è raggiungibile, quando è stato fatto l'ultimo backup |
+| **4) Crea superadmin** | Solo se non esiste più nessun Super Admin | Chiede username e password e lo crea |
+
+Alcune cose da sapere:
+
+- **Durante l'aggiornamento l'applicazione resta accesa**: si ferma per pochi
+  secondi solo al riavvio finale. Conviene comunque non aggiornare mentre
+  qualcuno sta inviando una comunicazione. Un invio interrotto da un riavvio
+  resta *«in invio»* (vedi *Limiti noti*).
+- **Se l'aggiornamento si ferma con un errore**, l'applicazione che stava
+  girando non viene toccata. Lo script stampa i comandi per tornare alla versione
+  precedente e il nome del backup appena fatto: vanno copiati e mandati
+  all'assistenza così come sono.
+- **Se durante l'aggiornamento compare una domanda su tabelle da cancellare o da
+  rinominare**, rispondere **No, abort** e contattare l'assistenza. Non capita in
+  un aggiornamento normale.
+- **Non vanno modificati a mano i file dell'applicazione sul server.** Se ce ne
+  sono, l'aggiornamento si rifiuta di partire e li elenca. La configurazione
+  tecnica sta nel file `.env`, che l'aggiornamento non tocca; tutto il resto si
+  configura da *Impostazioni*.
+- La porta scelta all'installazione è scritta in `.env` alla voce `PORT`.
+
 ### Dopo un intervento tecnico
 
 Un aggiornamento dell'applicazione **non risincronizza le anagrafiche**: se
@@ -602,7 +684,8 @@ conoscerle prima che diventino segnalazioni.
   ampio. Con la casella attuale un invio a tutti i conduttori non passa in un
   giorno solo.
 - **Il pixel di tracciamento delle aperture** non funziona finché non è
-  configurato l'indirizzo pubblico dell'applicazione: le email partono senza, con
+  configurato l'indirizzo pubblico dell'applicazione (`APP_URL` nel file `.env`,
+  chiesto da `deploy.sh` alla prima installazione): le email partono senza, con
   un avviso nei log.
 - **Una notifica interrotta da un riavvio del server resta in stato «in invio»**
   e nessuno la chiude. Se nello Storico compare una comunicazione ferma in quello
@@ -610,8 +693,14 @@ conoscerle prima che diventino segnalazioni.
 - **La sessione dura 8 ore e non ricontrolla Active Directory**: chi viene
   disabilitato sul dominio resta operativo fino alla scadenza. Per chiuderlo
   subito si disattiva l'utenza.
-- **Deve sempre esistere almeno un Super Admin locale.** Il codice non lo
-  impone.
+- **L'esito di ogni mail non si legge dallo Storico**: il dettaglio dello
+  Storico mostra dove è stata indirizzata, la *pagina della notifica* se è
+  partita. Quella pagina si apre solo dalla Dashboard (le ultime sei
+  comunicazioni) o scrivendo `…/notifiche/42` nella barra degli indirizzi (per
+  l'ID `N00042` dello Storico). Il
+  messaggio a schermo dopo l'invio dice ancora «si vede nello Storico».
+- **I testi dei template partono come sono scritti**: niente variabili `{{…}}`,
+  niente HTML.
 
 ---
 

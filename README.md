@@ -91,7 +91,7 @@ docs/          sorgenti Markdown delle guide utente
 
 | Componente | Versione |
 |---|---|
-| Node.js | 20 o superiore (lo script di deploy rifiuta versioni sotto la 18) |
+| Node.js | 20 o superiore (se manca, `deploy.sh` installa la 22 da NodeSource) |
 | PostgreSQL | 16 consigliato |
 | `postgresql-client` (`psql`, `pg_dump`) | stessa major del server o superiore |
 | pm2 | installato globalmente (`npm install -g pm2`) |
@@ -100,12 +100,10 @@ docs/          sorgenti Markdown delle guide utente
 `pg_dump` deve essere almeno della stessa versione del server PostgreSQL. Se è più vecchio
 si rifiuta di fare il dump, e il backup notturno smette di funzionare senza altri sintomi.
 
-```bash
-sudo apt update
-sudo apt install -y postgresql-16 postgresql-client-16 git cron
-# Node.js 20+ (ad es. da nodesource), poi:
-sudo npm install -g pm2
-```
+Su Debian/Ubuntu non serve installarli a mano: la prima installazione di `deploy.sh`
+controlla cosa manca e, dopo conferma, lo installa con `apt` (Node.js da NodeSource, pm2
+con npm). Su altre distribuzioni lo script elenca cosa manca e si ferma. Serve solo `git`
+per il clone, e un utente con `sudo`.
 
 ---
 
@@ -121,45 +119,69 @@ cd notifiche-canali-irrigui
 ### 2. Prima installazione guidata
 
 ```bash
-./deploy.sh      # → opzione 1 «Prima installazione»
+./deploy.sh      # → 1) Prima installazione
 ```
 
-L'opzione 1 esegue in sequenza questi passi:
+Va lanciato dall'utente di sistema che farà girare l'applicazione (non da root). Lo script
+chiede **la porta** su cui pubblicarla (default `8610`, rifiuta una porta già occupata) e
+l'**indirizzo pubblico** (facoltativo), poi esegue in sequenza:
 
-1. verifica le dipendenze;
-2. crea il file `.env` con una password del database e un `SESSION_SECRET` casuali;
-3. crea l'utente e il database PostgreSQL (via `sudo -u postgres`);
+1. installa le dipendenze di sistema mancanti: Node.js, PostgreSQL, `psql`/`pg_dump`, git,
+   cron, pm2;
+2. crea il file `.env` con la porta scelta, una password del database e un
+   `SESSION_SECRET` casuali (permessi `600`);
+3. crea l'utente e il database PostgreSQL sul cluster locale (via `sudo -u postgres`);
 4. esegue `npm ci` e `npm run build`;
-5. applica lo schema con `db:push` e controlla che le tabelle esistano davvero;
-6. crea il primo superadmin;
-7. avvia l'applicazione con pm2 e installa il backup automatico.
+5. crea lo schema del database e controlla che esistano **tutte** le tabelle di
+   `shared/schema.ts`;
+6. chiede username e password del primo superadmin;
+7. se `ufw` è attivo, chiede se aprire la porta;
+8. avvia l'applicazione con pm2, esegue `pm2 save` e attiva l'avvio automatico al boot
+   (`pm2 startup`);
+9. programma il backup notturno del database;
+10. controlla che l'applicazione risponda sulla porta scelta.
 
-**`deploy.sh` va lanciato da un terminale interattivo.** Il menu e le domande di
-drizzle-kit leggono da tastiera. Con l'input rediretto (`printf '2\n' | ./deploy.sh`)
-drizzle-kit riceverebbe un input vuoto e uscirebbe senza applicare lo schema, pur
-risultando riuscito. Per questo lo script in quel caso si rifiuta di partire.
+Rilanciarla è innocuo: non ricrea il `.env`, non tocca un database già esistente, non crea
+un secondo superadmin.
 
-### 3. Avvio automatico al riavvio del server
+**`deploy.sh` va lanciato da un terminale interattivo.** Con l'input rediretto
+(`printf '1\n' | ./deploy.sh`) si rifiuta di partire: le domande di drizzle-kit
+riceverebbero un input vuoto e lo schema non verrebbe applicato, senza errori visibili.
 
-Senza `pm2 startup` l'applicazione non riparte dopo un riavvio del server:
+### 3. Pubblicazione
 
-```bash
-pm2 startup      # stampa un comando sudo: eseguirlo così com'è
-pm2 save
-```
-
-### 4. Pubblicazione
-
-L'applicazione ascolta sulla porta **8610** (variabile `PORT`). Va messa dietro un reverse
-proxy con HTTPS: nginx, Nginx Proxy Manager, Caddy o altro. Poi, nel file `.env`:
+L'applicazione ascolta sulla porta scelta all'installazione (variabile `PORT` in `.env`).
+Si può usare direttamente (`http://<ip-del-server>:<porta>`) oppure metterla dietro un reverse
+proxy con HTTPS (nginx, Nginx Proxy Manager, Caddy…). In quel caso, in `.env`:
 
 ```
 APP_URL=https://dominio-pubblico
-SESSION_SECURE=true
 ```
 
 Senza `APP_URL` le email partono lo stesso, ma senza il pixel che registra l'apertura
 (nei log compare un avviso).
+
+### 4. Aggiornare a una nuova versione
+
+```bash
+./deploy.sh      # → 2) Aggiorna
+```
+
+1. rifiuta di partire se qualche file del repository è stato modificato a mano;
+2. mostra le modifiche in arrivo (se non ce ne sono, chiede se ricompilare comunque);
+3. fa un backup del database;
+4. `git pull`, `npm ci`, `npm run build`;
+5. applica le migrazioni nuove di `migrations/`, ciascuna in una transazione;
+6. allinea lo schema con `db:push` (senza `--force`: se drizzle-kit propone di cancellare o
+   rinominare qualcosa, rispondere **No, abort**);
+7. riavvia pm2 e controlla che l'applicazione risponda.
+
+Se un passo fallisce, lo script stampa i comandi esatti per tornare alla versione
+precedente e il percorso del backup appena fatto. Una migrazione fallita viene annullata per
+intero, e l'applicazione in esecuzione non viene riavviata.
+
+`./deploy.sh` → `3) Stato` mostra processo, porta, migrazioni in sospeso, ultimo backup e
+avvio automatico. `4) Crea superadmin` serve solo se non ne esiste nessuno.
 
 ### 5. Configurazione dall'interfaccia
 
@@ -246,10 +268,10 @@ service:
 
 ```bash
 ./deploy.sh                    # menu:
-                               #   2) Rebuild + riavvio pm2 (rilascio di una modifica)
-                               #   3) Ripara database (ricrea utente/DB e riapplica lo schema)
-                               #   6) Crea primo superadmin
-                               #   7) Installa/verifica backup automatico
+                               #   1) Prima installazione
+                               #   2) Aggiorna (git pull + build + riavvio)
+                               #   3) Stato
+                               #   4) Crea superadmin
 pm2 logs notifichepozzi        # log in tempo reale
 pm2 restart notifichepozzi     # riavvio
 ./scripts/backup-db.sh         # backup manuale
@@ -274,7 +296,7 @@ server**: se il server è in UTC, le 22:30 corrispondono alle 00:30 italiane d'e
 esistenti controlla che il nuovo dump sia integro, poi tiene le **ultime 30 copie**. Se il
 dump fallisce esce con errore e **non cancella nulla**. Le credenziali le legge da `.env`.
 
-La riga di crontab la installa `./deploy.sh` (opzione 1 o 7). A mano:
+La riga di crontab la installa `./deploy.sh` (opzione 1). A mano:
 
 ```bash
 P=/percorso/di/notifiche-canali-irrigui
@@ -302,13 +324,18 @@ sui dati, non da un guasto del server. Si consiglia di copiarli periodicamente a
 
 ## Aggiornamenti e schema del database
 
-- **Installazione nuova**: lo schema viene creato interamente da `npm run db:push`, che
-  `deploy.sh` esegue da solo. I file in `migrations/` non servono.
-- **Aggiornamento di un database esistente**: i file SQL in `migrations/` sono numerati e
-  scritti a mano. Vanno applicati in ordine, con `psql "$DATABASE_URL" -f migrations/NNNN_….sql`,
-  **prima** di riavviare sulla nuova versione. Ciascun file descrive nell'intestazione cosa
-  fa. Quelli che eliminano tabelle (`0012`) si applicano solo dopo una sincronizzazione
-  riuscita con la nuova versione.
+- **Installazione nuova**: lo schema viene creato interamente da `npm run db:push`, e le
+  migrazioni presenti in `migrations/` vengono segnate come già applicate.
+- **Aggiornamento**: `deploy.sh` → `2) Aggiorna` applica in ordine i file di `migrations/`
+  non ancora applicati e li registra nella tabella `deploy.migrazioni_applicate` (in uno
+  schema a parte, perché `db:push` cancellerebbe una tabella non dichiarata in
+  `shared/schema.ts`).
+- **Database creato prima di questo script**: al primo aggiornamento il registro non esiste,
+  e lo script chiede se segnare come applicate le migrazioni presenti *prima* del pull. La
+  risposta giusta è sì, se l'applicazione funziona con la versione installata.
+- Una migrazione che va eseguita in un momento diverso dal rilascio (come `0012`, che elimina
+  tabelle solo dopo una sincronizzazione riuscita) non va messa in `migrations/` finché quel
+  momento non è arrivato: lo script applica tutto ciò che trova.
 
 Tre cose da sapere su `db:push`:
 
@@ -322,7 +349,7 @@ Tre cose da sapere su `db:push`:
    gestisce la libreria delle sessioni, che la crea da sola. Se si toglie l'esclusione,
    `db:push` la elimina e tutti gli utenti vengono disconnessi.
 
-Dopo ogni aggiornamento che tocca lo schema, controllare che le tabelle ci siano:
+`deploy.sh` controlla da sé che esistano tutte le tabelle dello schema. A mano:
 
 ```bash
 psql "$DATABASE_URL" -c "\dt"

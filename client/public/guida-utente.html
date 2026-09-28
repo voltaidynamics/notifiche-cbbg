@@ -104,7 +104,8 @@
     <main class="foglio">
 <h1 id="guida-utente--notifiche-canali-irrigui">Guida utente — Notifiche Canali Irrigui</h1>
 <p>Guida per chi usa l&#39;applicazione tutti i giorni: <strong>Utente</strong> e <strong>Osservatore</strong>.
-Le funzioni riservate agli amministratori (Gestione Utenti, Impostazioni) sono
+Le funzioni riservate agli amministratori (Gestione Utenti, Gestione Codici,
+configurazione in Impostazioni) sono
 descritte nella <a href="/guida-super-user.html">Guida super user</a>.</p>
 <hr>
 <h2 id="indice">Indice</h2>
@@ -214,12 +215,16 @@ al menù laterale. <strong>La sessione dura 8 ore</strong>, poi va rifatto l&#39
 <ul>
 <li><strong>Moduli principali</strong> — Dashboard, Invia Notifica, Storico Notifiche,
 Anagrafiche, Template</li>
-<li><strong>Strumenti</strong> — Gestione Utenti, Impostazioni</li>
+<li><strong>Strumenti</strong> — Gestione Utenti, Gestione Codici, Impostazioni</li>
 </ul>
-<p><strong>Si vedono solo le voci a cui si ha accesso.</strong> In pratica cambia una voce sola:
-<em>Gestione Utenti</em> compare agli amministratori e a nessun altro.</p>
+<p><strong>Si vedono solo le voci a cui si ha accesso.</strong> <em>Gestione Utenti</em> e <em>Gestione
+Codici</em> compaiono agli amministratori e a nessun altro. <em>Impostazioni</em> compare a
+tutti, ma le schede di configurazione (email, PEC, SMS, web service) le legge e
+le modifica solo un amministratore: agli altri ruoli si aprono vuote.</p>
 <p>Su telefono il menù diventa una barra in basso con le prime cinque voci, più il
-pulsante ☰ in alto a destra per l&#39;elenco completo.</p>
+pulsante ☰ in alto a destra per l&#39;elenco completo. Nell&#39;intestazione, su
+telefono, restano solo le icone: descrizione della sezione, parola «Guida» e
+nome utente si vedono da computer.</p>
 <h3 id="lintestazione-uguale-in-ogni-pagina">L&#39;intestazione, uguale in ogni pagina</h3>
 <p>In cima a ogni sezione, sempre nello stesso posto:</p>
 <ul>
@@ -235,7 +240,7 @@ cambiare sotto gli occhi.</li>
 <li><strong>Guida</strong> — apre questa guida in una scheda nuova. Il pulsante porta alla
 guida giusta per il proprio ruolo: chi è Admin o Super Admin apre la <em>Guida
 super user</em>, che aggiunge i capitoli sulla configurazione.</li>
-<li><strong>Area personale</strong> — nome utente e ruolo.</li>
+<li><strong>Area personale</strong> — nome utente e ruolo; porta a <em>Impostazioni</em>.</li>
 <li><strong>Esci</strong>.</li>
 </ul>
 <h3 id="i-ruoli">I ruoli</h3>
@@ -248,7 +253,7 @@ super user</em>, che aggiunge i capitoli sulla configurazione.</li>
 </thead>
 <tbody><tr>
 <td><strong>Utente</strong></td>
-<td>Tutte le pagine tranne <em>Gestione Utenti</em>, in scrittura: può inviare notifiche, creare template</td>
+<td>Tutte le pagine tranne <em>Gestione Utenti</em> e <em>Gestione Codici</em>, in scrittura: può inviare notifiche, creare template</td>
 </tr>
 <tr>
 <td><strong>Osservatore</strong></td>
@@ -291,14 +296,18 @@ freccia a destra apre il dettaglio.</p>
 <p>Quando una sezione non ha ancora dati veri (nessuna chiusura registrata, nessuna
 notifica inviata) mostra dei <strong>dati di esempio</strong> con l&#39;etichetta arancione
 <code>ESEMPIO</code>. Servono a far vedere come si presenterà la sezione: <strong>non sono dati
-reali</strong>. Spariscono da soli alla prima chiusura o alla prima notifica vera.</p>
+reali</strong>. Spariscono da soli alla prima chiusura o alla prima notifica vera, e
+<strong>ricompaiono ogni volta che la sezione torna vuota</strong>: il riquadro «Tratte
+chiuse» quando tutte le tratte sono state riaperte, i grafici in un mese senza
+chiusure o senza notifiche. Un numero rosso con il badge <code>ESEMPIO</code> accanto non
+è una tratta chiusa.</p>
 <hr>
 <h2 id="5-invia-notifica">5. Invia notifica</h2>
 <p>È la sezione più importante. Si compila dall&#39;alto verso il basso, e ogni passo
 sblocca il successivo.</p>
 <h3 id="passo-1--la-sezione-rogge-madri-scorrimento-impianti-o-pozzi">Passo 1 — La sezione: Rogge Madri, Scorrimento, Impianti o Pozzi</h3>
-<p>Quattro riquadri in cima, <strong>«Rogge Madri» per primo a sinistra</strong>. Il riquadro
-attivo è verde.</p>
+<p>Quattro riquadri in cima, <strong>«Rogge Madri» per primo a sinistra</strong>. La pagina si
+apre su <strong>«Scorrimento»</strong>. Il riquadro attivo è verde.</p>
 <p><strong>Attenzione</strong>: cambiare sezione <strong>azzera tutta la selezione fatta finora</strong>
 (madri, tratte, elenco conduttori). I testi già scritti restano.</p>
 <p>La differenza fra le quattro sezioni non è estetica:</p>
@@ -306,10 +315,9 @@ attivo è verde.</p>
 <li><strong>Rogge Madri</strong>: la seconda gerarchia del consorzio, i codici R da 3 con
 nome proprio (per esempio «R08 — Roggia Serio e derivate»; l&#39;elenco del
 25/09/2026 ne conta 64). Si scelgono le
-loro tratte come nelle altre sezioni con tratte; una riga mostra <strong>due</strong>
-madri, quella roggia madre — con cui si sta selezionando — e, quando c&#39;è, il
-suo impianto: chiudere l&#39;impianto chiude comunque la tratta anche vista da
-qui.</li>
+loro tratte come nelle altre sezioni con tratte. Ogni tratta mostra codice e
+descrizione; il badge <strong>Chiusa</strong> tiene conto anche dell&#39;impianto a cui la
+tratta appartiene: chiudere l&#39;impianto la chiude anche vista da qui.</li>
 <li><strong>Scorrimento</strong> e <strong>Impianti</strong>: si scelgono le singole <strong>tratte</strong>, raggruppate
 per impianto. In Scorrimento compaiono solo impianti con codice <code>IM…</code>.</li>
 <li><strong>Pozzi</strong>: <strong>non si scelgono le tratte</strong>. Si sceglie il pozzo, e la
@@ -399,12 +407,13 @@ Tratte con codici che iniziano allo stesso modo possono stare sotto impianti
 diversi.</li>
 <li>In testa, in un riquadro verde, c&#39;è <strong>«Tutta la roggia» / «Tutto
 l&#39;impianto»</strong>: una voce <em>Tutte le tratte di <codice></em> per ciascuna madre
-scelta. È il modo per <strong>avvisare tutti quelli di una madre</strong>: spuntarla
+scelta che abbia almeno una tratta visibile con la ricerca in corso. È il modo per <strong>avvisare tutti quelli di una madre</strong>: spuntarla
 accende tutte le sue tratte, anche quelle che la ricerca sta nascondendo; se
 erano già tutte accese, le spegne. Spuntare le tratte una per una fino
 all&#39;ultima porta alla stessa selezione, e nessuno riceve la comunicazione due
 volte.</li>
 <li>Sotto, le singole tratte con codice, descrizione e badge <strong>Chiusa</strong> dove serve.</li>
+<li>Il campo <em>Cerca codice…</em> cerca anche nella descrizione.</li>
 <li><strong>Seleziona tutti / Deseleziona tutti</strong> agiscono sull&#39;elenco <strong>filtrato dalla
 ricerca</strong>: se si sta cercando <code>D010</code>, «Seleziona tutti» spunta solo quelle.</li>
 <li>Il contatore dice <code>&lt;spuntate&gt; / &lt;visibili&gt; selezionate</code>.</li>
@@ -579,7 +588,9 @@ occasione per annullare. Contiene:</p>
 <p><strong>Conferma invio</strong> fa partire la comunicazione.</p>
 <h3 id="passo-9--dopo-linvio">Passo 9 — Dopo l&#39;invio</h3>
 <p>Compare il messaggio <strong>«Invio avviato — Comunicazione in partenza verso N
-destinatari. L&#39;esito di ogni mail si vede nello Storico notifiche.»</strong></p>
+destinatari. L&#39;esito di ogni mail si vede nello Storico notifiche.»</strong> — ma
+attenzione: l&#39;esito mail per mail non sta nello Storico, sta nella <em>pagina della
+notifica</em> (vedi più sotto, <em>Capitolo 6 → L&#39;esito dell&#39;invio</em>).</p>
 <p>Cosa succede:</p>
 <ul>
 <li><strong>La tabella dei conduttori si svuota</strong> subito. È voluto: lasciarla lì
@@ -588,8 +599,8 @@ riclicca spedendo tutto una seconda volta. I testi scritti restano.</li>
 <li><strong>La spedizione prosegue in sottofondo.</strong> La risposta arriva appena la
 notifica è registrata, non quando l&#39;ultima email è partita: su un invio ampio
 ci vogliono minuti.</li>
-<li><strong>L&#39;esito email per email si legge nello Storico</strong>, nel dettaglio della
-notifica.</li>
+<li><strong>L&#39;esito email per email si legge nella pagina della notifica</strong>, che si apre
+dalla Dashboard (vedi <em>Capitolo 6 → L&#39;esito dell&#39;invio</em>).</li>
 </ul>
 <h3 id="se-linvio-viene-rifiutato">Se l&#39;invio viene rifiutato</h3>
 <p>Compare un messaggio rosso <strong>«Invio non riuscito»</strong> con la ragione. La più
@@ -606,10 +617,27 @@ si ferma per intero</strong> e non parte nulla: non si ripiega sulla posta ordin
 perché una PEC spedita da una casella normale non ha valore legale. Vale il
 simmetrico per la posta ordinaria. La configurazione la fa un amministratore in
 <em>Impostazioni</em>.</p>
+<p>Un&#39;altra risposta possibile:</p>
+<blockquote>
+<p><em>«Codici spenti in Gestione Codici: … Aggiorna la pagina e rifai la
+selezione.»</em></p>
+</blockquote>
+<p>Un amministratore ha spento uno dei codici scelti mentre si compilava la
+comunicazione. Si ricarica la pagina: quel codice non compare più, e si rifà la
+selezione senza.</p>
+<h3 id="codici-che-non-compaiono">Codici che non compaiono</h3>
+<p>Gli amministratori possono <strong>spegnere</strong> una roggia madre, un impianto o un pozzo
+in <em>Gestione Codici</em>: da quel momento sparisce da <em>Invia notifica</em> e dalle
+<em>Anagrafiche</em>, insieme alle tratte che non hanno un&#39;altra madre accesa. Se un
+codice che ci si aspetta non c&#39;è, non è un guasto: va chiesto a un
+amministratore. Lo Storico e la Dashboard continuano a mostrare le comunicazioni
+già inviate su quei codici.</p>
 <hr>
 <h2 id="6-storico-notifiche">6. Storico notifiche</h2>
 <p>L&#39;archivio di tutte le comunicazioni inviate, con il dettaglio di chi le ha
-ricevute. È anche il posto dove si verifica <strong>se le email sono davvero partite</strong>.</p>
+ricevute e di dove sono state indirizzate. L&#39;esito dell&#39;invio — partita o
+fallita, destinatario per destinatario — si legge invece nella <strong>pagina della
+notifica</strong> (vedi <em>L&#39;esito dell&#39;invio</em>, in fondo al capitolo).</p>
 <h3 id="filtri-di-ricerca">Filtri di ricerca</h3>
 <p>Sette filtri, che si combinano fra loro:</p>
 <div class="tabella"><table>
@@ -641,7 +669,7 @@ ricevute. È anche il posto dove si verifica <strong>se le email sono davvero pa
 </tr>
 <tr>
 <td><strong>Destinatario</strong></td>
-<td>Testo libero sul nome del conduttore</td>
+<td>Testo libero: cerca su nome e codice del conduttore, indirizzo email e numero</td>
 </tr>
 </tbody></table></div>
 <p>I filtri <strong>non si applicano mentre si scrive</strong>: si compilano e si preme
@@ -650,6 +678,8 @@ ricevute. È anche il posto dove si verifica <strong>se le email sono davvero pa
 <p>Colonne: <em>ID Notifica</em>, <em>Utente</em>, <em>Data e ora</em>, <em>N° Tratte</em>, <em>N° Destinatari</em>,
 <em>Tipo</em>, <em>Classificazione</em>, <em>Legame</em>. Tutte <strong>ordinabili</strong> cliccando
 l&#39;intestazione; l&#39;ordinamento predefinito è per data, dalla più recente.</p>
+<p>Accanto all&#39;ID, il badge ambra <strong>Prova</strong> segna una comunicazione arrivata ai
+soli utenti di test (un collaudo, non una comunicazione vera).</p>
 <p><strong>Legame</strong> dice con quale elenco sono stati scelti i destinatari: badge
 <strong>Live</strong> oppure <strong>Stagione irrigua</strong>, come scelto nel popup «Con quale legame?»
 al momento dell&#39;invio. È «—» sulle comunicazioni partite prima che il legame si
@@ -679,7 +709,7 @@ quella comunicazione, non il template da cui derivava.</li>
 </thead>
 <tbody><tr>
 <td><strong>Codice / Descrizione Conduttore</strong></td>
-<td>Chi ha ricevuto, come risultava all&#39;anagrafica <em>in quel momento</em></td>
+<td>Chi ha ricevuto, come risultava all&#39;anagrafica <em>in quel momento</em>. Il badge ambra <strong>Test</strong> segna la copia inviata a un utente di test</td>
 </tr>
 <tr>
 <td><strong>Codice / Descrizione Roggia</strong></td>
@@ -687,11 +717,11 @@ quella comunicazione, non il template da cui derivava.</li>
 </tr>
 <tr>
 <td><strong>SMS</strong></td>
-<td>Esito SMS — <em>Inviato</em> o <em>Fallito</em> solo se «Invia anche via SMS» era spuntata; vuoto se quella comunicazione non l&#39;aveva</td>
+<td>Il numero a cui era indirizzato l&#39;SMS; «—» se il conduttore non aveva un numero. <strong>Non dice</strong> se l&#39;SMS è partito</td>
 </tr>
 <tr>
 <td><strong>Mail</strong></td>
-<td>Esito dell&#39;invio email</td>
+<td>L&#39;indirizzo a cui era indirizzata la mail; «—» se non ne aveva uno. <strong>Non dice</strong> se la mail è partita</td>
 </tr>
 <tr>
 <td><strong>Canale</strong></td>
@@ -705,6 +735,30 @@ notifica.</li>
 <p>I dati del destinatario sono una <strong>fotografia scattata all&#39;invio</strong>: se il
 conduttore cambia indirizzo il mese dopo, lo Storico continua a dire dove era
 stata mandata la comunicazione. È il comportamento voluto.</p>
+<h3 id="lesito-dellinvio">L&#39;esito dell&#39;invio</h3>
+<p>Se una mail o un SMS sono <strong>partiti davvero</strong> lo dice la <strong>pagina della
+notifica</strong>, che si apre dalla <strong>Dashboard</strong>: la freccia accanto a una delle
+<em>Ultime notifiche</em>, oppure il collegamento <em>«Chiusa dal <data>»</em> di una tratta
+chiusa. Contiene:</p>
+<ul>
+<li><strong>Riepilogo</strong>: tratta, tipo, classificazione, legame, numero di destinatari,
+date e autore;</li>
+<li><strong>Statistiche Consegna</strong>: sulle comunicazioni partite da <em>Invia notifica</em>
+questo riquadro resta vuoto, e non è un guasto;</li>
+<li><strong>Destinatari</strong>, con l&#39;indirizzo email e le colonne <strong>Stato Email</strong> (<em>In
+attesa</em>, <em>Inviata</em>, <em>Fallita</em>, <em>Aperta</em>) e <strong>Stato SMS</strong> (<em>In attesa</em>,
+<em>Inviato</em>, <em>Fallito</em>). È questa la tabella da guardare. La colonna <em>Nome</em>
+resta vuota: chi è il destinatario lo dice il dettaglio dello Storico.</li>
+</ul>
+<p>Due cose da sapere:</p>
+<ul>
+<li><strong>Senza la spunta «Invia anche via SMS» lo Stato SMS resta <em>In attesa</em></strong>:
+l&#39;SMS non è mai partito, e non partirà.</li>
+<li>La Dashboard elenca solo le <strong>sei</strong> comunicazioni più recenti. Per una più
+vecchia la pagina si apre scrivendo nella barra degli indirizzi
+<code>…/notifiche/&lt;numero&gt;</code>, dove il numero è l&#39;ID della prima colonna dello
+Storico senza la <code>N</code> e gli zeri iniziali: <code>N00042</code> diventa <code>…/notifiche/42</code>.</li>
+</ul>
 <hr>
 <h2 id="7-anagrafiche">7. Anagrafiche</h2>
 <p>La copia dei dati del consorzio caricata a sistema. <strong>Sola lettura, sempre</strong>:
@@ -735,7 +789,7 @@ non c&#39;è nessun pulsante di modifica, in nessuna scheda, per nessun ruolo.</
 </tr>
 <tr>
 <td><strong>Legame Live</strong></td>
-<td>Chi è legato a quale tratta secondo l&#39;elenco <em>live</em>; solo i conduttori presenti in anagrafica</td>
+<td>Chi è legato a quale tratta secondo l&#39;elenco <em>live</em>; solo i conduttori presenti in anagrafica, <strong>compresi i cessati</strong>, che in <em>Invia notifica</em> non compaiono</td>
 <td>Codice/Descrizione destinatario, Codice/Descrizione roggia figlia</td>
 </tr>
 <tr>
@@ -802,8 +856,12 @@ collegate al web service, ed è il motivo per cui la loro tabella è vuota.</li>
 </ul>
 <p>Il riquadro tace mentre un caricamento è in corso.</p>
 <p>Se una tabella è vuota e dice <em>«Nessun impianto caricato. Lancia un aggiornamento
-dati»</em>, l&#39;aggiornamento lo fa un amministratore da <em>Impostazioni → WebService →
-Aggiorna ora</em>.</p>
+dati»</em>, l&#39;aggiornamento si lancia da <em>Impostazioni → WebService → Aggiorna ora</em>:
+di solito lo fa un amministratore, ma il pulsante è disponibile anche al ruolo
+Utente.</p>
+<p>I codici spenti da un amministratore in <em>Gestione Codici</em> non compaiono nelle
+schede Impianti, Rogge madri e Legame; la scheda Destinatari li ignora, perché
+elenca persone e non codici.</p>
 <hr>
 <h2 id="8-template">8. Template</h2>
 <p>I messaggi preimpostati che si caricano in <em>Invia notifica</em>.</p>
@@ -819,7 +877,7 @@ tutte ordinabili. Sopra la tabella:</p>
 creazione, ultima modifica (chi e quando), oggetto e corpo per intero. Dal
 dettaglio si passa direttamente alla modifica.</p>
 <h3 id="creare-o-modificare-un-template">Creare o modificare un template</h3>
-<p>Pulsante <strong>Nuovo template</strong>, oppure l&#39;icona matita sulla riga.</p>
+<p>Pulsante <strong>Nuovo Template</strong>, oppure l&#39;icona matita sulla riga.</p>
 <div class="tabella"><table>
 <thead>
 <tr>
@@ -841,13 +899,17 @@ dettaglio si passa direttamente alla modifica.</p>
 </tr>
 <tr>
 <td><strong>Corpo Email</strong> *</td>
-<td>Il testo. Ammette variabili come <code>{{nome_tratta}}</code>, <code>{{data}}</code></td>
+<td>Il testo, che parte <strong>esattamente com&#39;è scritto</strong>. Non ci sono variabili: una scritta come <code>{{data}}</code> arriverebbe al conduttore così, con le parentesi. Anche i tag HTML arrivano come testo; gli a capo invece si conservano</td>
 </tr>
 <tr>
 <td><strong>Testo SMS</strong> *</td>
 <td>La versione corta, precaricata in <em>Invia notifica</em> insieme a titolo e testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS»</td>
 </tr>
 </tbody></table></div>
+<p>Se non esiste ancora nessun template, in <em>Invia notifica</em> il pulsante per
+caricarne uno propone tre testi di partenza già pronti (<em>Comunicazione chiusura
+tratta</em>, <em>Avviso manutenzione programmata</em>, <em>Comunicazione riapertura</em>), che
+riempiono solo il testo email.</p>
 <p>L&#39;icona cestino elimina il template, con una conferma. L&#39;eliminazione <strong>non
 tocca le comunicazioni già inviate</strong>: il loro testo resta nello Storico.</p>
 <hr>
@@ -941,22 +1003,31 @@ attivo.</p>
 Due cause possibili: quella comunicazione è partita senza la spunta «Invia
 anche via SMS» (il testo si scrive comunque, ma senza la spunta non parte),
 oppure quel conduttore non ha un numero di cellulare in anagrafica — succede
-a circa metà dei conduttori attivi. Il dettaglio dello Storico dice qual è il
-caso: colonna SMS vuota nel primo, <em>Fallito</em> nel secondo.</p>
+a circa metà dei conduttori attivi. Nel dettaglio dello Storico, colonna <em>SMS</em>
+vuota («—») vuol dire nessun numero. Nella pagina della notifica (capitolo 6,
+<em>L&#39;esito dell&#39;invio</em>), <em>Stato SMS</em> <strong>In attesa</strong> vuol dire che la spunta non
+c&#39;era, <strong>Fallito</strong> che la spunta c&#39;era ma l&#39;invio non è riuscito.</p>
 <p><strong>Nel dettaglio dello Storico la colonna SMS è vuota.</strong>
-Vuol dire che quella comunicazione non aveva la spunta «Invia anche via SMS»:
-il testo, se scritto, resta registrato ma non è mai partito. Se invece la
-spunta c&#39;era e la colonna dice <em>Fallito</em>, il conduttore non aveva un numero.</p>
-<p><strong>La voce «Gestione Utenti» non c&#39;è.</strong>
-È riservata ad Admin e Super Admin. Le altre voci si vedono tutte.</p>
+Il conduttore non aveva un numero di cellulare in anagrafica al momento
+dell&#39;invio. La colonna mostra il numero, non l&#39;esito: se l&#39;SMS sia partito lo
+dice la pagina della notifica.</p>
+<p><strong>Una roggia, un impianto o un pozzo non compare più.</strong>
+Un amministratore l&#39;ha spento in <em>Gestione Codici</em> (capitolo 5, <em>Codici che
+non compaiono</em>). Le comunicazioni già inviate restano nello Storico.</p>
+<p><strong>«Troppi codici selezionati: N, il massimo è 500».</strong>
+La selezione è troppo ampia per l&#39;anteprima. Quando si vogliono tutte le tratte
+di una madre, si usa la voce <em>Tutte le tratte di …</em>: conta come un codice solo.</p>
+<p><strong>Le voci «Gestione Utenti» e «Gestione Codici» non ci sono.</strong>
+Sono riservate ad Admin e Super Admin. Le altre voci si vedono tutte.</p>
 <p><strong>«Accesso non autorizzato» e vengo rimandato alla Dashboard.</strong>
-Stessa cosa: si è aperto l&#39;indirizzo della Gestione Utenti senza esserlo.</p>
+Stessa cosa: si è aperto l&#39;indirizzo di una di quelle due pagine senza esserlo.</p>
 <p><strong>«Ultimo aggiornamento anagrafiche» è in ambra da giorni.</strong>
 Il caricamento notturno non sta andando a buon fine. Va segnalato a un
 amministratore: i contatti che si stanno usando potrebbero essere vecchi.</p>
 <p><strong>Ho inviato ma nello Storico la notifica sembra ferma.</strong>
 La spedizione prosegue in sottofondo e su un invio ampio richiede minuti. Si
-riapre il dettaglio dopo qualche minuto per vedere gli esiti aggiornati.
+riapre la pagina della notifica dopo qualche minuto per vedere gli esiti
+aggiornati.
 <strong>Non si rinvia la stessa comunicazione</strong>: si spedirebbe due volte a tutti.</p>
 <p><strong>Ho sbagliato la comunicazione già inviata.</strong>
 Non si può ritirare una email spedita. Si manda una comunicazione di rettifica —

@@ -141,13 +141,13 @@ si ripetono, se ne richiamano solo le implicazioni amministrative.</p>
 </thead>
 <tbody><tr>
 <td><strong>Super Admin</strong></td>
-<td>Tutto, compresa la scheda <strong>Active Directory</strong></td>
-<td>Unico che può creare altri Super Admin</td>
+<td>Tutto, comprese le schede <strong>Active Directory</strong> e <strong>Utenti di test</strong></td>
+<td>Unico che può creare altri Super Admin (al massimo due)</td>
 </tr>
 <tr>
 <td><strong>Admin</strong></td>
-<td>Tutto tranne la scheda Active Directory</td>
-<td>Non può assegnare il ruolo Super Admin</td>
+<td>Tutto tranne le schede Active Directory e Utenti di test</td>
+<td>Non può assegnare il ruolo Super Admin, né modificare o eliminare un Super Admin</td>
 </tr>
 <tr>
 <td><strong>Utente</strong></td>
@@ -170,8 +170,8 @@ funzione nuova nasce già chiusa a chi non ha fatto l&#39;accesso.</li>
 operazione che non sia una lettura viene rifiutata con un 403, qualunque
 pagina la generi. Nascondere i pulsanti è comodità; il blocco vero è dietro.</li>
 </ul>
-<p>Allo stesso modo, nascondere la scheda Active Directory agli Admin è comodità:
-le rotte che la servono accettano solo il Super Admin.</p>
+<p>Allo stesso modo, nascondere agli Admin le schede Active Directory e Utenti di
+test è comodità: le rotte che le servono accettano solo il Super Admin.</p>
 <h3 id="che-cosa-vede-un-utente">Che cosa vede un Utente</h3>
 <p>Non esiste un elenco di pagine da concedere: chi ha un&#39;utenza vede
 l&#39;applicazione. <strong>Le pagine riservate sono due, Gestione Utenti e Gestione
@@ -181,9 +181,11 @@ a Utenti e Osservatori. Sono stati tolti: nessun gruppo era mai stato creato, e
 quello che un Utente vede oggi è esattamente ciò che vedeva prima. A limitare
 restano il <strong>ruolo</strong> e i due blocchi centrali descritti qui sopra.</p>
 <blockquote>
-<p><strong>Attenzione a Impostazioni</strong>: un Utente la vede, ma il salvataggio delle
-schede email, PEC, SMS e web service richiede il ruolo Admin — le apre e non
-le può salvare. Il pulsante <em>Aggiorna ora</em> resta invece alla sua portata.</p>
+<p><strong>Attenzione a Impostazioni</strong>: un Utente la vede, ma le schede email, PEC, SMS
+e web service richiedono il ruolo Admin per <strong>leggere</strong> la configurazione
+salvata, provarla e salvarla — un Utente le apre vuote, o coi valori
+predefiniti, e non può farci niente. Il pulsante <em>Aggiorna ora</em> resta invece
+alla sua portata.</p>
 </blockquote>
 <blockquote>
 <p>Per dare la <strong>sola consultazione</strong> dello Storico si usa il ruolo
@@ -225,7 +227,20 @@ nella scheda Utenti.</p>
 <td>Solo in modifica. Disattivare blocca l&#39;accesso senza perdere lo storico</td>
 </tr>
 </tbody></table></div>
-<p>L&#39;icona cestino elimina l&#39;utenza, con conferma.</p>
+<p>Username di almeno 3 caratteri, password di almeno 8. Lo stato si cambia anche
+direttamente dall&#39;interruttore nella colonna <em>Stato</em>. L&#39;icona cestino elimina
+l&#39;utenza, con conferma.</p>
+<p>Regole che l&#39;applicazione fa rispettare da sé:</p>
+<ul>
+<li><strong>Al massimo due Super Admin.</strong></li>
+<li><strong>Un Admin non può modificare, disattivare né eliminare un Super Admin</strong>: su
+quelle righe i pulsanti non compaiono.</li>
+<li><strong>Nessuno può eliminare la propria utenza né cambiarsi il ruolo</strong>, e
+l&#39;interruttore di stato non compare sulla propria riga.</li>
+<li><strong>L&#39;ultimo Super Admin locale attivo non si tocca</strong>: non si può convertire ad
+Active Directory, cambiargli ruolo, disattivarlo né eliminarlo (messaggio
+<em>«Deve restare almeno un superadmin locale…»</em>). Vedi il capitolo 4.</li>
+</ul>
 <blockquote>
 <p><strong>Disattivare è quasi sempre meglio che eliminare</strong>: le comunicazioni inviate
 restano firmate con lo username nello Storico, e un&#39;utenza cancellata e
@@ -241,9 +256,11 @@ e la data dell&#39;ultimo.</p>
 <li><strong>Abilita</strong> apre la creazione utente <strong>già compilata</strong> con quello username e
 con sorgente <em>Active Directory</em>. È il modo giusto di creare un&#39;utenza di
 dominio: elimina il rischio di scrivere <code>mrossi</code> dove AD ha <code>m.rossi</code>.</li>
-<li><strong>Scarta</strong> elimina la richiesta, con conferma. <strong>Non è recuperabile</strong>: quello
-username torna disponibile solo se la persona ritenta l&#39;accesso.</li>
+<li>L&#39;icona cestino scarta la richiesta, dopo conferma col pulsante <strong>Scarta</strong>.
+<strong>Non è recuperabile</strong>: quello username ricompare solo se la persona ritenta
+l&#39;accesso.</li>
 </ul>
+<p>Creando l&#39;utenza, la richiesta sparisce da sola dall&#39;elenco.</p>
 <blockquote>
 <p>Questa scheda è il surrogato della ricerca su Active Directory, che
 l&#39;applicazione non può offrire perché il consorzio non concede un account di
@@ -272,7 +289,9 @@ lo faccia il consorzio.</p>
 <td>Le rogge madri <code>R</code> della seconda gerarchia</td>
 </tr>
 </tbody></table></div>
-<p>Ogni riga ha codice, descrizione e l&#39;interruttore <strong>Attivo</strong>.</p>
+<p>Ogni riga ha codice, descrizione e l&#39;interruttore <strong>Attivo</strong>. Sopra la tabella
+c&#39;è il campo <em>Cerca per codice o descrizione</em>, e l&#39;etichetta di ogni scheda dice
+quanti codici sono spenti (<em>«(N spenti)»</em>).</p>
 <p><strong>Un codice spento:</strong></p>
 <ul>
 <li>sparisce da <strong>Invia notifica</strong>: la madre non si può selezionare e non
@@ -316,10 +335,12 @@ passando a Locale bisogna fornirne una.</li>
 <blockquote>
 <p><strong>Deve sempre esistere almeno un Super Admin con sorgente Locale.</strong></p>
 </blockquote>
-<p>È l&#39;unico che riesce a entrare quando il domain controller non risponde. Il
-codice <strong>non lo impedisce</strong>: nulla vieta di convertire ad AD anche l&#39;ultimo Super
-Admin locale, e a quel punto un guasto di rete chiude fuori tutti. È una regola
-da rispettare, non un controllo automatico.</p>
+<p>È l&#39;unico che riesce a entrare quando il domain controller non risponde.
+<strong>L&#39;applicazione lo impone</strong>: rifiuta di convertire ad AD, cambiare ruolo,
+disattivare o eliminare l&#39;ultimo Super Admin locale attivo, con il messaggio
+<em>«Deve restare almeno un superadmin locale…»</em>. Resta una regola operativa
+tenerne la <strong>password</strong> conosciuta e aggiornata: un&#39;utenza locale di cui nessuno
+ricorda la password non fa entrare nessuno.</p>
 <h3 id="altre-due-cose-vere">Altre due cose vere</h3>
 <ul>
 <li>Un <strong>bind LDAP con password vuota riesce</strong> su molti server (è
@@ -342,7 +363,7 @@ comunicazioni ai conduttori senza indirizzo PEC.</p>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Servizio</strong></td>
+<td><strong>Servizio Email</strong></td>
 <td><em>Gmail</em> oppure <em>SMTP Personalizzato</em></td>
 </tr>
 <tr>
@@ -359,7 +380,8 @@ comunicazioni ai conduttori senza indirizzo PEC.</p>
 </tr>
 </tbody></table></div>
 <p>Due pulsanti: <strong>Test Connessione</strong> (prova le credenziali scritte a schermo,
-senza salvare) e <strong>Salva Configurazione</strong>.</p>
+senza salvare; con il campo password vuoto usa quella già memorizzata) e
+<strong>Salva Configurazione</strong>.</p>
 <p>Due regole del salvataggio, valide anche per PEC e SMS:</p>
 <ul>
 <li><strong>I segreti non tornano mai indietro al browser.</strong> L&#39;interfaccia sa solo se
@@ -401,15 +423,18 @@ badge <em>SMS</em> di chi ha un numero; ordinabile) e sopra la tabella il conteg
 preavviso»</em> aveva il preavviso a schermo.</p>
 <blockquote>
 <p>Resta un punto cieco: <strong>la scheda <em>Anagrafiche → Destinatari</em> non ha quella
-colonna</strong>, perché la sua sorgente non porta il tipo di indirizzo. Per sapere
+colonna</strong>: il tipo di indirizzo è nell&#39;anagrafica, ma quella scheda non lo
+mostra. Per sapere
 se un singolo conduttore è PEC lo si cerca in <em>Invia notifica</em>, dopo aver
 selezionato una sua tratta.</p>
 </blockquote>
 <hr>
 <h2 id="7-impostazioni--sms">7. Impostazioni → SMS</h2>
 <p>Scheda <strong>SMS</strong>: credenziali del fornitore <strong>Register.it (sfera.net)</strong> — <em>Client
-ID</em> e <em>Password</em> — con <strong>Test Connessione</strong> e <strong>Salva Configurazione</strong>. Il test
-interroga il credito residuo e non spende un SMS.</p>
+ID</em> e <em>Password</em> — con <strong>Prova credenziali</strong> e <strong>Salva Configurazione</strong>. La
+prova interroga il credito residuo e non spende un SMS. Se fallisce con
+credenziali giuste, l&#39;IP del server non è ancora abilitato nella whitelist del
+pannello Register.it: la scheda lo ricorda.</p>
 <blockquote>
 <p><strong>Il canale SMS è attivo.</strong> In <em>Invia notifica</em> l&#39;operatore spunta «Invia
 anche via SMS» — <strong>spenta di default</strong>, perché ogni messaggio ha un costo —
@@ -433,9 +458,9 @@ caricamento risulta <em>parziale</em>, con il motivo scritto. <strong>La madre d
 <p>Da settembre 2026 (issue #49) ci sono anche le <strong>rogge madri</strong>, una seconda
 gerarchia che convive con quella di sopra senza sostituirla: codici R da 3
 con un nome proprio (per esempio «R08 — Roggia Serio e derivate»), e le loro
-figlie — il consorzio ne ha mandati 26 nell&#39;elenco allegato alla mail del
-16/09/2026, ma non ancora caricati: non prenderlo come il numero definitivo
-finché non compare qui sotto, nei conteggi del primo caricamento riuscito.
+figlie. L&#39;elenco del 22/09/2026 porta 69 righe e 64 codici distinti: 5 codici
+arrivano due volte con nomi diversi, e l&#39;applicazione tiene il primo e lo conta
+(<em>«Rogge madri ripetute nell&#39;elenco»</em>).
 Le riempiono altre due entità, e <strong>si sostituiscono per conto loro</strong>:
 se una delle due manca, la gerarchia rogge madri resta quella del caricamento
 precedente, ma questo <strong>non</strong> blocca l&#39;aggiornamento delle sette di sopra —
@@ -450,8 +475,9 @@ consorzio.</p>
 ora</em> fa esattamente la stessa cosa, subito.</p>
 <h3 id="i-campi">I campi</h3>
 <ul>
-<li><strong>Autenticazione</strong>: la credenziale del web service. Come le password, resta
-memorizzata: lasciarla vuota non la cancella.</li>
+<li><strong>Stringa di autenticazione</strong>: la credenziale del web service, inviata a ogni
+chiamata. Come le password, resta memorizzata: lasciarla vuota non la
+cancella.</li>
 <li><strong>URL base del web service</strong>: l&#39;indirizzo comune a tutte le entità (per
 esempio <code>http://192.168.0.100</code>). Un&#39;entità in modalità HTTP senza un URL
 proprio usa la base più il suo percorso, che il campo mostra in grigio.</li>
@@ -465,7 +491,8 @@ indirizzo diverso dalla base, e quando c&#39;è <strong>vale lui</strong>;</li>
 <li>in modalità File JSON, il <strong>percorso</strong> del file, con il pulsante <strong>Carica
 file</strong> per caricarne uno dal proprio PC;</li>
 <li>il pulsante <strong>Prova</strong>, che verifica quella singola sorgente e scrive l&#39;esito
-sotto.</li>
+sotto. <strong>Prova usa la configurazione salvata</strong>, non quella a schermo: dopo
+una modifica si salva prima di provare.</li>
 </ul>
 </li>
 </ul>
@@ -481,8 +508,8 @@ configurazione</strong>.</p>
 <h3 id="ordine-di-lavoro-consigliato">Ordine di lavoro consigliato</h3>
 <ol>
 <li>Impostare modalità e URL/file di ogni entità.</li>
-<li><strong>Prova</strong> su ciascuna, una alla volta.</li>
 <li><strong>Salva configurazione</strong>.</li>
+<li><strong>Prova</strong> su ciascuna, una alla volta.</li>
 <li><strong>Aggiorna ora</strong>, e poi controllare la sezione <em>Anagrafiche</em>: il riquadro
 ambra in cima dice se qualcosa è andato storto o se qualche entità non è mai
 stata caricata.</li>
@@ -510,8 +537,16 @@ l&#39;applicazione non ha né un indirizzo né un numero, e su richiesta del
 consorzio non compaiono nemmeno nelle schede <em>Legame</em> di Anagrafiche.</li>
 <li><strong>Una tratta non si attribuisce dal codice.</strong> Tratte che iniziano allo stesso
 modo stanno sotto impianti diversi — quelle che iniziano per <code>R08</code> sotto 13
-impianti. La madre giusta è nella colonna <em>Codice madre</em> di <em>Anagrafiche →
+impianti. La madre giusta è nella colonna <em>Codice impianto</em> di <em>Anagrafiche →
 Impianti</em>.</li>
+<li><strong>Tratte S scartate (non gruppi di consegna).</strong> Delle figlie di <code>S45</code> servono
+solo i gruppi di consegna: sfiati, scarichi, nodi e saracinesche (91 righe) si
+scartano, perché non hanno mai conduttori.</li>
+<li><strong>Impianti con tipo irrigazione sconosciuto.</strong> Un impianto con un tipo che la
+decodifica del consorzio non prevede non sparisce: finisce fra le rogge
+(<em>Scorrimento</em>) e si conta.</li>
+<li><strong>Rogge madri ripetute nell&#39;elenco.</strong> Lo stesso codice con due nomi diversi:
+si tiene il primo e si conta, così che qualcuno lo sappia.</li>
 <li><strong>Le rogge madri non coprono tutti i codici R.</strong> Una tratta R il cui codice
 da 3 non è fra le rogge madri dell&#39;elenco del consorzio resta fuori dal
 bottone <em>Rogge Madri</em> di Invia notifica, e continua a comparire sotto il suo
@@ -523,10 +558,10 @@ dato perso, è una lista che il consorzio stesso tiene più corta.</li>
 guardare è quali entità risultano caricate.</p>
 <hr>
 <h2 id="9-impostazioni--active-directory">9. Impostazioni → Active Directory</h2>
-<p>Scheda visibile <strong>solo al Super Admin</strong>. È l&#39;unica sezione dell&#39;applicazione con
-questo livello, e la ragione è precisa: <strong>chi modifica host e certificato decide
+<p>Scheda visibile <strong>solo al Super Admin</strong>, come <em>Utenti di test</em>: sono le uniche
+due con questo livello. Per Active Directory la ragione è precisa: <strong>chi modifica host e certificato decide
 quale macchina riceve le password di dominio del personale.</strong></p>
-<p>A differenza di email, PEC e web service, <strong>qui non c&#39;è nessun ripiego su
+<p>A differenza di email, PEC e SMS, <strong>qui non c&#39;è nessun ripiego su
 variabili d&#39;ambiente</strong>: i dati del domain controller si inseriscono
 dall&#39;interfaccia, in sede.</p>
 <h3 id="i-campi">I campi</h3>
@@ -609,6 +644,11 @@ conduttori sono stati selezionati.</p>
 <p><strong>È un interruttore per persona, non generale.</strong> Ogni riga della tabella ha il
 proprio interruttore Attivo/Non attivo: si può tenere censita una persona e
 spegnerla temporaneamente, senza cancellarla.</p>
+<p><strong>I campi</strong>: <em>Nome</em> (obbligatorio), <em>Email</em> con il suo canale — <em>Email
+ordinaria</em> o <em>PEC</em> — e <em>Telefono</em>. Un utente di test <strong>PEC</strong> si comporta come un
+conduttore PEC: se la PEC non è configurata, l&#39;invio viene rifiutato per intero.
+In <em>Invia notifica</em> ogni operatore vede i nomi degli utenti di test che
+riceveranno la copia.</p>
 <p><strong>Un utente di test ha bisogno di almeno un recapito</strong>, email o telefono: la
 maschera non fa salvare una riga senza nessuno dei due, perché non
 raggiungerebbe nessuno pur comparendo come censita. Chi ha inserito solo un
@@ -618,8 +658,8 @@ anche la spunta SMS: con la sola email spedita, quella persona resta fuori.</p>
 compone la comunicazione come sempre, ma <strong>si toglie la spunta a tutti i
 conduttori</strong>. Con almeno un utente di test attivo e raggiungibile il bottone
 resta acceso: la comunicazione parte solo verso gli utenti di test, nessun
-conduttore la riceve. È il modo per collaudare testo, canale (email o PEC) e
-allegati senza disturbare nessuno.</p>
+conduttore la riceve. È il modo per collaudare testo e canale (email, PEC,
+SMS) senza disturbare nessuno.</p>
 <p><strong>Una prova si comporta come un invio vero fino in fondo</strong>, comprese le
 conseguenze sulle rogge: se il tipo scelto è apertura o chiusura, le rogge
 selezionate risultano aperte o chiuse in Dashboard esattamente come per un
@@ -666,8 +706,9 @@ invia la notifica opposta sugli stessi codici. Regole:</p>
 chiude le sue tratte, chiudere una tratta non chiude il pozzo;</li>
 <li><strong>ripetere non azzera</strong>: una seconda chiusura su un codice già chiuso lascia la
 data della prima;</li>
-<li>la Dashboard conta le chiusure <strong>proprie</strong>: una tratta chiusa solo perché è
-chiusa la madre non entra nel conteggio.</li>
+<li>la Dashboard conta le <strong>tratte</strong>: chiudere una madre vi porta tutte le sue
+tratte (con la dicitura <em>«Con la madre …»</em>), la madre non compare come riga a
+sé, e una tratta chiusa sia da sola sia con la madre conta una volta.</li>
 </ul>
 <p><strong>Chi ha inviato viene preso dalla sessione</strong>, non da quello che il client
 dichiara: nello Storico la firma non è modificabile.</p>
@@ -718,6 +759,62 @@ guasto hardware.</strong> Portarne una copia altrove è una decisione ancora ape
 </blockquote>
 <p>Dettagli operativi, comandi e ripristino: <code>README.md</code> nel repository, sezione
 <em>Backup del database</em>.</p>
+<h3 id="installare-e-aggiornare-lapplicazione">Installare e aggiornare l&#39;applicazione</h3>
+<p>Si fa tutto dal server, con lo script <code>deploy.sh</code> nella cartella
+dell&#39;applicazione. Va lanciato da un terminale (una sessione SSH), con l&#39;utente di
+sistema che fa girare l&#39;applicazione, <strong>non da root</strong>:</p>
+<pre><code>cd notifiche-canali-irrigui
+./deploy.sh
+</code></pre>
+<p>Compare un menu:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Voce</th>
+<th>Quando si usa</th>
+<th>Cosa fa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1) Prima installazione</strong></td>
+<td>Una volta sola, subito dopo il <code>git clone</code></td>
+<td>Installa ciò che manca sul server (Node.js, PostgreSQL, pm2…), chiede la <strong>porta</strong> su cui pubblicare l&#39;applicazione, crea database e configurazione, chiede username e password del primo <strong>Super Admin</strong>, avvia l&#39;applicazione e la fa ripartire da sola a ogni riavvio del server, programma il backup notturno</td>
+</tr>
+<tr>
+<td><strong>2) Aggiorna</strong></td>
+<td>Quando il fornitore comunica che c&#39;è una nuova versione</td>
+<td>Fa un backup del database, scarica la nuova versione, la compila, aggiorna il database e riavvia l&#39;applicazione</td>
+</tr>
+<tr>
+<td><strong>3) Stato</strong></td>
+<td>Per un controllo, o prima di chiamare l&#39;assistenza</td>
+<td>Dice se l&#39;applicazione è accesa e risponde, se il database è raggiungibile, quando è stato fatto l&#39;ultimo backup</td>
+</tr>
+<tr>
+<td><strong>4) Crea superadmin</strong></td>
+<td>Solo se non esiste più nessun Super Admin</td>
+<td>Chiede username e password e lo crea</td>
+</tr>
+</tbody></table></div>
+<p>Alcune cose da sapere:</p>
+<ul>
+<li><strong>Durante l&#39;aggiornamento l&#39;applicazione resta accesa</strong>: si ferma per pochi
+secondi solo al riavvio finale. Conviene comunque non aggiornare mentre
+qualcuno sta inviando una comunicazione. Un invio interrotto da un riavvio
+resta <em>«in invio»</em> (vedi <em>Limiti noti</em>).</li>
+<li><strong>Se l&#39;aggiornamento si ferma con un errore</strong>, l&#39;applicazione che stava
+girando non viene toccata. Lo script stampa i comandi per tornare alla versione
+precedente e il nome del backup appena fatto: vanno copiati e mandati
+all&#39;assistenza così come sono.</li>
+<li><strong>Se durante l&#39;aggiornamento compare una domanda su tabelle da cancellare o da
+rinominare</strong>, rispondere <strong>No, abort</strong> e contattare l&#39;assistenza. Non capita in
+un aggiornamento normale.</li>
+<li><strong>Non vanno modificati a mano i file dell&#39;applicazione sul server.</strong> Se ce ne
+sono, l&#39;aggiornamento si rifiuta di partire e li elenca. La configurazione
+tecnica sta nel file <code>.env</code>, che l&#39;aggiornamento non tocca; tutto il resto si
+configura da <em>Impostazioni</em>.</li>
+<li>La porta scelta all&#39;installazione è scritta in <code>.env</code> alla voce <code>PORT</code>.</li>
+</ul>
 <h3 id="dopo-un-intervento-tecnico">Dopo un intervento tecnico</h3>
 <p>Un aggiornamento dell&#39;applicazione <strong>non risincronizza le anagrafiche</strong>: se
 l&#39;intervento riguardava il caricamento dei dati, va lanciato <em>Aggiorna ora</em>.</p>
@@ -740,7 +837,8 @@ andato a buon fine lo si controlla a mano — vedi <em>Manutenzione ordinaria</e
 ampio. Con la casella attuale un invio a tutti i conduttori non passa in un
 giorno solo.</li>
 <li><strong>Il pixel di tracciamento delle aperture</strong> non funziona finché non è
-configurato l&#39;indirizzo pubblico dell&#39;applicazione: le email partono senza, con
+configurato l&#39;indirizzo pubblico dell&#39;applicazione (<code>APP_URL</code> nel file <code>.env</code>,
+chiesto da <code>deploy.sh</code> alla prima installazione): le email partono senza, con
 un avviso nei log.</li>
 <li><strong>Una notifica interrotta da un riavvio del server resta in stato «in invio»</strong>
 e nessuno la chiude. Se nello Storico compare una comunicazione ferma in quello
@@ -748,8 +846,14 @@ stato, è quasi certamente successo questo.</li>
 <li><strong>La sessione dura 8 ore e non ricontrolla Active Directory</strong>: chi viene
 disabilitato sul dominio resta operativo fino alla scadenza. Per chiuderlo
 subito si disattiva l&#39;utenza.</li>
-<li><strong>Deve sempre esistere almeno un Super Admin locale.</strong> Il codice non lo
-impone.</li>
+<li><strong>L&#39;esito di ogni mail non si legge dallo Storico</strong>: il dettaglio dello
+Storico mostra dove è stata indirizzata, la <em>pagina della notifica</em> se è
+partita. Quella pagina si apre solo dalla Dashboard (le ultime sei
+comunicazioni) o scrivendo <code>…/notifiche/42</code> nella barra degli indirizzi (per
+l&#39;ID <code>N00042</code> dello Storico). Il
+messaggio a schermo dopo l&#39;invio dice ancora «si vede nello Storico».</li>
+<li><strong>I testi dei template partono come sono scritti</strong>: niente variabili <code>{{…}}</code>,
+niente HTML.</li>
 </ul>
 <hr>
 <h2 id="14-diagnosi-rapida">14. Diagnosi rapida</h2>
