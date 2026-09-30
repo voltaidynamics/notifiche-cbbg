@@ -32,6 +32,9 @@ DB_NAME="${DB_NAME:-notifichepozzi}"   # solo per generare il primo .env
 DB_USER="${DB_USER:-npozzi}"           # idem
 NODE_MIN=20        # versione minima accettata
 NODE_INSTALLA=22   # versione installata da NodeSource se manca
+# npm 9 e 10 rifiutano package-lock.json ("Missing: esbuild@0.28.2 from lock
+# file") per una peer dependency facoltativa di vite che npm 11 ignora.
+NPM_MIN=11
 
 # Registro delle migrazioni applicate. Sta in uno schema proprio e non in
 # `public` perché drizzle-kit push gestisce tutto `public` e cancellerebbe
@@ -81,6 +84,22 @@ sql_valore() { psql "$DATABASE_URL" -X -tA -v ON_ERROR_STOP=1 -c "$1"; }
 versione_node() {
   command -v node >/dev/null 2>&1 || { echo 0; return; }
   node -e "process.stdout.write(process.versions.node.split('.')[0])"
+}
+
+versione_npm() {
+  command -v npm >/dev/null 2>&1 || { echo 0; return; }
+  npm --version 2>/dev/null | cut -d. -f1
+}
+
+# npm install -g: con il prefix npm di sistema richiede root; con nvm no, e
+# sudo userebbe un altro node.
+npm_globale() {
+  if [[ -w "$(npm prefix -g)/lib" || -w "$(npm prefix -g)" ]]; then
+    npm install -g "$@"
+  else
+    $SUDO npm install -g "$@"
+  fi
+  hash -r
 }
 
 serve_postgres_locale() {
@@ -147,16 +166,20 @@ installa_dipendenze_sistema() {
     info "Dipendenze installate (Node.js $node_ver)."
   fi
 
+  local npm_ver; npm_ver="$(versione_npm)"
+  if [[ "$npm_ver" -lt "$NPM_MIN" ]]; then
+    # Tipico del pacchetto npm di Debian/Ubuntu (9.x).
+    info "Aggiorno npm $npm_ver → $NPM_MIN: le versioni precedenti rifiutano package-lock.json."
+    npm_globale "npm@$NPM_MIN"
+    npm_ver="$(versione_npm)"
+    [[ "$npm_ver" -ge "$NPM_MIN" ]] \
+      || errore "npm nel PATH è ancora la versione $npm_ver ($(command -v npm)). Serve la $NPM_MIN o superiore."
+  fi
+  info "npm $(npm --version) presente."
+
   if ! command -v pm2 >/dev/null 2>&1; then
     info "Installo pm2."
-    # Con il prefix npm di sistema l'installazione globale richiede root; con
-    # nvm no, e sudo userebbe un altro node.
-    if [[ -w "$(npm prefix -g)/lib" || -w "$(npm prefix -g)" ]]; then
-      npm install -g pm2
-    else
-      $SUDO npm install -g pm2
-    fi
-    hash -r
+    npm_globale pm2
     command -v pm2 >/dev/null 2>&1 || errore "pm2 non risulta installato. Installalo a mano (npm install -g pm2) e rilancia."
   fi
   info "pm2 $(pm2 --version 2>/dev/null | tail -1) presente."
@@ -448,6 +471,8 @@ build() {
   # dipendenze di sviluppo che servono alla build.
   # Controlli espliciti e non set -e: dentro `build || …` bash lo disattiva, e
   # un npm ci fallito passerebbe inosservato fino al riavvio.
+  [[ "$(versione_npm)" -ge "$NPM_MIN" ]] \
+    || { warn "Serve npm $NPM_MIN o superiore (trovato $(npm --version)): aggiornalo con 'sudo npm install -g npm@$NPM_MIN'."; return 1; }
   NODE_ENV=development npm ci --include=dev --no-audit --no-fund || { warn "npm ci fallito."; return 1; }
   npm run build || { warn "Build fallita."; return 1; }
   [[ -f "$APP_DIR/dist/index.js" ]] || { warn "Build terminata senza dist/index.js."; return 1; }
