@@ -111,6 +111,10 @@ installa_dipendenze_sistema() {
   if [[ "$node_ver" -lt "$NODE_MIN" ]]; then
     serve_node=1
     if [[ "$node_ver" -eq 0 ]]; then mancanti+=("Node.js"); else mancanti+=("Node.js $NODE_MIN+ (trovato $node_ver)"); fi
+  elif ! command -v npm >/dev/null 2>&1; then
+    # Il nodejs delle distribuzioni (Debian, Ubuntu) non include npm, che è un
+    # pacchetto a parte; quello di NodeSource sì.
+    mancanti+=("npm"); pacchetti+=(npm)
   fi
 
   if [[ ${#mancanti[@]} -eq 0 ]]; then
@@ -138,6 +142,8 @@ installa_dipendenze_sistema() {
     # installato nel PATH: meglio fermarsi qui che fallire a metà build.
     [[ "$node_ver" -ge "$NODE_MIN" ]] \
       || errore "Node.js nel PATH è ancora la versione $node_ver ($(command -v node)). Serve la $NODE_MIN o superiore."
+    command -v npm >/dev/null 2>&1 \
+      || errore "npm non risulta installato accanto a Node.js ($(command -v node)). Installalo a mano e rilancia."
     info "Dipendenze installate (Node.js $node_ver)."
   fi
 
@@ -170,6 +176,31 @@ porta_postgres_locale() {
   echo "${p:-5432}"
 }
 
+# La password del .env è nuova, quindi utente e database devono esserlo anche
+# loro: un utente già esistente ha un'altra password (che non si tocca) e il
+# database potrebbe essere quello di un'altra installazione.
+scegli_nomi_db() {
+  local pg_port="$1" esiste_u esiste_d
+  # Senza un PostgreSQL raggiungibile non c'è niente con cui scontrarsi:
+  # prepara_postgres dirà poi se il server non risponde.
+  come_postgres psql -p "$pg_port" -tAc "SELECT 1" >/dev/null 2>&1 || return 0
+  while true; do
+    esiste_u="$(come_postgres psql -p "$pg_port" -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'")"
+    esiste_d="$(come_postgres psql -p "$pg_port" -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'")"
+    [[ -z "$esiste_u" && -z "$esiste_d" ]] && return 0
+    [[ -n "$esiste_u" ]] && warn "L'utente PostgreSQL '${DB_USER}' esiste già (porta $pg_port)."
+    [[ -n "$esiste_d" ]] && warn "Il database '${DB_NAME}' esiste già (porta $pg_port)."
+    echo "  Probabilmente appartiene a un'altra installazione: ne serve uno nuovo."
+    echo "  (Per riusare un database esistente, scrivi a mano il .env con le sue credenziali e rilancia.)"
+    while true; do
+      DB_NAME="$(chiedi "Nome del nuovo database" "")"
+      DB_USER="$(chiedi "Nome del nuovo utente PostgreSQL" "")"
+      [[ "$DB_NAME" =~ ^[a-z_][a-z0-9_]*$ && "$DB_USER" =~ ^[a-z_][a-z0-9_]*$ ]] && break
+      warn "Solo lettere minuscole, cifre e _, senza iniziare con una cifra."
+    done
+  done
+}
+
 crea_env() {
   titolo "Configurazione (.env)"
   if [[ -f "$ENV_FILE" ]]; then
@@ -193,6 +224,7 @@ crea_env() {
   app_url="$(chiedi "Indirizzo pubblico dell'applicazione (es. https://notifiche.consorzio.it) — invio per saltare" "")"
 
   local pg_port; pg_port="$(porta_postgres_locale)"
+  scegli_nomi_db "$pg_port"
   umask 077
   cat > "$ENV_FILE" <<EOF
 # Generato da deploy.sh il $(date '+%d/%m/%Y %H:%M').
@@ -222,7 +254,7 @@ SMS_CLIENTID=
 SMS_PASSWORD=
 EOF
   umask 022
-  info ".env creato (porta $porta, PostgreSQL locale sulla $pg_port)."
+  info ".env creato (porta $porta, database '${DB_NAME}' dell'utente '${DB_USER}' su PostgreSQL locale, porta $pg_port)."
 }
 
 carica_env() {
@@ -250,6 +282,7 @@ carica_env() {
 
 prepara_postgres() {
   titolo "PostgreSQL"
+  local utente_preesistente=0
   if [[ "$_DB_HOST" != "localhost" && "$_DB_HOST" != "127.0.0.1" ]]; then
     info "Database su un altro server ($_DB_HOST): utente e database devono già esistere."
   else
@@ -274,6 +307,7 @@ prepara_postgres() {
       # La password di un utente esistente non si tocca: potrebbe usarlo
       # un'altra installazione, e la connessione sotto dice se .env è giusto.
       info "Utente PostgreSQL '${_DB_USER}' già esistente."
+      utente_preesistente=1
     fi
 
     if [[ -z "$(come_postgres psql -p "$_DB_PORT" -tAc "SELECT 1 FROM pg_database WHERE datname='${_DB_NAME}'")" ]]; then
@@ -284,8 +318,11 @@ prepara_postgres() {
     fi
   fi
 
-  sql -c "SELECT 1" >/dev/null \
-    || errore "L'applicazione non riesce a collegarsi al database con le credenziali di .env."
+  if ! sql -c "SELECT 1" >/dev/null; then
+    [[ $utente_preesistente -eq 1 ]] \
+      && errore "L'utente '${_DB_USER}' esisteva già con una password diversa da quella di .env. Metti in .env la sua password vera, oppure cancella .env e rilancia: l'installazione proporrà nomi nuovi."
+    errore "L'applicazione non riesce a collegarsi al database con le credenziali di .env."
+  fi
   info "Connessione al database riuscita."
 }
 
