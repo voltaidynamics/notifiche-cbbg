@@ -1,6 +1,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { puoAccedere } from "@shared/permessi-pagina";
+import { toast } from "@/hooks/use-toast";
 
 export type AppRole = "superadmin" | "admin" | "user" | "osservatore";
 
@@ -60,8 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const logoutMutation = useMutation({
+    // Una risposta di errore va detta: ignorandola la sessione resta valida, la
+    // pagina rilegge /me e chi ha premuto «Esci» si ritrova dentro senza un
+    // messaggio — l'osservatore della issue #73.
     mutationFn: async () => {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (!res.ok) throw new Error("Uscita non riuscita");
     },
     onSuccess: () => {
       queryClient.clear();
@@ -80,7 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await loginMutation.mutateAsync({ username, password });
     },
     logout: async () => {
-      await logoutMutation.mutateAsync();
+      try {
+        await logoutMutation.mutateAsync();
+      } catch {
+        toast({ title: "Uscita non riuscita", description: "Riprova tra qualche istante.", variant: "destructive" });
+      }
     },
     canAccess,
     isAdmin: user?.role === "superadmin" || user?.role === "admin",

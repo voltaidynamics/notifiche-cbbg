@@ -28,7 +28,7 @@ function Router() {
         <ProtectedRoute pageSlug="anagrafiche"><Anagrafiche /></ProtectedRoute>
       </Route>
       <Route path="/invia-notifica">
-        <ProtectedRoute pageSlug="notifiche"><InviaNotifica /></ProtectedRoute>
+        <ProtectedRoute pageSlug="invia-notifica"><InviaNotifica /></ProtectedRoute>
       </Route>
       <Route path="/notifiche/:id">
         <ProtectedRoute pageSlug="notifiche"><NotificationDetail /></ProtectedRoute>

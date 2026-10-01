@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { Request, Response, NextFunction } from "express";
-import { requireAuth, requireRole, requireAdmin } from "../auth";
+import { requireAuth, requireRole, requireAdmin, soloLetturaOsservatore } from "../auth";
 
 function mockReq(overrides: Partial<Request> = {}): Request {
   return {
@@ -87,6 +87,50 @@ describe("requireAdmin", () => {
     const { res } = mockRes();
     const next = vi.fn();
     requireAdmin(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+});
+
+describe("soloLetturaOsservatore", () => {
+  const osservatore = { id: 7, username: "obs1", role: "osservatore", isActive: true };
+
+  it("rifiuta con 403 le richieste che modificano", () => {
+    const req = mockReq({ method: "POST", path: "/api/templates", user: osservatore } as Partial<Request>);
+    const { res, status } = mockRes();
+    const next = vi.fn();
+    soloLetturaOsservatore(req, res, next);
+    expect(status).toHaveBeenCalledWith(403);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("lascia passare le letture", () => {
+    const req = mockReq({ method: "GET", path: "/api/templates", user: osservatore } as Partial<Request>);
+    const { res } = mockRes();
+    const next = vi.fn();
+    soloLetturaOsservatore(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it("lascia uscire l'osservatore (issue #73)", () => {
+    // Il logout è una POST: bloccato, la sessione restava valida e il pulsante
+    // «Esci» sembrava non fare niente.
+    const req = mockReq({ method: "POST", path: "/api/auth/logout", user: osservatore } as Partial<Request>);
+    const { res, status } = mockRes();
+    const next = vi.fn();
+    soloLetturaOsservatore(req, res, next);
+    expect(next).toHaveBeenCalled();
+    expect(status).not.toHaveBeenCalled();
+  });
+
+  it("non tocca gli altri ruoli", () => {
+    const req = mockReq({
+      method: "POST",
+      path: "/api/templates",
+      user: { id: 1, username: "u", role: "user", isActive: true },
+    } as Partial<Request>);
+    const { res } = mockRes();
+    const next = vi.fn();
+    soloLetturaOsservatore(req, res, next);
     expect(next).toHaveBeenCalled();
   });
 });

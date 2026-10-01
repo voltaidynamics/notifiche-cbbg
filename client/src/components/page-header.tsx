@@ -3,6 +3,7 @@ import { User, LogOut, BookOpen, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ROLE_LABELS } from "@/lib/roles";
 import StatoAnagrafiche from "@/components/stato-anagrafiche";
+import { SLUG_IMPOSTAZIONI } from "@shared/permessi-pagina";
 
 interface PageHeaderProps {
   title: string;
@@ -30,6 +31,22 @@ function guidaPer(ruolo: string | undefined): { href: string; titolo: string } {
     : { href: "/guida-utente.html", titolo: "Guida utente" };
 }
 
+/** Avatar, nome e ruolo di chi è entrato. */
+function IdentitaUtente() {
+  const { user } = useAuth();
+  return (
+    <>
+      <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+        <User className="text-primary" size={14} />
+      </span>
+      <span className="hidden sm:block text-left leading-tight">
+        <span className="block text-sm font-medium text-gray-900">{user?.username ?? "..."}</span>
+        <span className="block text-xs text-gray-500">{ROLE_LABELS[user?.role ?? "user"]}</span>
+      </span>
+    </>
+  );
+}
+
 /**
  * L'intestazione di TUTTE le sezioni (issue #13), sul modello dell'app
  * "Vasche di Laminazione": stato delle anagrafiche, Guida, area personale,
@@ -39,7 +56,7 @@ function guidaPer(ruolo: string | undefined): { href: string; titolo: string } {
  * ricordato di metterla.
  */
 export default function PageHeader({ title, subtitle, icon: Icon, back, children }: PageHeaderProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, canAccess } = useAuth();
   const guida = guidaPer(user?.role);
 
   return (
@@ -82,19 +99,21 @@ export default function PageHeader({ title, subtitle, icon: Icon, back, children
               <span className="hidden sm:inline text-xs ml-1">Guida</span>
             </a>
 
-            <Link
-              href="/impostazioni"
-              className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-              title="Area personale"
-            >
-              <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="text-primary" size={14} />
-              </span>
-              <span className="hidden sm:block text-left leading-tight">
-                <span className="block text-sm font-medium text-gray-900">{user?.username ?? "..."}</span>
-                <span className="block text-xs text-gray-500">{ROLE_LABELS[user?.role ?? "user"]}</span>
-              </span>
-            </Link>
+            {/* Il nome porta alle Impostazioni solo a chi può aprirle (issue #73):
+                per gli altri sarebbe un link verso «Accesso non autorizzato». */}
+            {canAccess(SLUG_IMPOSTAZIONI) ? (
+              <Link
+                href="/impostazioni"
+                className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Area personale"
+              >
+                <IdentitaUtente />
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2 px-2 py-1">
+                <IdentitaUtente />
+              </div>
+            )}
 
             <button
               onClick={() => logout()}

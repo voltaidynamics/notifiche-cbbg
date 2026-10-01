@@ -151,13 +151,13 @@ si ripetono, se ne richiamano solo le implicazioni amministrative.</p>
 </tr>
 <tr>
 <td><strong>Utente</strong></td>
-<td>Tutte le pagine tranne <strong>Gestione Utenti</strong>, in scrittura</td>
+<td>Tutte le pagine tranne <strong>Gestione Utenti</strong>, <strong>Gestione Codici</strong> e <strong>Impostazioni</strong>, in scrittura</td>
 <td></td>
 </tr>
 <tr>
 <td><strong>Osservatore</strong></td>
-<td>Le stesse pagine, <strong>in sola lettura</strong></td>
-<td></td>
+<td>Solo <strong>Dashboard</strong>, <strong>Storico Notifiche</strong> e <strong>Anagrafiche</strong>, in sola lettura</td>
+<td>Esce col pulsante <em>Esci</em> come tutti: il logout è l&#39;unica scrittura che gli è concessa</td>
 </tr>
 </tbody></table></div>
 <h3 id="come-funziona-davvero-il-blocco">Come funziona davvero il blocco</h3>
@@ -174,18 +174,21 @@ pagina la generi. Nascondere i pulsanti è comodità; il blocco vero è dietro.<
 test è comodità: le rotte che le servono accettano solo il Super Admin.</p>
 <h3 id="che-cosa-vede-un-utente">Che cosa vede un Utente</h3>
 <p>Non esiste un elenco di pagine da concedere: chi ha un&#39;utenza vede
-l&#39;applicazione. <strong>Le pagine riservate sono due, Gestione Utenti e Gestione
-Codici</strong>, e le vedono solo Admin e Super Admin.</p>
+l&#39;applicazione. <strong>Le pagine riservate sono tre, Gestione Utenti, Gestione
+Codici e Impostazioni</strong>, e le vedono solo Admin e Super Admin. L&#39;Osservatore
+vede in più solo Dashboard, Storico Notifiche e Anagrafiche: Invia Notifica e
+Template gli sono nascoste, perché non potrebbe usarle.</p>
 <p>Fino alla versione precedente c&#39;erano i <em>gruppi</em>, insiemi di pagine da assegnare
 a Utenti e Osservatori. Sono stati tolti: nessun gruppo era mai stato creato, e
 quello che un Utente vede oggi è esattamente ciò che vedeva prima. A limitare
 restano il <strong>ruolo</strong> e i due blocchi centrali descritti qui sopra.</p>
 <blockquote>
-<p><strong>Attenzione a Impostazioni</strong>: un Utente la vede, ma le schede email, PEC, SMS
-e web service richiedono il ruolo Admin per <strong>leggere</strong> la configurazione
-salvata, provarla e salvarla — un Utente le apre vuote, o coi valori
-predefiniti, e non può farci niente. Il pulsante <em>Aggiorna ora</em> resta invece
-alla sua portata.</p>
+<p><strong>Impostazioni è solo degli amministratori.</strong> Un Utente la vedeva, ma le
+schede email, PEC, SMS e web service richiedono il ruolo Admin per <strong>leggere</strong>
+la configurazione salvata, provarla e salvarla: le apriva vuote e il
+salvataggio falliva. Con lei l&#39;Utente ha perso il pulsante <em>Aggiorna ora</em>:
+l&#39;anagrafica si ricarica comunque ogni notte, e in giornata la ricarica un
+amministratore.</p>
 </blockquote>
 <blockquote>
 <p>Per dare la <strong>sola consultazione</strong> dello Storico si usa il ruolo

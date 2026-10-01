@@ -3,7 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startScheduler } from "./scheduler";
-import { setupSession, requireAuth } from "./auth";
+import { setupSession, requireAuth, soloLetturaOsservatore } from "./auth";
 import { storage } from "./storage";
 import { caricaConfigAd } from "./config-ad";
 
@@ -28,15 +28,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ---- Osservatore read-only guard ----
 // osservatore accounts may not call any mutating method on /api/ routes
-app.use((req: Request, res: Response, next: NextFunction) => {
-  if (!req.path.startsWith("/api/")) return next();
-  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
-  if (!req.user) return next(); // requireAuth already handled unauthenticated
-  if (req.user.role === "osservatore") {
-    return res.status(403).json({ message: "Accesso in sola lettura" });
-  }
-  next();
-});
+app.use(soloLetturaOsservatore);
 
 app.use((req, res, next) => {
   const start = Date.now();

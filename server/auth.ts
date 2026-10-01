@@ -115,6 +115,23 @@ export function requireRole(...roles: string[]) {
 
 export const requireAdmin = requireRole("superadmin", "admin");
 
+/**
+ * L'osservatore è in sola lettura: ogni richiesta /api/ che non sia una lettura
+ * riceve 403. Il logout fa eccezione (issue #73): è una POST, e bloccato lasciava
+ * la sessione valida — il pulsante «Esci» sembrava non fare niente.
+ */
+export function soloLetturaOsservatore(req: Request, res: Response, next: NextFunction): void {
+  if (!req.path.startsWith("/api/")) return next();
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+  if (req.path === "/api/auth/logout") return next();
+  if (!req.user) return next(); // requireAuth already handled unauthenticated
+  if (req.user.role === "osservatore") {
+    res.status(403).json({ message: "Accesso in sola lettura" });
+    return;
+  }
+  next();
+}
+
 // ---- Helpers ----
 
 export async function hashPassword(password: string): Promise<string> {

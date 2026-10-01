@@ -38,8 +38,8 @@ si ripetono, se ne richiamano solo le implicazioni amministrative.
 |---|---|---|
 | **Super Admin** | Tutto, comprese le schede **Active Directory** e **Utenti di test** | Unico che può creare altri Super Admin (al massimo due) |
 | **Admin** | Tutto tranne le schede Active Directory e Utenti di test | Non può assegnare il ruolo Super Admin, né modificare o eliminare un Super Admin |
-| **Utente** | Tutte le pagine tranne **Gestione Utenti**, in scrittura | |
-| **Osservatore** | Le stesse pagine, **in sola lettura** | |
+| **Utente** | Tutte le pagine tranne **Gestione Utenti**, **Gestione Codici** e **Impostazioni**, in scrittura | |
+| **Osservatore** | Solo **Dashboard**, **Storico Notifiche** e **Anagrafiche**, in sola lettura | Esce col pulsante *Esci* come tutti: il logout è l'unica scrittura che gli è concessa |
 
 ### Come funziona davvero il blocco
 
@@ -58,19 +58,22 @@ test è comodità: le rotte che le servono accettano solo il Super Admin.
 ### Che cosa vede un Utente
 
 Non esiste un elenco di pagine da concedere: chi ha un'utenza vede
-l'applicazione. **Le pagine riservate sono due, Gestione Utenti e Gestione
-Codici**, e le vedono solo Admin e Super Admin.
+l'applicazione. **Le pagine riservate sono tre, Gestione Utenti, Gestione
+Codici e Impostazioni**, e le vedono solo Admin e Super Admin. L'Osservatore
+vede in più solo Dashboard, Storico Notifiche e Anagrafiche: Invia Notifica e
+Template gli sono nascoste, perché non potrebbe usarle.
 
 Fino alla versione precedente c'erano i *gruppi*, insiemi di pagine da assegnare
 a Utenti e Osservatori. Sono stati tolti: nessun gruppo era mai stato creato, e
 quello che un Utente vede oggi è esattamente ciò che vedeva prima. A limitare
 restano il **ruolo** e i due blocchi centrali descritti qui sopra.
 
-> **Attenzione a Impostazioni**: un Utente la vede, ma le schede email, PEC, SMS
-> e web service richiedono il ruolo Admin per **leggere** la configurazione
-> salvata, provarla e salvarla — un Utente le apre vuote, o coi valori
-> predefiniti, e non può farci niente. Il pulsante *Aggiorna ora* resta invece
-> alla sua portata.
+> **Impostazioni è solo degli amministratori.** Un Utente la vedeva, ma le
+> schede email, PEC, SMS e web service richiedono il ruolo Admin per **leggere**
+> la configurazione salvata, provarla e salvarla: le apriva vuote e il
+> salvataggio falliva. Con lei l'Utente ha perso il pulsante *Aggiorna ora*:
+> l'anagrafica si ricarica comunque ogni notte, e in giornata la ricarica un
+> amministratore.
 
 > Per dare la **sola consultazione** dello Storico si usa il ruolo
 > **Osservatore**, che guarda, filtra ed esporta ma non può spedire.

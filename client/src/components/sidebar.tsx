@@ -28,7 +28,7 @@ const navigation: NavGroup[] = [
     label: "Moduli principali",
     items: [
       { name: "Dashboard", href: "/", icon: Home, slugs: ["dashboard"] },
-      { name: "Invia Notifica", href: "/invia-notifica", icon: Send, slugs: ["notifiche"] },
+      { name: "Invia Notifica", href: "/invia-notifica", icon: Send, slugs: ["invia-notifica"] },
       { name: "Storico Notifiche", href: "/notifiche", icon: Bell, slugs: ["notifiche"] },
       { name: "Anagrafiche", href: "/anagrafiche", icon: Users, slugs: ["anagrafiche"] },
       { name: "Template", href: "/template", icon: FileText, slugs: ["template"] },

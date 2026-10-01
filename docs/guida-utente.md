@@ -2,7 +2,7 @@
 
 Guida per chi usa l'applicazione tutti i giorni: **Utente** e **Osservatore**.
 Le funzioni riservate agli amministratori (Gestione Utenti, Gestione Codici,
-configurazione in Impostazioni) sono
+Impostazioni) sono
 descritte nella [Guida super user](guida-super-user.md).
 
 ---
@@ -123,10 +123,9 @@ Su computer sta a sinistra ed è diviso in due gruppi:
   Anagrafiche, Template
 - **Strumenti** — Gestione Utenti, Gestione Codici, Impostazioni
 
-**Si vedono solo le voci a cui si ha accesso.** *Gestione Utenti* e *Gestione
-Codici* compaiono agli amministratori e a nessun altro. *Impostazioni* compare a
-tutti, ma le schede di configurazione (email, PEC, SMS, web service) le legge e
-le modifica solo un amministratore: agli altri ruoli si aprono vuote.
+**Si vedono solo le voci a cui si ha accesso.** *Gestione Utenti*, *Gestione
+Codici* e *Impostazioni* compaiono agli amministratori e a nessun altro.
+L'Osservatore vede soltanto *Dashboard*, *Storico Notifiche* e *Anagrafiche*.
 
 Su telefono il menù diventa una barra in basso con le prime cinque voci, più il
 pulsante ☰ in alto a destra per l'elenco completo. Nell'intestazione, su
@@ -149,15 +148,16 @@ In cima a ogni sezione, sempre nello stesso posto:
 - **Guida** — apre questa guida in una scheda nuova. Il pulsante porta alla
   guida giusta per il proprio ruolo: chi è Admin o Super Admin apre la *Guida
   super user*, che aggiunge i capitoli sulla configurazione.
-- **Area personale** — nome utente e ruolo; porta a *Impostazioni*.
+- **Area personale** — nome utente e ruolo; agli amministratori porta a
+  *Impostazioni*.
 - **Esci**.
 
 ### I ruoli
 
 | Ruolo | Che cosa può fare |
 |---|---|
-| **Utente** | Tutte le pagine tranne *Gestione Utenti* e *Gestione Codici*, in scrittura: può inviare notifiche, creare template |
-| **Osservatore** | Le stesse pagine, ma **in sola lettura**: può guardare, filtrare, esportare in CSV — non può inviare né modificare nulla |
+| **Utente** | Dashboard, Invia Notifica, Storico Notifiche, Anagrafiche e Template, in scrittura: può inviare notifiche, creare template |
+| **Osservatore** | Solo Dashboard, Storico Notifiche e Anagrafiche, **in sola lettura**: può guardare, filtrare, esportare in CSV — non può inviare né modificare nulla |
 | **Admin / Super Admin** | Tutto, comprese le sezioni di configurazione (vedi la guida super user) |
 
 Se si è **Osservatore** e si prova a fare un'operazione di modifica,
@@ -701,9 +701,9 @@ l'ultimo caricamento dati ha avuto problemi:
 Il riquadro tace mentre un caricamento è in corso.
 
 Se una tabella è vuota e dice *«Nessun impianto caricato. Lancia un aggiornamento
-dati»*, l'aggiornamento si lancia da *Impostazioni → WebService → Aggiorna ora*:
-di solito lo fa un amministratore, ma il pulsante è disponibile anche al ruolo
-Utente.
+dati»*, l'aggiornamento si lancia da *Impostazioni → WebService → Aggiorna ora*, che
+è una pagina degli amministratori: chiedere a uno di loro, oppure attendere il
+caricamento notturno.
 
 I codici spenti da un amministratore in *Gestione Codici* non compaiono nelle
 schede Impianti, Rogge madri e Legame; la scheda Destinatari li ignora, perché
