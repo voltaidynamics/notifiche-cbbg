@@ -39,13 +39,11 @@ export default function Login() {
   };
 
   // Rosso = riprova la password, ambra = non serve, fai altro. `credenzialiNonValide`
-  // è l'unico codice per cui riprovare ha senso: negli altri sei la password
-  // digitata era giusta (o non c'entra), e ridirla in rosso manda l'operatore
-  // a ricontrollare qualcosa che aveva già fatto bene — nel caso di
-  // `accountBloccato` un altro tentativo è dannoso, non solo inutile, perché
-  // allunga il blocco. Un `codice` mancante o sconosciuto ripiega su questo
-  // stesso valore (vedi handleSubmit) e resta quindi rosso: è l'unico caso in
-  // cui riprovare è un primo passo ragionevole.
+  // è l'unico codice per cui riprovare ha senso: negli altri tre (account
+  // disabilitato nell'app, non abilitato, servizio di verifica non raggiungibile)
+  // ridire la password non cambia niente. Un `codice` mancante o sconosciuto
+  // ripiega su questo stesso valore (vedi handleSubmit) e resta quindi rosso: è
+  // l'unico caso in cui riprovare è un primo passo ragionevole.
   const CODICE_RIFIUTO_CREDENZIALI = "credenzialiNonValide";
 
   return (

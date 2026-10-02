@@ -5,7 +5,6 @@ import { setupVite, serveStatic, log } from "./vite";
 import { startScheduler } from "./scheduler";
 import { setupSession, requireAuth, soloLetturaOsservatore } from "./auth";
 import { storage } from "./storage";
-import { caricaConfigAd } from "./config-ad";
 
 const app = express();
 app.use(express.json());
@@ -84,17 +83,6 @@ app.use((req, res, next) => {
     await caricaConfigNotifiche(storage);
   } catch (e) {
     console.error("[config] lettura impostazioni email/SMS fallita, uso .env:", e);
-  }
-
-  // Configurazione di Active Directory: a differenza di email/SMS non ha un
-  // ripiego su .env, ma vale la stessa igiene — un database non ancora
-  // raggiungibile all'avvio non deve impedire al server di mettersi in
-  // ascolto. Con AD non caricata, verificatoreCorrente() resta null e il
-  // login funziona comunque per gli utenti locali.
-  try {
-    await caricaConfigAd(storage);
-  } catch (e) {
-    console.error("[config] lettura impostazione Active Directory fallita:", e);
   }
 
   startScheduler();

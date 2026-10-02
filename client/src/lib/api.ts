@@ -343,40 +343,35 @@ export const settingsApi = {
   },
 };
 
+// Mirror di `VistaConfigAd` in server/config-ad.ts. Il client non importa dal
+// server (stesso motivo degli altri tipi qui sopra), quindi la forma è ricopiata.
 export type ConfigAd = {
   enabled: boolean;
-  host: string;
-  port: number;
-  dominio: string;
-  tls: "ldaps" | "starttls" | "nessuno";
-  caPem: string;
-  rejectUnauthorized: boolean;
+  url: string; // quello salvato; "" = predefinito da ws.base
   timeoutMs: number;
+  urlEffettivo: string; // quello che verrà chiamato davvero; "" = nessuno
+  urlDerivato: boolean;
 };
 
-// Mirror di `EsitoAd` in server/ad/verificatore.ts: unione chiusa, non un
-// `esito: string` generico, così i task 11/12 che ci si diramano sopra hanno
-// un controllo di esaustività e niente refusi silenziosi su un letterale.
-// Il client non importa dal server (stesso motivo degli altri tipi qui
-// sopra), quindi la forma è ricopiata a mano.
+export type PatchConfigAd = { enabled?: boolean; url?: string; timeoutMs?: number };
+
+// Mirror di `EsitoAd` in server/ad/verificatore.ts: unione chiusa, così lo
+// switch della scheda ha un controllo di esaustività.
 export type EsitoBindAd =
   | { esito: "ok" }
   | { esito: "credenzialiNonValide" }
-  | { esito: "passwordScaduta" }
-  | { esito: "accountDisabilitato" }
-  | { esito: "accountBloccato" }
   | { esito: "nonRaggiungibile"; dettaglio: string };
 
 export type EsitoProvaAd = {
-  raggiungibile: boolean;
+  riuscita: boolean;
   messaggio: string;
-  bind?: EsitoBindAd;
+  verifica?: EsitoBindAd;
 };
 
 export const adSettingsApi = {
   get: (): Promise<ConfigAd> =>
     apiRequest("GET", "/api/settings/ad").then((res) => res.json()),
-  save: (data: Partial<ConfigAd>): Promise<ConfigAd> =>
+  save: (data: PatchConfigAd): Promise<ConfigAd> =>
     apiRequest("POST", "/api/settings/ad", data).then((res) => res.json()),
   test: (credenziali?: { username: string; password: string }): Promise<EsitoProvaAd> =>
     apiRequest("POST", "/api/settings/ad/test", credenziali ?? {}).then((res) => res.json()),

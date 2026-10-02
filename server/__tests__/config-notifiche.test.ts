@@ -325,7 +325,6 @@ describe("haIndirizzo", () => {
 });
 
 // ---- Il booleano non deve declassare un canale su un valore che non capisce --
-// Stessa regola gia' applicata a `rejectUnauthorized` in server/config-ad.ts.
 
 describe("smtpSecure con valori malformati", () => {
   it("un valore non riconosciuto NON spegne il TLS della PEC", () => {

@@ -1,25 +1,16 @@
 /**
  * Il punto in cui il flusso di autenticazione incontra il mondo vero.
  * Tutto ciò che sta sotto è puro e testabile; qui si legano database, bcrypt e
- * il domain controller.
+ * l'endpoint di verifica del consorzio.
  */
 import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { appUsers, type AuthSource } from "@shared/schema";
 import { storage } from "../storage";
-import { getConfigAd, adConfigurato } from "../config-ad";
-import { LdapVerificatoreAd } from "./ldap";
-import type { VerificatoreAd } from "./verificatore";
+import { endpointAd } from "../config-ad";
+import { HttpVerificatoreAd } from "./http";
 import type { DipendenzeAutenticazione, UtenteAutenticabile } from "../auth";
-
-// Costruito una volta sola, ma legge la configurazione a ogni tentativo:
-// salvarla da Impostazioni deve avere effetto senza riavviare pm2.
-const verificatore = new LdapVerificatoreAd(getConfigAd);
-
-export function verificatoreCorrente(): VerificatoreAd | null {
-  return adConfigurato(getConfigAd()) ? verificatore : null;
-}
 
 async function trovaUtente(username: string): Promise<UtenteAutenticabile | undefined> {
   const [u] = await db.select().from(appUsers).where(eq(appUsers.username, username)).limit(1);
@@ -34,11 +25,17 @@ async function trovaUtente(username: string): Promise<UtenteAutenticabile | unde
   };
 }
 
-export function dipendenzeAutenticazione(): DipendenzeAutenticazione {
+/**
+ * Le dipendenze del login, rilette a ogni tentativo: l'URL dell'endpoint
+ * dipende da `ws.base`, che si cambia da un'altra scheda. Una query in più per
+ * login, sotto un limitatore di 10 al minuto, non costa niente.
+ */
+export async function dipendenzeAutenticazione(): Promise<DipendenzeAutenticazione> {
+  const endpoint = endpointAd(await storage.getAllSettings());
   return {
     trovaUtente,
     confrontaPassword: (password, hash) => bcrypt.compare(password, hash),
-    verificatoreAd: verificatoreCorrente(),
+    verificatoreAd: endpoint ? new HttpVerificatoreAd(endpoint) : null,
     registraRichiestaAccesso: (username) => storage.registraRichiestaAccesso(username),
   };
 }

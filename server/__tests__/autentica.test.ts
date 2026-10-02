@@ -116,21 +116,6 @@ describe("autentica — utente AD", () => {
     expect(confronti).toBe(0);
   });
 
-  it("password scaduta arriva fino in fondo", async () => {
-    const { d } = depsAd({ esito: "passwordScaduta" });
-    expect((await autentica("m.rossi", "pw", d)).esito).toBe("passwordScaduta");
-  });
-
-  it("account disabilitato su AD e' distinto da quello disabilitato nell'app", async () => {
-    const { d } = depsAd({ esito: "accountDisabilitato" });
-    expect((await autentica("m.rossi", "pw", d)).esito).toBe("accountDisabilitatoAd");
-  });
-
-  it("account bloccato arriva fino in fondo", async () => {
-    const { d } = depsAd({ esito: "accountBloccato" });
-    expect((await autentica("m.rossi", "pw", d)).esito).toBe("accountBloccato");
-  });
-
   it("DC irraggiungibile non diventa 'credenziali non valide'", async () => {
     const { d } = depsAd({ esito: "nonRaggiungibile", dettaglio: "ECONNREFUSED" });
     expect((await autentica("m.rossi", "pw", d)).esito).toBe("adNonRaggiungibile");
@@ -154,14 +139,6 @@ describe("autentica — utente sconosciuto", () => {
 
   it("bind fallito e' un 401 generico e NON registra niente", async () => {
     const fake = new FakeVerificatoreAd({ esito: "credenzialiNonValide" });
-    const d = deps({ verificatoreAd: fake });
-    expect((await autentica("g.bianchi", "pw", d)).esito).toBe("credenzialiNonValide");
-    expect(d.richieste).toEqual([]);
-  });
-
-  it("a chi non e' abilitato non si dice che la sua password di dominio e' scaduta", async () => {
-    const fake = new FakeVerificatoreAd();
-    fake.imposta("g.bianchi", { esito: "passwordScaduta" });
     const d = deps({ verificatoreAd: fake });
     expect((await autentica("g.bianchi", "pw", d)).esito).toBe("credenzialiNonValide");
     expect(d.richieste).toEqual([]);
@@ -236,9 +213,21 @@ describe("rispostaLogin", () => {
     expect(r.corpo.message).not.toContain("10.0.0.5");
   });
 
-  it("password scaduta e' 403 col suo codice", () => {
-    const r = rispostaLogin({ esito: "passwordScaduta" });
-    expect(r.status).toBe(403);
-    expect(r.corpo.codice).toBe("passwordScaduta");
+  it("i codici che la pagina di login puo' ricevere sono solo questi quattro", () => {
+    const codici = (
+      [
+        { esito: "credenzialiNonValide" },
+        { esito: "accountDisabilitatoApp" },
+        { esito: "nonAbilitato", username: "x" },
+        { esito: "adNonRaggiungibile", dettaglio: "x" },
+      ] as const
+    ).map((r) => [rispostaLogin(r).status, rispostaLogin(r).corpo.codice]);
+    expect(codici).toEqual([
+      [401, "credenzialiNonValide"],
+      [401, "accountDisabilitatoApp"],
+      [403, "nonAbilitato"],
+      [503, "adNonRaggiungibile"],
+    ]);
   });
+
 });

@@ -155,9 +155,6 @@ export type RisultatoLogin =
   | { esito: "credenzialiNonValide" }
   | { esito: "nonAbilitato"; username: string }
   | { esito: "accountDisabilitatoApp" }
-  | { esito: "accountDisabilitatoAd" }
-  | { esito: "passwordScaduta" }
-  | { esito: "accountBloccato" }
   | { esito: "adNonRaggiungibile"; dettaglio: string };
 
 /**
@@ -214,14 +211,11 @@ export async function autentica(
     switch (esito.esito) {
       case "ok": return { esito: "ok", utente: sessioneDa(utente) };
       case "credenzialiNonValide": return { esito: "credenzialiNonValide" };
-      case "passwordScaduta": return { esito: "passwordScaduta" };
-      case "accountDisabilitato": return { esito: "accountDisabilitatoAd" };
-      case "accountBloccato": return { esito: "accountBloccato" };
       case "nonRaggiungibile":
         return { esito: "adNonRaggiungibile", dettaglio: esito.dettaglio };
       default: {
         // `EsitoAd` è un'unione chiusa (server/ad/verificatore.ts). Se un
-        // domani si aggiunge un settimo caso, questo `never` fa fallire la
+        // domani si aggiunge un quarto caso, questo `never` fa fallire la
         // build invece di far collassare silenziosamente il caso nuovo su
         // un 401 generico: è la stessa disciplina del mirror lato client in
         // scheda-ad.tsx.
@@ -252,8 +246,7 @@ export async function autentica(
   if (esito.esito === "nonRaggiungibile") {
     return { esito: "adNonRaggiungibile", dettaglio: esito.dettaglio };
   }
-  // Chi non è abilitato non ha bisogno di sapere che la sua password di dominio
-  // è scaduta: non entrerebbe comunque.
+  // Credenziali rifiutate: un 401 generico, e nessuna richiesta di accesso.
   return { esito: "credenzialiNonValide" };
 }
 
@@ -264,18 +257,6 @@ const MESSAGGI: Record<Exclude<RisultatoLogin["esito"], "ok">, { status: number;
     status: 403,
     message: "Utente non abilitato. Contatta un amministratore per richiedere l'accesso.",
   },
-  accountDisabilitatoAd: {
-    status: 403,
-    message: "Account di dominio disabilitato. Contatta i sistemisti.",
-  },
-  passwordScaduta: {
-    status: 403,
-    message: "La tua password di dominio è scaduta. Cambiala dal tuo PC e riprova.",
-  },
-  accountBloccato: {
-    status: 403,
-    message: "Account di dominio bloccato per troppi tentativi. Contatta i sistemisti.",
-  },
   adNonRaggiungibile: {
     status: 503,
     message: "Active Directory non è raggiungibile. Riprova più tardi o contatta un amministratore.",
@@ -284,9 +265,9 @@ const MESSAGGI: Record<Exclude<RisultatoLogin["esito"], "ok">, { status: number;
 
 /**
  * Il `codice` serve alla pagina di login per distinguere il tono: «non sei
- * abilitato» e «password di dominio scaduta» non sono errori di credenziali e
+ * abilitato» e «servizio non raggiungibile» non sono errori di credenziali e
  * non vanno mostrati in rosso come un rifiuto. Il dettaglio tecnico resta nei
- * log del server: all'utente non serve, e direbbe l'indirizzo del DC.
+ * log del server: all'utente non serve, e direbbe l'indirizzo dell'endpoint.
  */
 export function rispostaLogin(
   r: RisultatoLogin,

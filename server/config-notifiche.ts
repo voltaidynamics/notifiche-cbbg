@@ -98,9 +98,8 @@ function numeroONull(v: string | undefined): number | null {
  * riconosciuto. Per la posta ordinaria è innocuo, perché il default è già spento
  * — ma per la PEC il default è **acceso**, e un `"no"` finito in `app_settings`
  * (una modifica a mano, una migrazione futura) spegnerebbe in silenzio il TLS
- * verso il gestore, senza un errore da nessuna parte. È la stessa regola di
- * `booleano()` in `server/config-ad.ts`, dove riguardava `rejectUnauthorized`:
- * un errore di battitura non declassa un canale su cui viaggiano credenziali.
+ * verso il gestore, senza un errore da nessuna parte: un errore di battitura
+ * non declassa un canale su cui viaggiano credenziali.
  */
 function booleano(v: string | null, predefinito: boolean): boolean {
   if (v === null) return predefinito;

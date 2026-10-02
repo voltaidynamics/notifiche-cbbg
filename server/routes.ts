@@ -53,19 +53,28 @@ import { preparaInvio, spedisciPreparato } from "./invio-notifica";
 import { caricaFiltroCodici } from "./filtro-codici";
 import { isGerarchiaCodice, type RispostaGestioneCodici } from "@shared/codici-attivi";
 import { leggiTokenTracking } from "./tracking-token";
-import { getConfigAd, salvaConfigAd, MODI_TLS, type ConfigAd } from "./config-ad";
-import { provaConnessione, type EsitoProva } from "./ad/ldap";
+import {
+  salvaConfigAd,
+  vistaConfigAd,
+  endpointAd,
+  TIMEOUT_AD_MIN,
+  TIMEOUT_AD_MAX,
+  type EndpointAd,
+} from "./config-ad";
+import { provaEndpoint, type EsitoProva } from "./ad/http";
 import type { ArchivioImpostazioni } from "./config-notifiche";
 
 const schemaPatchAd = z.object({
   enabled: z.boolean().optional(),
-  host: z.string().max(255).optional(),
-  port: z.number().int().min(1).max(65535).optional(),
-  dominio: z.string().max(255).optional(),
-  tls: z.enum(MODI_TLS).optional(),
-  caPem: z.string().max(20000).optional(),
-  rejectUnauthorized: z.boolean().optional(),
-  timeoutMs: z.number().int().min(1000).max(60000).optional(),
+  // Vuoto è lecito: vuol dire «usa ws.base + il percorso documentato».
+  url: z
+    .string()
+    .max(1000)
+    .refine((u) => u.trim() === "" || /^https?:\/\//i.test(u.trim()), {
+      message: "L'URL deve iniziare con http:// o https://",
+    })
+    .optional(),
+  timeoutMs: z.number().int().min(TIMEOUT_AD_MIN).max(TIMEOUT_AD_MAX).optional(),
 }).strict();
 
 export function patchConfigAd(body: unknown) {
@@ -83,19 +92,22 @@ export function patchConfigAd(body: unknown) {
  */
 export type DipendenzeRotteAd = {
   archivio: ArchivioImpostazioni;
-  leggiConfig: () => ConfigAd;
   prova: (
-    c: ConfigAd,
+    endpoint: EndpointAd | null,
     credenziali?: { username: string; password: string },
   ) => Promise<EsitoProva>;
 };
 
 export function rotteAd(deps: DipendenzeRotteAd) {
   return {
-    leggi: (_req: Request, res: Response): void => {
-      // Nessun segreto da nascondere: con il bind diretto non c'è account di
-      // servizio, e il caPem è un certificato pubblico.
-      res.json(deps.leggiConfig());
+    leggi: async (_req: Request, res: Response): Promise<void> => {
+      // Nessun segreto da nascondere: l'URL non lo è, e ws.auth non si restituisce.
+      try {
+        res.json(vistaConfigAd(await deps.archivio.getAllSettings()));
+      } catch (error) {
+        console.error("Lettura della configurazione AD fallita:", error);
+        res.status(500).json({ message: "Errore nella lettura della configurazione AD" });
+      }
     },
 
     salva: async (req: Request, res: Response): Promise<void> => {
@@ -121,12 +133,12 @@ export function rotteAd(deps: DipendenzeRotteAd) {
           ? { username, password }
           : undefined;
       try {
-        res.json(await deps.prova(deps.leggiConfig(), credenziali));
-      } catch (error) {
-        res.status(500).json({
-          raggiungibile: false,
-          messaggio: error instanceof Error ? error.message : "Errore sconosciuto",
-        });
+        // La configurazione salvata, interruttore ignorato: si prova prima di accendere.
+        const endpoint = endpointAd(await deps.archivio.getAllSettings(), { ancheSpenta: true });
+        res.json(await deps.prova(endpoint, credenziali));
+      } catch {
+        // Niente messaggio dell'errore né log: potrebbe citare l'URL, cioè la password.
+        res.status(500).json({ riuscita: false, messaggio: "Errore imprevisto durante la prova" });
       }
     },
   };
@@ -222,7 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const risultato = await autentica(
         typeof username === "string" ? username : "",
         typeof password === "string" ? password : "",
-        dipendenzeAutenticazione(),
+        await dipendenzeAutenticazione(),
       );
 
       if (risultato.esito !== "ok") {
@@ -1561,7 +1573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
    * macchina riceve le password di dominio del personale — le altre schede di
    * Impostazioni, al peggio, interrompono un servizio.
    */
-  const ad = rotteAd({ archivio: storage, leggiConfig: getConfigAd, prova: provaConnessione });
+  const ad = rotteAd({ archivio: storage, prova: provaEndpoint });
   app.get("/api/settings/ad", requireRole("superadmin"), ad.leggi);
   app.post("/api/settings/ad", requireRole("superadmin"), ad.salva);
   app.post("/api/settings/ad/test", requireRole("superadmin"), ad.prova);
