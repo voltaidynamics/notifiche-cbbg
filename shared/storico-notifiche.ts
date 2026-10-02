@@ -10,9 +10,9 @@ import { separaTratte } from "@shared/destinatari";
 /**
  * Logica pura dello Storico Notifiche.
  *
- * Sta in `shared/` e non in `server/` perché la usano in tre: le due
- * implementazioni di IStorage e i dati di esempio del client. Una regola sola,
- * o "il filtro non funziona" diventa una frase vera solo per metà dei casi.
+ * Sta in `shared/` perché la usano le due implementazioni di IStorage. Una
+ * regola sola, o "il filtro non funziona" diventa una frase vera solo per metà
+ * dei casi.
  */
 
 /** Codice leggibile mostrato in tabella: 42 -> "N00042". */

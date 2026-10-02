@@ -16,7 +16,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Download, ArrowUpDown } from "lucide-react";
 import { notificationsApi } from "@/lib/api";
-import { storicoEsempio, dettaglioEsempio } from "@/lib/sample-storico";
 import {
   TIPI_NOTIFICA, CLASSIFICAZIONI_NOTIFICA,
   ETICHETTE_TIPO, ETICHETTE_CLASSIFICAZIONE,
@@ -79,37 +78,25 @@ export default function Notifications() {
   const [sortAsc, setSortAsc] = useState(false);
   const [dettaglioId, setDettaglioId] = useState<number | null>(null);
 
-  const { data: righeApi = [], isLoading } = useQuery({
+  const { data: righe = [], isLoading } = useQuery({
     queryKey: ["/api/notifications/storico", applicati],
     queryFn: () => notificationsApi.getStorico(applicati),
   });
 
-  // L'elenco utenti del filtro si popola dai dati effettivamente presenti; la
-  // stessa query dice anche se il database è vuoto.
-  const { data: storicoCompleto = [], isLoading: caricaCompleto } = useQuery({
+  // L'elenco utenti del filtro si popola dai dati effettivamente presenti.
+  const { data: storicoCompleto = [] } = useQuery({
     queryKey: ["/api/notifications/storico", FILTRI_VUOTI],
     queryFn: () => notificationsApi.getStorico({}),
   });
 
-  // Finché non c'è nessuna notifica reale la sezione si mostra con dati di
-  // esempio (mai scritti a database). Passano dalla stessa funzione di filtro
-  // del server, quindi reggono la pagina **anche con i filtri attivi**: prima
-  // sparivano al primo filtro e ogni ricerca sembrava rotta.
-  const usaEsempio = !caricaCompleto && storicoCompleto.length === 0;
-  const righe = usaEsempio ? storicoEsempio(applicati) : righeApi;
-
-  const { data: dettaglioApi } = useQuery({
+  const { data: dettaglio } = useQuery({
     queryKey: ["/api/notifications/storico/dettaglio", dettaglioId],
     queryFn: () => notificationsApi.getStoricoDetail(dettaglioId as number),
-    enabled: dettaglioId !== null && !usaEsempio,
+    enabled: dettaglioId !== null,
   });
-  const dettaglio = usaEsempio && dettaglioId !== null
-    ? dettaglioEsempio(dettaglioId)
-    : dettaglioApi;
 
   const utenti = useMemo(() => {
-    const fonte = storicoCompleto.length ? storicoCompleto : storicoEsempio({});
-    return Array.from(new Set(fonte.map((r) => r.utente).filter((u): u is string => !!u))).sort();
+    return Array.from(new Set(storicoCompleto.map((r) => r.utente).filter((u): u is string => !!u))).sort();
   }, [storicoCompleto]);
 
   const righeOrdinate = useMemo(() => {
@@ -300,11 +287,6 @@ export default function Notifications() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Notifiche inviate
-                  {usaEsempio && (
-                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
-                      esempio
-                    </span>
-                  )}
                 </h3>
                 <Button variant="outline" size="sm" onClick={esportaCsv} disabled={righeOrdinate.length === 0}>
                   <Download size={14} className="mr-1.5" />Esporta CSV
@@ -373,7 +355,9 @@ export default function Notifications() {
 
       {/* MODALE DETTAGLIO (ESC chiude: gestito da Dialog) */}
       <Dialog open={dettaglioId !== null} onOpenChange={(open) => !open && setDettaglioId(null)}>
-        <DialogContent className="max-w-4xl">
+        {/* Da telefono il dettaglio è più alto e più largo dello schermo: il
+            riquadro scorre per conto suo e resta staccato dai bordi (issue #90). */}
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Dettaglio notifica</DialogTitle>
             <DialogDescription>Messaggio inviato e destinatari raggiunti da questa comunicazione.</DialogDescription>
@@ -382,7 +366,7 @@ export default function Notifications() {
           {!dettaglio && <div className="py-8 text-center text-gray-400">Caricamento…</div>}
 
           {dettaglio && (
-            <div className="space-y-3">
+            <div className="space-y-3 min-w-0">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-gray-50 rounded-lg p-3">
                 <div className="flex flex-col">
                   <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">ID Notifica</span>
@@ -415,7 +399,7 @@ export default function Notifications() {
                   lungo non spinge fuori schermo l'elenco dei destinatari. */}
               <div className="border rounded-lg p-3">
                 <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Oggetto</span>
-                <p className="text-sm font-medium mb-3">{dettaglio.subject}</p>
+                <p className="text-sm font-medium mb-3 break-words">{dettaglio.subject}</p>
                 <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Messaggio inviato</span>
                 <div className="mt-1 max-h-[160px] overflow-y-auto text-sm whitespace-pre-wrap text-gray-700">
                   {dettaglio.messaggio || <span className="text-gray-400">—</span>}
@@ -439,8 +423,8 @@ export default function Notifications() {
                 </Button>
               </div>
 
-              <div className="max-h-[350px] overflow-y-auto border rounded-lg">
-                <table className="w-full text-sm">
+              <div className="max-h-[250px] sm:max-h-[350px] overflow-auto border rounded-lg">
+                <table className="w-full min-w-[720px] text-sm">
                   <thead className="sticky top-0 bg-gray-50">
                     <tr>
                       {["Codice Conduttore", "Descrizione Conduttore", "Codice Roggia", "Descrizione Roggia", "SMS", "Mail", "Canale"].map((h) => (

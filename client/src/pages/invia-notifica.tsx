@@ -91,12 +91,6 @@ const NESSUNA_TRATTA_ROGGIA: TrattaRoggiaSelezionabile[] = [];
 // valore da cui si parte, come chiesto nella issue #13.
 const TITOLO_PREDEFINITO = "CBBG - Comunicazione Importante";
 
-const STATIC_TEMPLATES: { id: string; label: string; body: string }[] = [
-  { id: "chiusura", label: "Comunicazione chiusura tratta", body: "Si comunica che la tratta selezionata risulta chiusa a partire dalla data indicata. Si prega di adottare percorsi alternativi." },
-  { id: "manutenzione", label: "Avviso manutenzione programmata", body: "È prevista un'attività di manutenzione programmata sull'impianto in oggetto. Si informa l'utenza per opportuna conoscenza." },
-  { id: "riapertura", label: "Comunicazione riapertura", body: "Si comunica che la tratta precedentemente chiusa è stata riaperta e risulta nuovamente percorribile." },
-];
-
 // Il messaggio d'errore leggibile da dentro un errore di `apiRequest`, che ha la
 // forma `400: {"message":"..."}`. Qui il 400 è un caso previsto — titolo vuoto,
 // destinatari spariti nel frattempo — e a leggerlo è un operatore, non chi
@@ -233,11 +227,9 @@ export default function InviaNotifica() {
   );
 
   // Il template porta con sé oggetto, corpo mail e testo SMS: caricarne uno
-  // deve riempire tutti e tre i campi (issue #28). I template statici di
-  // ripiego non hanno un testo SMS, e infatti lo lasciano vuoto.
-  const templateOptions = dbTemplates.length
-    ? dbTemplates.map((t) => ({ id: String(t.id), label: t.name, oggetto: t.subject, body: t.bodyEmail, sms: t.bodySms }))
-    : STATIC_TEMPLATES.map((t) => ({ ...t, oggetto: "", sms: "" }));
+  // deve riempire tutti e tre i campi (issue #28). Solo i template del
+  // database: senza, la tendina resta vuota, niente modelli di ripiego (issue #94).
+  const templateOptions = dbTemplates.map((t) => ({ id: String(t.id), label: t.name, oggetto: t.subject, body: t.bodyEmail, sms: t.bodySms }));
 
   // Le due gerarchie riempiono gli stessi due elenchi: da qui in giù la pagina
   // non sa più quale delle due sta mostrando, e non deve saperlo.
@@ -1103,18 +1095,18 @@ export default function InviaNotifica() {
                     />
                   </label>
                   <div className="w-full md:w-64 md:mt-[22px]">
-                    <Select onValueChange={(id) => {
+                    <Select disabled={templateOptions.length === 0} onValueChange={(id) => {
                       const t = templateOptions.find((o) => o.id === id);
                       if (!t) return;
                       setMessaggio(t.body);
                       if (t.oggetto) setTitolo(t.oggetto);
                       // Solo se il template ne ha uno, come già si fa con
-                      // l'oggetto: un template di ripiego senza testo SMS non
-                      // deve cancellare quello appena scritto a mano.
+                      // l'oggetto: un template senza testo SMS non deve
+                      // cancellare quello appena scritto a mano.
                       if (t.sms) setMessaggioSms(t.sms);
                     }}>
                       <SelectTrigger>
-                        <span className="inline-flex items-center gap-2"><FileText size={14} /><SelectValue placeholder="Carica template" /></span>
+                        <span className="inline-flex items-center gap-2"><FileText size={14} /><SelectValue placeholder={templateOptions.length ? "Carica template" : "Nessun template"} /></span>
                       </SelectTrigger>
                       <SelectContent>
                         {templateOptions.map((o) => (
