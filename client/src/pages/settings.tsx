@@ -30,6 +30,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Settings as SettingsIcon, Mail, MessageSquare, Shield, ShieldCheck, AlertTriangle, Database, RefreshCw, Upload, FlaskConical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { messaggioErrore } from "@/lib/messaggio-errore";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSyncAnagrafiche } from "@/hooks/use-sync-anagrafiche";
 import { settingsApi, utentiTestApi } from "@/lib/api";
@@ -701,7 +702,7 @@ function SchedaWs() {
       // apiRequest solleva su qualunque risposta non 2xx (entità non valida,
       // utente non amministratore, rete caduta): senza questo catch il testo
       // resta bloccato su "Prova in corso…" e si genera un rifiuto non gestito.
-      setEsiti((s) => ({ ...s, [e]: `Errore: ${(err as Error).message}` }));
+      setEsiti((s) => ({ ...s, [e]: `Errore: ${messaggioErrore(err)}` }));
     }
   };
 
@@ -726,7 +727,7 @@ function SchedaWs() {
       }));
       queryClient.invalidateQueries({ queryKey: ["/api/settings/ws"] });
     } catch (err) {
-      setEsiti((s) => ({ ...s, [e]: `Errore: ${(err as Error).message}` }));
+      setEsiti((s) => ({ ...s, [e]: `Errore: ${messaggioErrore(err)}` }));
     } finally {
       setCaricando((s) => ({ ...s, [e]: false }));
     }

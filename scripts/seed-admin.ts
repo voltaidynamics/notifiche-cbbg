@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { db } from "../server/db";
 import { appUsers } from "../shared/schema";
+import { errorePasswordLocale, LUNGHEZZA_MINIMA_PASSWORD } from "../shared/password";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import * as readline from "readline/promises";
@@ -16,14 +17,17 @@ async function prompt(question: string): Promise<string> {
 
 async function main() {
   const username = process.env.SEED_ADMIN_USERNAME ?? await prompt("Username superadmin: ");
-  const password = process.env.SEED_ADMIN_PASSWORD ?? await prompt("Password superadmin (min 8 caratteri): ");
+  const password = process.env.SEED_ADMIN_PASSWORD ?? await prompt(`Password superadmin (almeno ${LUNGHEZZA_MINIMA_PASSWORD} caratteri, maiuscola, minuscola, numero e carattere speciale): `);
 
   if (!username || username.length < 3) {
     console.error("Errore: username deve essere almeno 3 caratteri");
     process.exit(1);
   }
-  if (!password || password.length < 8) {
-    console.error("Errore: password deve essere almeno 8 caratteri");
+  // Stessa regola di Gestione Utenti (issue #99): il superadmin creato qui è
+  // locale, ed è l'account che entra quando Active Directory non risponde.
+  const errorePassword = errorePasswordLocale(password ?? "");
+  if (errorePassword) {
+    console.error(`Errore: ${errorePassword}`);
     process.exit(1);
   }
 

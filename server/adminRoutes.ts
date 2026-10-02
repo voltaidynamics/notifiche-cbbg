@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { requireAdmin, BCRYPT_ROUNDS } from "./auth";
 import { storage } from "./storage";
 import { z } from "zod";
+import { errorePasswordLocale } from "@shared/password";
 
 const MAX_SUPERADMINS = 2;
 
@@ -42,6 +43,13 @@ export function validaCambioSorgente(
       ok: false,
       errore: "Per passare a credenziali locali serve una password",
     };
+  }
+
+  // Issue #99: la regola vale quando una password si imposta o si cambia.
+  // Senza password nuova si tiene quella salvata, anche se è di prima.
+  if (haPassword) {
+    const errorePassword = errorePasswordLocale(password);
+    if (errorePassword) return { ok: false, errore: errorePassword };
   }
 
   return { ok: true, authSource: "locale", passwordHash: haPassword ? "nuova" : "invariato" };
@@ -126,7 +134,7 @@ export function registerAdminRoutes(app: Express): void {
 
   const createUserSchema = z.object({
     username: z.string().min(3),
-    password: z.string().min(8).optional(),
+    password: z.string().optional(),
     role: z.enum(APP_ROLES).default("user"),
     authSource: z.enum(AUTH_SOURCES).default("locale"),
     isActive: z.boolean().default(true),
@@ -143,6 +151,13 @@ export function registerAdminRoutes(app: Express): void {
     try {
       const data = createUserSchema.parse(req.body);
       const actor = req.user!;
+
+      // Fuori dallo schema zod perché il 400 porti il messaggio della regola
+      // (cosa manca) e non il generico «Dati non validi».
+      if (data.authSource === "locale") {
+        const errorePassword = errorePasswordLocale(data.password!);
+        if (errorePassword) return res.status(400).json({ message: errorePassword });
+      }
 
       if (!canManageTarget(actor.role, data.role)) {
         return res.status(403).json({ message: "Non puoi creare utenti con questo ruolo" });
@@ -193,7 +208,7 @@ export function registerAdminRoutes(app: Express): void {
 
   const updateUserSchema = z.object({
     username: z.string().min(3).optional(),
-    password: z.string().min(8).optional(),
+    password: z.string().optional(),
     role: z.enum(APP_ROLES).optional(),
     authSource: z.enum(AUTH_SOURCES).optional(),
     isActive: z.boolean().optional(),

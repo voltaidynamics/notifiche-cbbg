@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Shield, Users } from "lucide-react";
 import { RichiesteAccesso } from "@/components/admin/richieste-accesso";
+import { RequisitiPassword } from "@/components/admin/requisiti-password";
+import { requisitiMancanti } from "@shared/password";
 
 const ROLE_OPTIONS = [
   { value: "osservatore", label: "Osservatore" },
@@ -76,7 +78,7 @@ function UserModal({
       if (editing) return adminUsersApi.update(editing.id, payload);
       // Non ripescare data.password qui: per un utente Active Directory è "" e
       // riaggiungerla annullerebbe l'omissione fatta sopra, facendo fallire il
-      // parse lato server (min(8)) prima ancora che authSource venga letto.
+      // parse lato server prima ancora che authSource venga letto.
       return adminUsersApi.create(payload);
     },
     onSuccess: () => {
@@ -86,9 +88,20 @@ function UserModal({
       onClose();
     },
     onError: (err: any) => {
-      toast({ title: err.message ?? "Errore", variant: "destructive" });
+      toast({ title: "Errore", description: err.message, variant: "destructive" });
     },
   });
+
+  // Issue #99: una password locale nuova deve rispettare i requisiti di
+  // shared/password.ts. In modifica il campo vuoto vuol dire «tieni quella di
+  // prima», che non si ricontrolla; passando da AD a locale invece serve.
+  const passwordObbligatoria =
+    form.authSource === "locale" && (!editing || editing.authSource === "ad");
+  const passwordNonValida =
+    form.authSource === "locale" &&
+    (form.password.length > 0
+      ? requisitiMancanti(form.password).length > 0
+      : passwordObbligatoria);
 
   const roleOptions = currentUser?.role === "superadmin" ? ROLE_OPTIONS : ROLE_OPTIONS.filter((r) => r.value !== "superadmin");
 
@@ -123,8 +136,11 @@ function UserModal({
           </div>
           {form.authSource === "locale" && (
             <div className="space-y-1">
-              <Label>{editing ? "Nuova password (lascia vuoto per non cambiare)" : "Password"}</Label>
+              <Label>{passwordObbligatoria ? "Password" : "Nuova password (lascia vuoto per non cambiare)"}</Label>
               <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              {(passwordObbligatoria || form.password.length > 0) && (
+                <RequisitiPassword password={form.password} />
+              )}
             </div>
           )}
           <div className="space-y-1">
@@ -145,7 +161,7 @@ function UserModal({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Annulla</Button>
-          <Button onClick={() => mutation.mutate(form)} disabled={mutation.isPending}>
+          <Button onClick={() => mutation.mutate(form)} disabled={mutation.isPending || passwordNonValida}>
             {mutation.isPending ? "Salvo..." : "Salva"}
           </Button>
         </DialogFooter>
@@ -176,14 +192,14 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       toast({ title: "Utente eliminato" });
     },
-    onError: (err: any) => toast({ title: err.message ?? "Errore", variant: "destructive" }),
+    onError: (err: any) => toast({ title: "Errore", description: err.message, variant: "destructive" }),
   });
 
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
       adminUsersApi.update(id, { isActive }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
-    onError: (err: any) => toast({ title: err.message ?? "Errore", variant: "destructive" }),
+    onError: (err: any) => toast({ title: "Errore", description: err.message, variant: "destructive" }),
   });
 
   const canManage = (targetRole: string) => {

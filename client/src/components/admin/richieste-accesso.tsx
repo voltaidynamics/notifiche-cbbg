@@ -35,7 +35,7 @@ export function RichiesteAccesso({ onAbilita }: { onAbilita: (username: string) 
       queryClient.invalidateQueries({ queryKey: ["admin", "richieste-accesso"] });
       toast({ title: "Richiesta scartata" });
     },
-    onError: (err: any) => toast({ title: err.message ?? "Errore", variant: "destructive" }),
+    onError: (err: any) => toast({ title: "Errore", description: err.message, variant: "destructive" }),
   });
 
   return (

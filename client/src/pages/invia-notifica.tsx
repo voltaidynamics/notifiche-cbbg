@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSyncAnagrafiche } from "@/hooks/use-sync-anagrafiche";
 import { cn } from "@/lib/utils";
+import { messaggioErrore } from "@/lib/messaggio-errore";
 import { Waves, Boxes, Droplet, FileText, ArrowUpDown, GitFork } from "lucide-react";
 import { templatesApi, consorzioApi, notificationsApi, utentiTestApi } from "@/lib/api";
 import type {
@@ -90,22 +91,6 @@ const NESSUNA_TRATTA_ROGGIA: TrattaRoggiaSelezionabile[] = [];
 // Il titolo della comunicazione diventerà l'oggetto della mail; questo è il
 // valore da cui si parte, come chiesto nella issue #13.
 const TITOLO_PREDEFINITO = "CBBG - Comunicazione Importante";
-
-// Il messaggio d'errore leggibile da dentro un errore di `apiRequest`, che ha la
-// forma `400: {"message":"..."}`. Qui il 400 è un caso previsto — titolo vuoto,
-// destinatari spariti nel frattempo — e a leggerlo è un operatore, non chi
-// scrive il codice.
-function messaggioErrore(errore: unknown): string {
-  const testo = errore instanceof Error ? errore.message : String(errore);
-  const corpo = testo.replace(/^\d{3}:\s*/, "");
-  try {
-    const json = JSON.parse(corpo);
-    if (json && typeof json.message === "string") return json.message;
-  } catch {
-    // non era JSON: si mostra il testo così com'è
-  }
-  return corpo;
-}
 
 export default function InviaNotifica() {
   const isMobile = useIsMobile();

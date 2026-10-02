@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { TIPI_TEMPLATE, TIPI_NOTIFICA, CLASSIFICAZIONI_NOTIFICA } from "./classificazione";
+import { passwordLocaleSchema } from "./password";
 import type { CategoriaMadre } from "./categorie-madri";
 import type { TipoLegame } from "./legame";
 import type { LivelloCodice } from "./stato-rogge";
@@ -389,7 +390,8 @@ export const insertAppUserSchema = createInsertSchema(appUsers).omit({
 }).extend({
   username: z.string().min(3, "Username min 3 caratteri"),
   // Facoltativa: un utente authSource "ad" non ha una password locale da impostare.
-  password: z.string().min(8, "Password min 8 caratteri").optional(),
+  // I requisiti (issue #99) stanno in shared/password.ts.
+  password: passwordLocaleSchema.optional(),
   role: z.enum(APP_ROLES).default("user"),
   authSource: z.enum(AUTH_SOURCES).default("locale"),
   isActive: z.boolean().default(true),

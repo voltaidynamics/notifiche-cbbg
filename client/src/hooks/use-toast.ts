@@ -5,8 +5,18 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
+// Errori e conferme viaggiano separati (issue #100). Un toast con
+// `variant: "destructive"` non diventa un avviso ma un popup centrato da
+// chiudere a mano (`errori`, reso da Toaster): una conferma che arriva subito
+// dopo non deve poterlo scalzare, come faceva TOAST_LIMIT = 1 quando stavano
+// nella stessa lista. Gli errori si accodano e si mostrano uno alla volta.
+//
+// Le conferme si chiudono da sole dopo TOAST_DURATION (lo passa Toaster al
+// provider di Radix); TOAST_REMOVE_DELAY è solo il tempo per l'animazione di
+// uscita prima di togliere il toast dallo stato.
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+export const TOAST_DURATION = 4000
+const TOAST_REMOVE_DELAY = 1000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -51,6 +61,7 @@ type Action =
 
 interface State {
   toasts: ToasterToast[]
+  errori: ToasterToast[]
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
@@ -74,6 +85,9 @@ const addToRemoveQueue = (toastId: string) => {
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
+      if (action.toast.variant === "destructive") {
+        return { ...state, errori: [...state.errori, action.toast] }
+      }
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
@@ -85,10 +99,20 @@ export const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === action.toast.id ? { ...t, ...action.toast } : t
         ),
+        errori: state.errori.map((t) =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t
+        ),
       }
 
     case "DISMISS_TOAST": {
       const { toastId } = action
+
+      // Un errore si chiude solo col suo bottone, e sparisce subito: il popup
+      // ha la sua animazione e il prossimo in coda deve poter comparire. Un
+      // dismiss() senza id chiude le conferme, non gli errori.
+      if (toastId && state.errori.some((t) => t.id === toastId)) {
+        return { ...state, errori: state.errori.filter((t) => t.id !== toastId) }
+      }
 
       // ! Side effects ! - This could be extracted into a dismissToast() action,
       // but I'll keep it here for simplicity
@@ -117,18 +141,20 @@ export const reducer = (state: State, action: Action): State => {
         return {
           ...state,
           toasts: [],
+          errori: [],
         }
       }
       return {
         ...state,
         toasts: state.toasts.filter((t) => t.id !== action.toastId),
+        errori: state.errori.filter((t) => t.id !== action.toastId),
       }
   }
 }
 
 const listeners: Array<(state: State) => void> = []
 
-let memoryState: State = { toasts: [] }
+let memoryState: State = { toasts: [], errori: [] }
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)

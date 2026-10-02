@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { validaCambioSorgente, toglierebbeUltimoSuperadminLocale } from "../adminRoutes";
+import { errorePasswordLocale } from "@shared/password";
 
 describe("validaCambioSorgente", () => {
   it("nessun cambio, nessuna password: tutto invariato", () => {
@@ -8,7 +9,7 @@ describe("validaCambioSorgente", () => {
   });
 
   it("utente locale che cambia password", () => {
-    const r = validaCambioSorgente("locale", undefined, "nuovapassword");
+    const r = validaCambioSorgente("locale", undefined, "Nuova-password1");
     expect(r).toEqual({ ok: true, authSource: "locale", passwordHash: "nuova" });
   });
 
@@ -39,10 +40,31 @@ describe("validaCambioSorgente", () => {
   });
 
   it("ad -> locale con password va bene", () => {
-    expect(validaCambioSorgente("ad", "locale", "nuovapassword")).toEqual({
+    expect(validaCambioSorgente("ad", "locale", "Nuova-password1")).toEqual({
       ok: true,
       authSource: "locale",
       passwordHash: "nuova",
+    });
+  });
+
+  // Issue #99: la nuova password di un utente locale deve rispettare i
+  // requisiti, sia cambiandola sia passando da AD a locale. Il messaggio è
+  // quello della regola condivisa, che elenca cosa manca.
+  it("una nuova password locale debole viene rifiutata con l'elenco di cosa manca", () => {
+    const r = validaCambioSorgente("locale", undefined, "nuovapassword");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errore).toBe(errorePasswordLocale("nuovapassword"));
+  });
+
+  it("anche passando da AD a locale", () => {
+    expect(validaCambioSorgente("ad", "locale", "corta").ok).toBe(false);
+  });
+
+  it("password vuota in modifica: si tiene quella salvata, nessun requisito da verificare", () => {
+    expect(validaCambioSorgente("locale", undefined, "")).toEqual({
+      ok: true,
+      authSource: "locale",
+      passwordHash: "invariato",
     });
   });
 

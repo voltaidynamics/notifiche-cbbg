@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { messaggioErrore } from "@/lib/messaggio-errore";
 import { Loader2, RefreshCw, ShieldAlert } from "lucide-react";
 
 const TIMEOUT_MIN = 1000;
@@ -72,7 +73,7 @@ export function SchedaAd() {
       queryClient.invalidateQueries({ queryKey: ["settings", "ad"] });
       toast({ title: "Configurazione salvata" });
     },
-    onError: (err: any) => toast({ title: err.message ?? "Errore", variant: "destructive" }),
+    onError: (err: any) => toast({ title: "Errore", description: err.message, variant: "destructive" }),
   });
 
   const prova = useMutation({
@@ -81,7 +82,7 @@ export function SchedaAd() {
         provaUsername.trim() === "" ? undefined : { username: provaUsername, password: provaPassword },
       ),
     onSuccess: (e) => setEsito(e),
-    onError: (err: any) => setEsito({ riuscita: false, messaggio: err.message ?? "Errore" }),
+    onError: (err: any) => setEsito({ riuscita: false, messaggio: messaggioErrore(err) }),
   });
 
   if (isLoading) return <p className="text-sm text-gray-500 py-6">Carico…</p>;
