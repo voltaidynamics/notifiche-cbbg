@@ -27,8 +27,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Settings as SettingsIcon, Mail, MessageSquare, Shield, ShieldCheck, AlertTriangle, Database, RefreshCw, Upload, FlaskConical } from "lucide-react";
+import { Settings as SettingsIcon, Mail, MessageSquare, Shield, ShieldCheck, AlertTriangle, Database, RefreshCw, Upload, FlaskConical, Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { messaggioErrore } from "@/lib/messaggio-errore";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -879,6 +881,15 @@ function SchedaUtentiTest() {
   const queryClient = useQueryClient();
   const vuoto = { nome: "", email: "", tipoEmail: "normale", telefono: "", attivo: true };
   const [bozza, setBozza] = useState<typeof vuoto & { id?: number }>(vuoto);
+  // Creazione e modifica in un popup, come in Gestione Utenti (issue #104).
+  const [dialogAperto, setDialogAperto] = useState(false);
+  const apri = (u?: UtenteTest) => {
+    setBozza(u ? {
+      id: u.id, nome: u.nome, email: u.email ?? "", tipoEmail: u.tipoEmail,
+      telefono: u.telefono ?? "", attivo: u.attivo,
+    } : vuoto);
+    setDialogAperto(true);
+  };
   // Le due conferme distruttive di questa scheda, con AlertDialog come nel
   // resto dell'app (admin.tsx): window.confirm non è la convenzione qui.
   const [daEliminare, setDaEliminare] = useState<UtenteTest | null>(null);
@@ -911,8 +922,8 @@ function SchedaUtentiTest() {
     },
     onSuccess: () => {
       aggiorna();
-      setBozza(vuoto);
-      toast({ title: "Utente di test salvato" });
+      setDialogAperto(false);
+      toast({ title: bozza.id ? "Utente di test aggiornato" : "Utente di test creato" });
     },
     onError: (e: any) => toast({ title: "Errore", description: e.message, variant: "destructive" }),
   });
@@ -950,6 +961,12 @@ function SchedaUtentiTest() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button size="sm" onClick={() => apri()}>
+          <Plus size={15} className="mr-1" /> Nuovo utente di test
+        </Button>
+      </div>
+
       <Alert>
         <AlertTriangle size={16} />
         <AlertDescription>
@@ -978,12 +995,15 @@ function SchedaUtentiTest() {
                 <td className="px-3 py-2">
                   <Switch checked={u.attivo} onCheckedChange={() => commuta.mutate(u)} />
                 </td>
-                <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <Button variant="ghost" size="sm" onClick={() => setBozza({
-                    id: u.id, nome: u.nome, email: u.email ?? "", tipoEmail: u.tipoEmail,
-                    telefono: u.telefono ?? "", attivo: u.attivo,
-                  })}>Modifica</Button>
-                  <Button variant="ghost" size="sm" onClick={() => setDaEliminare(u)}>Elimina</Button>
+                <td className="px-3 py-2">
+                  <div className="flex gap-1 justify-end">
+                    <Button variant="ghost" size="sm" aria-label="Modifica" onClick={() => apri(u)}>
+                      <Pencil size={14} />
+                    </Button>
+                    <Button variant="ghost" size="sm" aria-label="Elimina" className="text-red-500 hover:text-red-700" onClick={() => setDaEliminare(u)}>
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -994,33 +1014,6 @@ function SchedaUtentiTest() {
             )}
           </tbody>
         </table>
-      </div>
-
-      <div className="space-y-3 border rounded-lg p-4">
-        <div className="font-medium text-sm">{bozza.id ? "Modifica utente di test" : "Nuovo utente di test"}</div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Input placeholder="Nome" value={bozza.nome} onChange={(e) => setBozza({ ...bozza, nome: e.target.value })} />
-          <Input placeholder="Email" value={bozza.email} onChange={(e) => setBozza({ ...bozza, email: e.target.value })} />
-          <Select value={bozza.tipoEmail} onValueChange={(v) => setBozza({ ...bozza, tipoEmail: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="normale">Email ordinaria</SelectItem>
-              <SelectItem value="pec">PEC</SelectItem>
-            </SelectContent>
-          </Select>
-          <Input placeholder="Telefono" value={bozza.telefono} onChange={(e) => setBozza({ ...bozza, telefono: e.target.value })} />
-        </div>
-        {/* Senza recapiti non riceverebbe niente: e' una riga che promette un
-            collaudo che non avviene. */}
-        {recapitoAssente && (
-          <div className="text-xs text-amber-700">Serve almeno un recapito: email o telefono.</div>
-        )}
-        <div className="flex gap-3">
-          <Button onClick={() => salva.mutate()} disabled={!bozza.nome.trim() || recapitoAssente || salva.isPending}>
-            {bozza.id ? "Salva modifiche" : "Aggiungi"}
-          </Button>
-          {bozza.id && <Button variant="outline" onClick={() => setBozza(vuoto)}>Annulla</Button>}
-        </div>
       </div>
 
       <div className="border rounded-lg p-4 space-y-2">
@@ -1038,6 +1031,53 @@ function SchedaUtentiTest() {
           Elimina le comunicazioni di prova ({prove?.quante ?? 0})
         </Button>
       </div>
+
+      <Dialog open={dialogAperto} onOpenChange={setDialogAperto}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{bozza.id ? "Modifica utente di test" : "Nuovo utente di test"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1">
+              <Label>Nome</Label>
+              <Input value={bozza.nome} onChange={(e) => setBozza({ ...bozza, nome: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label>Email</Label>
+              <Input value={bozza.email} onChange={(e) => setBozza({ ...bozza, email: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label>Canale</Label>
+              <Select value={bozza.tipoEmail} onValueChange={(v) => setBozza({ ...bozza, tipoEmail: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="normale">Email ordinaria</SelectItem>
+                  <SelectItem value="pec">PEC</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label>Telefono</Label>
+              <Input value={bozza.telefono} onChange={(e) => setBozza({ ...bozza, telefono: e.target.value })} />
+            </div>
+            {/* Senza recapiti non riceverebbe niente: e' una riga che promette un
+                collaudo che non avviene. */}
+            {recapitoAssente && (
+              <div className="text-xs text-amber-700">Serve almeno un recapito: email o telefono.</div>
+            )}
+            <div className="flex items-center gap-2">
+              <Switch checked={bozza.attivo} onCheckedChange={(v) => setBozza({ ...bozza, attivo: v })} />
+              <Label>Riceve le comunicazioni</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogAperto(false)}>Annulla</Button>
+            <Button onClick={() => salva.mutate()} disabled={!bozza.nome.trim() || recapitoAssente || salva.isPending}>
+              {salva.isPending ? "Salvo..." : "Salva"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!daEliminare} onOpenChange={() => setDaEliminare(null)}>
         <AlertDialogContent>
