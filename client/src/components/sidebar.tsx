@@ -54,7 +54,7 @@ function Logo({ dimensione }: { dimensione: string }) {
   const contenuto = (
     <>
       <Waves className="text-primary mr-2" size={24} />
-      Consorzio Irriguo
+      Notifiche Impianti
     </>
   );
 

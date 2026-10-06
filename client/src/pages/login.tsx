@@ -53,7 +53,7 @@ export default function Login() {
           <div className="flex justify-center mb-3">
             <Waves className="text-primary" size={40} />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-800">Consorzio Irriguo</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800">Notifiche Impianti</CardTitle>
           <p className="text-sm text-gray-500 mt-1">Accedi al pannello di gestione</p>
         </CardHeader>
         <CardContent>
