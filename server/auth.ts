@@ -132,6 +132,19 @@ export function soloLetturaOsservatore(req: Request, res: Response, next: NextFu
   next();
 }
 
+/**
+ * Nessuna risposta /api/ resta nella cache del browser (issue #122). Duplicando
+ * o ripristinando una scheda, Chrome serve le richieste dalla cache senza
+ * ricontrollare: una scheda dell'utente `user` riceveva il `/api/auth/me`
+ * dell'admin entrato prima nello stesso browser, e gli mostrava Impostazioni.
+ * Il server rifiutava comunque ogni chiamata, ma la pagina non doveva aprirsi —
+ * e lo stesso valeva per Storico, Dashboard ed elenchi vecchi.
+ */
+export function apiSenzaCache(req: Request, res: Response, next: NextFunction): void {
+  if (req.path.startsWith("/api/")) res.set("Cache-Control", "no-store");
+  next();
+}
+
 // ---- Helpers ----
 
 export async function hashPassword(password: string): Promise<string> {

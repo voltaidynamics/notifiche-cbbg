@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { Request, Response, NextFunction } from "express";
-import { requireAuth, requireRole, requireAdmin, soloLetturaOsservatore } from "../auth";
+import { requireAuth, requireRole, requireAdmin, soloLetturaOsservatore, apiSenzaCache } from "../auth";
 
 function mockReq(overrides: Partial<Request> = {}): Request {
   return {
@@ -131,6 +131,31 @@ describe("soloLetturaOsservatore", () => {
     const { res } = mockRes();
     const next = vi.fn();
     soloLetturaOsservatore(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+});
+
+// Issue #122: una scheda duplicata riceveva dalla cache il `/api/auth/me` di
+// chi era entrato prima nello stesso browser, e mostrava le sue pagine.
+describe("apiSenzaCache", () => {
+  const conSet = () => {
+    const set = vi.fn();
+    return { res: { set } as unknown as Response, set };
+  };
+
+  it("vieta la cache su ogni risposta /api/", () => {
+    const { res, set } = conSet();
+    const next = vi.fn();
+    apiSenzaCache(mockReq({ path: "/api/auth/me" } as Partial<Request>), res, next);
+    expect(set).toHaveBeenCalledWith("Cache-Control", "no-store");
+    expect(next).toHaveBeenCalled();
+  });
+
+  it("non tocca le pagine e i file statici", () => {
+    const { res, set } = conSet();
+    const next = vi.fn();
+    apiSenzaCache(mockReq({ path: "/assets/index.js" } as Partial<Request>), res, next);
+    expect(set).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
   });
 });

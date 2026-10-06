@@ -3,12 +3,15 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startScheduler } from "./scheduler";
-import { setupSession, requireAuth, soloLetturaOsservatore } from "./auth";
+import { setupSession, requireAuth, soloLetturaOsservatore, apiSenzaCache } from "./auth";
 import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Prima di tutto, così vale anche per i 401 del guard qui sotto (issue #122).
+app.use(apiSenzaCache);
 
 // ---- Session + Passport ----
 setupSession(app);
