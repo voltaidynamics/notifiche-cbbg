@@ -81,6 +81,7 @@ export function buildHistoryDetail(
     destinatari,
     emailInviate: destinatari.filter((d) => d.esitoEmail === "inviato").length,
     smsInviati: destinatari.filter((d) => d.esitoSms === "inviato").length,
+    inCorso: n.status === "sending",
   };
 }
 

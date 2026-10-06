@@ -237,6 +237,13 @@ describe("esito dell'invio nel dettaglio (issue #111)", () => {
     expect(d.smsInviati).toBe(1);
     expect(d.messaggio).toBe("Testo");
     expect(d.destinatari.map((x) => x.esitoEmail)).toEqual(["inviato", "inviato", "nonInviato", "nonInviato"]);
+    expect(d.inCorso).toBe(false);
+  });
+
+  it("è in corso finché la notifica è «sending», anche a mail finite: dopo partono gli SMS", () => {
+    const tutteSpedite = [destinatario({ emailStatus: "sent", smsStatus: "pending" })];
+    expect(buildHistoryDetail(notifica({ status: "sending" }), tutteSpedite).inCorso).toBe(true);
+    expect(buildHistoryDetail(notifica({ status: "failed" }), tutteSpedite).inCorso).toBe(false);
   });
 });
 

@@ -83,6 +83,15 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
     queryKey: ["/api/notifications/storico/dettaglio", notificaId],
     queryFn: () => notificationsApi.getStoricoDetail(notificaId as number),
     enabled: notificaId !== null,
+    // Il default dell'app è non rileggere mai (`staleTime: Infinity`), e qui
+    // vorrebbe dire contatori fermi al primo sguardo: riaprendo si rilegge, e
+    // finché la spedizione è in corso (mail e poi SMS, uno alla volta) si
+    // rilegge da solo. Una spedizione interrotta da un riavvio resta
+    // «sending» per sempre: costa una richiesta ogni 3 secondi, solo a popup
+    // aperto.
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchInterval: (query) => (query.state.data?.inCorso ? 3000 : false),
   });
 
   const esportaDettaglioCsv = () => {

@@ -542,6 +542,11 @@ export type NotificationHistoryDetail = NotificationHistoryRow & {
   emailInviate: number;
   /** SMS accettati dalla piattaforma. */
   smsInviati: number;
+  /**
+   * La spedizione sta ancora andando (`notifications.status = "sending"`): mail
+   * e poi SMS, uno alla volta. Il popup lo usa per rileggere il dettaglio.
+   */
+  inCorso: boolean;
 };
 
 /** Filtri accettati da GET /api/notifications/storico. */

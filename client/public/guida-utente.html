@@ -281,15 +281,16 @@ sé, compaiono tutte le sue tratte;</li>
 <li>quando il codice ha una roggia madre nella seconda gerarchia, il suo nome
 comparirà sotto, come riferimento — non è un dato in più da controllare, solo
 a chi conosce la tratta col nome della roggia più che con quello del codice;</li>
-<li><strong>«Chiusa dal <data>»</strong>: la data è un collegamento e porta alla notifica che
-ha prodotto quella chiusura.</li>
+<li><strong>«Chiusa dal <data>»</strong>: cliccando la data si apre il dettaglio della
+notifica che ha prodotto quella chiusura, lo stesso dello Storico.</li>
 </ul>
 <p>Il conteggio è per tratta: una notifica che chiude quattro tratte lo fa salire
 di quattro, e chiudere un pozzo con venti tratte lo fa salire di venti. Una
 tratta chiusa due volte — da sé e con la sua madre — conta una volta sola.</p>
 <h3 id="ultime-notifiche">Ultime notifiche</h3>
-<p>Le sei comunicazioni più recenti, con data, ora e numero di destinatari. La
-freccia a destra apre il dettaglio.</p>
+<p>Le sei comunicazioni più recenti, con data, ora e numero di destinatari.
+Cliccando una riga si apre il suo dettaglio, la stessa finestra che si apre
+dallo Storico (capitolo 6, <em>Il dettaglio di una notifica</em>).</p>
 <h3 id="i-due-grafici">I due grafici</h3>
 <p><strong>Chiusure</strong> e <strong>Notifiche</strong> degli ultimi 30 giorni, un barra per giorno.</p>
 <h3 id="il-badge-esempio">Il badge «esempio»</h3>
@@ -599,8 +600,8 @@ riclicca spedendo tutto una seconda volta. I testi scritti restano.</li>
 <li><strong>La spedizione prosegue in sottofondo.</strong> La risposta arriva appena la
 notifica è registrata, non quando l&#39;ultima email è partita: su un invio ampio
 ci vogliono minuti.</li>
-<li><strong>L&#39;esito email per email si legge nella pagina della notifica</strong>, che si apre
-dalla Dashboard (vedi <em>Capitolo 6 → L&#39;esito dell&#39;invio</em>).</li>
+<li><strong>L&#39;esito email per email si legge nel dettaglio della notifica</strong>, dallo
+Storico o dalla Dashboard (vedi <em>Capitolo 6 → L&#39;esito dell&#39;invio</em>).</li>
 </ul>
 <h3 id="se-linvio-viene-rifiutato">Se l&#39;invio viene rifiutato</h3>
 <p>Compare un messaggio rosso <strong>«Invio non riuscito»</strong> con la ragione. La più
@@ -717,11 +718,19 @@ quella comunicazione, non il template da cui derivava.</li>
 </tr>
 <tr>
 <td><strong>SMS</strong></td>
-<td>Il numero a cui era indirizzato l&#39;SMS; «—» se il conduttore non aveva un numero. <strong>Non dice</strong> se l&#39;SMS è partito</td>
+<td>Il numero a cui era indirizzato l&#39;SMS; «—» se il conduttore non aveva un numero</td>
+</tr>
+<tr>
+<td><strong>Esito SMS</strong></td>
+<td>Se l&#39;SMS è partito: vedi <em>L&#39;esito dell&#39;invio</em> qui sotto</td>
 </tr>
 <tr>
 <td><strong>Mail</strong></td>
-<td>L&#39;indirizzo a cui era indirizzata la mail; «—» se non ne aveva uno. <strong>Non dice</strong> se la mail è partita</td>
+<td>L&#39;indirizzo a cui era indirizzata la mail; «—» se non ne aveva uno</td>
+</tr>
+<tr>
+<td><strong>Esito email</strong></td>
+<td>Se la mail è partita: vedi <em>L&#39;esito dell&#39;invio</em> qui sotto</td>
 </tr>
 <tr>
 <td><strong>Canale</strong></td>
@@ -729,36 +738,52 @@ quella comunicazione, non il template da cui derivava.</li>
 </tr>
 </tbody></table></div>
 <ul>
+<li>Sopra la tabella, il conteggio <strong>email inviate su destinatari</strong> e <strong>SMS
+inviati</strong>.</li>
 <li><strong>Esporta dettaglio CSV</strong> scarica l&#39;elenco completo dei destinatari di quella
-notifica.</li>
+notifica, esiti compresi.</li>
 </ul>
+<p>La stessa finestra si apre anche dalla <strong>Dashboard</strong>: da una riga delle <em>Ultime
+notifiche</em> o dalla data <em>«Chiusa dal …»</em> di una tratta chiusa.</p>
 <p>I dati del destinatario sono una <strong>fotografia scattata all&#39;invio</strong>: se il
 conduttore cambia indirizzo il mese dopo, lo Storico continua a dire dove era
 stata mandata la comunicazione. È il comportamento voluto.</p>
 <h3 id="lesito-dellinvio">L&#39;esito dell&#39;invio</h3>
-<p>Se una mail o un SMS sono <strong>partiti davvero</strong> lo dice la <strong>pagina della
-notifica</strong>, che si apre dalla <strong>Dashboard</strong>: la freccia accanto a una delle
-<em>Ultime notifiche</em>, oppure il collegamento <em>«Chiusa dal <data>»</em> di una tratta
-chiusa. Contiene:</p>
-<ul>
-<li><strong>Riepilogo</strong>: tratta, tipo, classificazione, legame, numero di destinatari,
-date e autore;</li>
-<li><strong>Statistiche Consegna</strong>: sulle comunicazioni partite da <em>Invia notifica</em>
-questo riquadro resta vuoto, e non è un guasto;</li>
-<li><strong>Destinatari</strong>, con l&#39;indirizzo email e le colonne <strong>Stato Email</strong> (<em>In
-attesa</em>, <em>Inviata</em>, <em>Fallita</em>, <em>Aperta</em>) e <strong>Stato SMS</strong> (<em>In attesa</em>,
-<em>Inviato</em>, <em>Fallito</em>). È questa la tabella da guardare. La colonna <em>Nome</em>
-resta vuota: chi è il destinatario lo dice il dettaglio dello Storico.</li>
-</ul>
-<p>Due cose da sapere:</p>
-<ul>
-<li><strong>Senza la spunta «Invia anche via SMS» lo Stato SMS resta <em>In attesa</em></strong>:
-l&#39;SMS non è mai partito, e non partirà.</li>
-<li>La Dashboard elenca solo le <strong>sei</strong> comunicazioni più recenti. Per una più
-vecchia la pagina si apre scrivendo nella barra degli indirizzi
-<code>…/notifiche/&lt;numero&gt;</code>, dove il numero è l&#39;ID della prima colonna dello
-Storico senza la <code>N</code> e gli zeri iniziali: <code>N00042</code> diventa <code>…/notifiche/42</code>.</li>
-</ul>
+<p>Le colonne <strong>Esito email</strong> ed <strong>Esito SMS</strong> del dettaglio dicono se l&#39;app è
+riuscita a <strong>spedire</strong> ciascun messaggio:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Esito</th>
+<th>Significato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Inviata / Inviato</strong></td>
+<td>Il server di posta (o la piattaforma SMS) ha accettato il messaggio</td>
+</tr>
+<tr>
+<td><strong>Non inviata / Non inviato</strong></td>
+<td>Il messaggio non è partito: manca l&#39;indirizzo o il numero, oppure il server lo ha rifiutato</td>
+</tr>
+<tr>
+<td><strong>In attesa</strong></td>
+<td>Solo per le email: la spedizione è ancora in corso</td>
+</tr>
+<tr>
+<td><strong>—</strong></td>
+<td>Solo per gli SMS: per quella comunicazione nessun SMS è partito, di solito perché la spunta «Invia anche via SMS» non c&#39;era</td>
+</tr>
+</tbody></table></div>
+<p><strong>«Inviata» non vuol dire «arrivata» né «letta»</strong>: l&#39;app sa solo di aver
+consegnato il messaggio al server, che poi lo recapita per conto suo. Se
+consegna e lettura vanno verificate, per le email certificate fanno fede le
+ricevute della PEC.</p>
+<p>I messaggi partono <strong>uno alla volta</strong>: prima tutte le email, poi tutti gli SMS.
+Su un invio ampio ci vogliono minuti, e intanto le righe ancora da spedire
+restano <em>In attesa</em>. Finché la spedizione è in corso il dettaglio aperto <strong>si
+aggiorna da solo</strong> ogni pochi secondi: i contatori salgono man mano che i
+messaggi partono, senza bisogno di chiudere e riaprire.</p>
 <hr>
 <h2 id="7-anagrafiche">7. Anagrafiche</h2>
 <p>La copia dei dati del consorzio caricata a sistema. <strong>Sola lettura, sempre</strong>:
@@ -1004,13 +1029,13 @@ Due cause possibili: quella comunicazione è partita senza la spunta «Invia
 anche via SMS» (il testo si scrive comunque, ma senza la spunta non parte),
 oppure quel conduttore non ha un numero di cellulare in anagrafica — succede
 a circa metà dei conduttori attivi. Nel dettaglio dello Storico, colonna <em>SMS</em>
-vuota («—») vuol dire nessun numero. Nella pagina della notifica (capitolo 6,
-<em>L&#39;esito dell&#39;invio</em>), <em>Stato SMS</em> <strong>In attesa</strong> vuol dire che la spunta non
-c&#39;era, <strong>Fallito</strong> che la spunta c&#39;era ma l&#39;invio non è riuscito.</p>
+vuota («—») vuol dire nessun numero; colonna <em>Esito SMS</em> «—» vuol dire che la
+spunta non c&#39;era, <strong>Non inviato</strong> che la spunta c&#39;era ma l&#39;invio non è riuscito
+(capitolo 6, <em>L&#39;esito dell&#39;invio</em>).</p>
 <p><strong>Nel dettaglio dello Storico la colonna SMS è vuota.</strong>
 Il conduttore non aveva un numero di cellulare in anagrafica al momento
 dell&#39;invio. La colonna mostra il numero, non l&#39;esito: se l&#39;SMS sia partito lo
-dice la pagina della notifica.</p>
+dice la colonna accanto, <em>Esito SMS</em>.</p>
 <p><strong>Una roggia, un impianto o un pozzo non compare più.</strong>
 Un amministratore l&#39;ha spento in <em>Gestione Codici</em> (capitolo 5, <em>Codici che
 non compaiono</em>). Le comunicazioni già inviate restano nello Storico.</p>
@@ -1025,9 +1050,9 @@ Stessa cosa: si è aperto l&#39;indirizzo di una di quelle due pagine senza esse
 Il caricamento notturno non sta andando a buon fine. Va segnalato a un
 amministratore: i contatti che si stanno usando potrebbero essere vecchi.</p>
 <p><strong>Ho inviato ma nello Storico la notifica sembra ferma.</strong>
-La spedizione prosegue in sottofondo e su un invio ampio richiede minuti. Si
-riapre la pagina della notifica dopo qualche minuto per vedere gli esiti
-aggiornati.
+La spedizione prosegue in sottofondo e su un invio ampio richiede minuti. Il
+dettaglio della notifica, lasciato aperto, si aggiorna da solo finché la
+spedizione non è finita.
 <strong>Non si rinvia la stessa comunicazione</strong>: si spedirebbe due volte a tutti.</p>
 <p><strong>Ho sbagliato la comunicazione già inviata.</strong>
 Non si può ritirare una email spedita. Si manda una comunicazione di rettifica —

@@ -622,7 +622,9 @@ ricevute della PEC.
 
 I messaggi partono **uno alla volta**: prima tutte le email, poi tutti gli SMS.
 Su un invio ampio ci vogliono minuti, e intanto le righe ancora da spedire
-restano *In attesa*.
+restano *In attesa*. Finché la spedizione è in corso il dettaglio aperto **si
+aggiorna da solo** ogni pochi secondi: i contatori salgono man mano che i
+messaggi partono, senza bisogno di chiudere e riaprire.
 
 ---
 
@@ -834,9 +836,9 @@ Il caricamento notturno non sta andando a buon fine. Va segnalato a un
 amministratore: i contatti che si stanno usando potrebbero essere vecchi.
 
 **Ho inviato ma nello Storico la notifica sembra ferma.**
-La spedizione prosegue in sottofondo e su un invio ampio richiede minuti. Si
-riapre il dettaglio della notifica dopo qualche minuto per vedere gli esiti
-aggiornati.
+La spedizione prosegue in sottofondo e su un invio ampio richiede minuti. Il
+dettaglio della notifica, lasciato aperto, si aggiorna da solo finché la
+spedizione non è finita.
 **Non si rinvia la stessa comunicazione**: si spedirebbe due volte a tutti.
 
 **Ho sbagliato la comunicazione già inviata.**
