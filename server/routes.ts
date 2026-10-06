@@ -742,6 +742,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Per la spunta SMS di Invia notifica (issue #117): un booleano e nient'altro,
+  // perché la pagina la usa anche chi non è admin, e `GET /api/settings/sms`
+  // (riservata agli admin) porta anche il client ID. Sta prima di `:id`, che
+  // altrimenti la catturerebbe.
+  app.get("/api/notifications/sms-disponibile", (_req: Request, res: Response) => {
+    res.json({ configurato: isSMSConfigured() });
+  });
+
   app.get("/api/notifications/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);

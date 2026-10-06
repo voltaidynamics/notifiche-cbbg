@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { db } from "./db";
-import { appUsers, APP_ROLES, AUTH_SOURCES, type AuthSource } from "@shared/schema";
+import { appUsers, APP_ROLES, AUTH_SOURCES, type AuthSource, type RichiestaAccesso } from "@shared/schema";
 import { and, eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { requireAdmin, BCRYPT_ROUNDS } from "./auth";
@@ -53,6 +53,52 @@ export function validaCambioSorgente(
   }
 
   return { ok: true, authSource: "locale", passwordHash: haPassword ? "nuova" : "invariato" };
+}
+
+/**
+ * Lo username di un utente Active Directory non si cambia (issue #116): è
+ * quello di dominio, e cambiato il bind fallirebbe per sempre — la persona
+ * resterebbe fuori senza che nessuno capisca perché. Vale la sorgente salvata:
+ * chi converte un utente locale ad AD sta proprio scrivendo lo username di
+ * dominio, e deve poterlo fare.
+ */
+export function erroreCambioUsername(
+  attuale: { username: string; authSource: string },
+  nuovo: string | undefined,
+): string | null {
+  if (nuovo === undefined || nuovo === attuale.username) return null;
+  if (attuale.authSource === "ad") {
+    return "Lo username di un utente Active Directory non si cambia: deve coincidere con quello di dominio";
+  }
+  return null;
+}
+
+/**
+ * Un utente creato da una richiesta di accesso porta lo username che ha
+ * scritto AD, e nessun altro (issue #116): `nome.cognome` come arriva, senza
+ * ritocchi. È anche ciò che fa sparire la richiesta, che si cancella per id.
+ */
+export function erroreUsernameRichiesta(
+  richiestaId: number | undefined,
+  richieste: RichiestaAccesso[],
+  username: string,
+): string | null {
+  if (richiestaId === undefined) return null;
+  const r = richieste.find((x) => x.id === richiestaId);
+  if (!r) return "La richiesta di accesso non esiste più: ricarica l'elenco";
+  if (r.username !== username) {
+    return `Lo username deve essere quello arrivato da Active Directory: "${r.username}"`;
+  }
+  return null;
+}
+
+/**
+ * Le richieste ancora da evadere: chi è già fra gli utenti è stato censito, da
+ * qualunque strada (issue #116), e non deve restare nell'elenco.
+ */
+export function richiesteInAttesa(richieste: RichiestaAccesso[], usernameUtenti: string[]): RichiestaAccesso[] {
+  const esistenti = new Set(usernameUtenti);
+  return richieste.filter((r) => !esistenti.has(r.username));
 }
 
 async function countSuperadmins(excludeId?: number): Promise<number> {
@@ -138,6 +184,8 @@ export function registerAdminRoutes(app: Express): void {
     role: z.enum(APP_ROLES).default("user"),
     authSource: z.enum(AUTH_SOURCES).default("locale"),
     isActive: z.boolean().default(true),
+    // Presente quando l'utente nasce da «Abilita» su una richiesta di accesso.
+    richiestaId: z.number().int().optional(),
   }).superRefine((d, ctx) => {
     if (d.authSource === "locale" && !d.password) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["password"], message: "La password è obbligatoria per un utente locale" });
@@ -162,6 +210,13 @@ export function registerAdminRoutes(app: Express): void {
       if (!canManageTarget(actor.role, data.role)) {
         return res.status(403).json({ message: "Non puoi creare utenti con questo ruolo" });
       }
+
+      const erroreRichiesta = erroreUsernameRichiesta(
+        data.richiestaId,
+        data.richiestaId === undefined ? [] : await storage.getRichiesteAccesso(),
+        data.username,
+      );
+      if (erroreRichiesta) return res.status(400).json({ message: erroreRichiesta });
 
       if (data.role === "superadmin") {
         const count = await countSuperadmins();
@@ -194,6 +249,7 @@ export function registerAdminRoutes(app: Express): void {
       // su un utente che invece esiste già.
       try {
         await storage.deleteRichiestaAccessoPerUsername(data.username);
+        if (data.richiestaId !== undefined) await storage.deleteRichiestaAccesso(data.richiestaId);
       } catch (cleanupError) {
         console.error(`Errore nella pulizia della richiesta di accesso per "${data.username}" dopo la creazione dell'utente:`, cleanupError);
       }
@@ -241,6 +297,9 @@ export function registerAdminRoutes(app: Express): void {
           return res.status(400).json({ message: `Massimo ${MAX_SUPERADMINS} superadmin consentiti` });
         }
       }
+
+      const erroreUsername = erroreCambioUsername(target, data.username);
+      if (erroreUsername) return res.status(400).json({ message: erroreUsername });
 
       const esito = validaCambioSorgente(
         target.authSource as AuthSource,
@@ -323,7 +382,8 @@ export function registerAdminRoutes(app: Express): void {
 
   app.get("/api/admin/richieste-accesso", requireAdmin, async (_req: Request, res: Response) => {
     try {
-      res.json(await storage.getRichiesteAccesso());
+      const utenti = await db.select({ username: appUsers.username }).from(appUsers);
+      res.json(richiesteInAttesa(await storage.getRichiesteAccesso(), utenti.map((u) => u.username)));
     } catch (error) {
       res.status(500).json({ message: "Errore nel recupero delle richieste di accesso" });
     }

@@ -95,7 +95,7 @@ Tabella con *Username*, *Ruolo*, *Sorgente*, *Stato*, *Ultima login*.
 
 | Campo | Note |
 |---|---|
-| **Username** | Con sorgente Active Directory **deve coincidere esattamente** con quello di dominio |
+| **Username** | Con sorgente Active Directory **deve coincidere esattamente** con quello di dominio, e per questo su un utente AD già creato **non si modifica più**: cambiarlo lo lascerebbe fuori dall'applicazione. Si modifica solo sugli utenti locali |
 | **Sorgente credenziali** | *Locale (password nell'app)* oppure *Active Directory* — vedi il capitolo seguente |
 | **Password** | Compare **solo** per la sorgente Locale. In modifica: vuota = non cambia |
 | **Ruolo** | Un Admin non vede l'opzione *Super Admin* |
@@ -130,13 +130,17 @@ Per ogni richiesta: lo **username esatto scritto da AD**, il numero di tentativi
 e la data dell'ultimo.
 
 - **Abilita** apre la creazione utente **già compilata** con quello username e
-  con sorgente *Active Directory*. È il modo giusto di creare un'utenza di
-  dominio: elimina il rischio di scrivere `mrossi` dove AD ha `m.rossi`.
+  con sorgente *Active Directory*. Lo username **non si può modificare**: è
+  quello arrivato da AD (`nome.cognome`), ed è il modo giusto di creare
+  un'utenza di dominio — elimina il rischio di scrivere `mrossi` dove AD ha
+  `m.rossi`.
 - L'icona cestino scarta la richiesta, dopo conferma col pulsante **Scarta**.
   **Non è recuperabile**: quello username ricompare solo se la persona ritenta
   l'accesso.
 
-Creando l'utenza, la richiesta sparisce da sola dall'elenco.
+Una richiesta evasa sparisce dall'elenco, in entrambi i casi: creando l'utenza
+o scartandola. Sparisce anche se l'utenza con quello username è stata creata
+da un'altra strada.
 
 > Questa scheda è il surrogato della ricerca su Active Directory, che
 > l'applicazione non può offrire perché il consorzio non concede un account di
@@ -309,12 +313,13 @@ prova interroga il credito residuo e non spende un SMS. Se fallisce con
 credenziali giuste, l'IP del server non è ancora abilitato nella whitelist del
 pannello Register.it: la scheda lo ricorda.
 
-> **Il canale SMS è attivo.** In *Invia notifica* l'operatore spunta «Invia
-> anche via SMS» — **spenta di default**, perché ogni messaggio ha un costo —
-> e a quel punto il testo SMS diventa obbligatorio e parte davvero, verso chi
-> ha un numero di cellulare in anagrafica: circa metà dei conduttori attivi.
-> Senza queste credenziali, spuntare la casella **rifiuta l'invio per
-> intero**, con lo stesso meccanismo della PEC assente.
+> **Il canale SMS è attivo.** In *Invia notifica* la spunta «Invia anche via
+> SMS» è **accesa di default** quando queste credenziali ci sono: il testo SMS
+> è obbligatorio e parte davvero, verso chi ha un numero di cellulare in
+> anagrafica — circa metà dei conduttori attivi — e l'operatore che non lo
+> vuole toglie la spunta. **Senza queste credenziali la spunta è spenta e non
+> si può accendere**, con l'avviso «SMS non configurati»: le comunicazioni
+> partono per sola mail.
 
 ---
 
@@ -567,7 +572,8 @@ testa.
 **L'email parte sempre — ordinaria o PEC — l'SMS solo se richiesto.** Il testo
 SMS scritto dall'operatore viene registrato con la comunicazione e mostrato nel
 dettaglio dello Storico, ma parte davvero solo se in *Invia notifica* era
-spuntata «Invia anche via SMS» (spenta di default) e solo verso chi ha un
+spuntata «Invia anche via SMS» (accesa di default, se gli SMS sono
+configurati) e solo verso chi ha un
 numero in anagrafica. Chi segnala «ho scritto l'SMS e non è arrivato» — pur
 avendo spuntato l'invio via SMS — va verificato sul numero: se manca in
 anagrafica, è il comportamento previsto.

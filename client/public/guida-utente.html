@@ -131,10 +131,11 @@ riapertura, una manutenzione, un allarme di inquinamento.</p>
 <strong>due</strong>, e non li sceglie chi invia: il sistema guarda l&#39;anagrafica di ogni
 conduttore e manda la comunicazione dalla <strong>casella ordinaria</strong> oppure dalla
 <strong>PEC</strong>. Fra i conduttori attivi la PEC è quasi la metà.</p>
-<p><strong>Si può aggiungere anche l&#39;SMS, ma solo spuntandolo.</strong> In <em>Invia notifica</em>,
-sotto al testo email, c&#39;è un secondo riquadro, <em>Testo SMS</em>, e sotto ancora la
-spunta <strong>«Invia anche via SMS»</strong>: <strong>spenta di default</strong>, perché ogni SMS ha un
-costo. Se la si spunta, il testo SMS diventa <strong>obbligatorio</strong> e parte davvero,
+<p><strong>Di base parte anche l&#39;SMS.</strong> In <em>Invia notifica</em>, sotto al testo email, c&#39;è
+un secondo riquadro, <em>Testo SMS</em>, e sotto ancora la spunta <strong>«Invia anche via
+SMS»</strong>: <strong>accesa di default</strong> quando gli SMS sono configurati — chi non vuole
+mandarlo la toglie. Finché la spunta è accesa il testo SMS è <strong>obbligatorio</strong> e
+parte davvero,
 attraverso il fornitore configurato in Impostazioni — ma solo verso chi ha un
 numero di cellulare in anagrafica, <strong>circa la metà</strong> dei conduttori attivi: chi
 non ce l&#39;ha non riceve l&#39;SMS, e lo si vede nel dettaglio dello Storico.</p>
@@ -502,12 +503,13 @@ restare vuoto.</li>
 già pronto e riempie in un colpo solo oggetto, testo email e testo SMS. I
 template si gestiscono nella sezione <a href="#8-template">Template</a>. <em>Un template
 senza testo SMS non cancella quello eventualmente già scritto a mano.</em></li>
-<li><strong>Testo SMS</strong> — <strong>facoltativo</strong>, a meno di spuntare «Invia anche via SMS»
-qui sotto: in quel caso diventa obbligatorio. Sotto al campo c&#39;è un contatore
+<li><strong>Testo SMS</strong> — <strong>obbligatorio</strong> finché «Invia anche via SMS», qui sotto, è
+accesa; togliendo la spunta diventa facoltativo. Sotto al campo c&#39;è un contatore
 <code>nn/160 caratteri</code>: oltre i 160 il messaggio potrebbe essere spezzato in più
 SMS.</li>
-<li><strong>Invia anche via SMS</strong> — la spunta che fa davvero partire l&#39;SMS, <strong>spenta
-di default</strong> perché ogni messaggio ha un costo. Accesa, mostra quanti dei
+<li><strong>Invia anche via SMS</strong> — la spunta che fa davvero partire l&#39;SMS, <strong>accesa
+di default</strong>. Se gli SMS non sono configurati resta spenta e non si può
+spuntare, con l&#39;avviso «SMS non configurati»: la mail parte lo stesso. Accesa, mostra quanti dei
 destinatari selezionati hanno un numero: solo a quelli arriverà, gli altri
 restano senza.</li>
 </ul>

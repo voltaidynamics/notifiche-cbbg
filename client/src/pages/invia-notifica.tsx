@@ -20,7 +20,7 @@ import { useSyncAnagrafiche } from "@/hooks/use-sync-anagrafiche";
 import { cn } from "@/lib/utils";
 import { messaggioErrore } from "@/lib/messaggio-errore";
 import { Waves, Boxes, Droplet, FileText, ArrowUpDown, GitFork } from "lucide-react";
-import { templatesApi, consorzioApi, notificationsApi, utentiTestApi } from "@/lib/api";
+import { templatesApi, consorzioApi, notificationsApi, utentiTestApi, smsDisponibile } from "@/lib/api";
 import type {
   MadreSelezionabile, TrattaSelezionabile, RoggiaMadreSelezionabile, TrattaRoggiaSelezionabile,
   DestinatarioInvio,
@@ -48,7 +48,7 @@ import {
 import { risolviStato, ETICHETTE_STATO, COLORI_STATO } from "@shared/stato-rogge";
 import { canaleDi, contaPerCanale, haIndirizzo } from "@shared/canale-email";
 import { BadgeCanaliContatto } from "@/components/badge-canale";
-import { mancanoDestinatari } from "@shared/invio-notifica";
+import { mancanoDestinatari, spuntaSms } from "@shared/invio-notifica";
 import { utenteTestRaggiungibile } from "@shared/utenti-test";
 
 type Row = { conduttore: DestinatarioInvio; tratte: string; invia: boolean };
@@ -135,9 +135,17 @@ export default function InviaNotifica() {
   // a invio partito si svuota la tabella dei conduttori, non i testi scritti
   // (issue #28).
   const [messaggioSms, setMessaggioSms] = useState("");
-  // Spenta di default: ogni SMS costa, e un testo scritto e poi ripensato non
-  // deve diventare una spesa involontaria.
-  const [inviaSms, setInviaSms] = useState(false);
+  // Accesa di default quando gli SMS sono configurati (issue #117): di base una
+  // comunicazione parte per mail e per SMS, e chi non vuole l'SMS la spegne.
+  // Senza credenziali resta spenta e non si tocca, o il server rifiuterebbe
+  // l'invio per intero e non partirebbe nemmeno la mail. `sceltaSms` è null
+  // finché l'operatore non l'ha toccata.
+  const [sceltaSms, setSceltaSms] = useState<boolean | null>(null);
+  const { data: statoSms } = useQuery({
+    queryKey: ["/api/notifications/sms-disponibile"],
+    queryFn: smsDisponibile,
+  });
+  const { accesa: inviaSms, disponibile: smsSelezionabile } = spuntaSms(statoSms?.configurato, sceltaSms);
   const [tipo, setTipo] = useState<TipoNotifica | "">("");
   const [classificazione, setClassificazione] = useState<ClassificazioneNotifica | "">("");
   const [riepilogoOpen, setRiepilogoOpen] = useState(false);
@@ -1107,7 +1115,7 @@ export default function InviaNotifica() {
                     Testo SMS
                   </span>
                   <Textarea
-                    placeholder="Versione corta per l'SMS (facoltativa)..."
+                    placeholder="Versione corta per l'SMS..."
                     value={messaggioSms}
                     onChange={(e) => setMessaggioSms(e.target.value)}
                     className="min-h-20"
@@ -1126,13 +1134,21 @@ export default function InviaNotifica() {
                   </span>
                 </label>
 
-                {/* Spenta di default: un testo SMS scritto e poi ripensato non
-                    deve diventare una spesa involontaria. Accesa, il testo
-                    diventa obbligatorio. */}
-                <label className="flex items-center gap-2 mt-1 cursor-pointer">
-                  <Checkbox checked={inviaSms} onCheckedChange={(v) => setInviaSms(Boolean(v))} />
-                  <span className="text-xs text-gray-700">
+                {/* Accesa di default se gli SMS sono configurati (issue #117).
+                    Accesa, il testo SMS diventa obbligatorio. */}
+                <label className={cn("flex items-center gap-2 mt-1", smsSelezionabile ? "cursor-pointer" : "cursor-not-allowed")}>
+                  <Checkbox
+                    checked={inviaSms}
+                    disabled={!smsSelezionabile}
+                    onCheckedChange={(v) => setSceltaSms(Boolean(v))}
+                  />
+                  <span className={cn("text-xs", smsSelezionabile ? "text-gray-700" : "text-gray-400")}>
                     Invia anche via SMS
+                    {statoSms && !statoSms.configurato && (
+                      <span className="text-amber-700">
+                        {" "}— SMS non configurati: chiedi a un amministratore (Impostazioni → SMS)
+                      </span>
+                    )}
                     {inviaSms && (
                       <span className="text-gray-500">
                         {" "}— {totConNumero} destinatari su {totNotificati} hanno un numero

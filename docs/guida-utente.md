@@ -35,10 +35,11 @@ riapertura, una manutenzione, un allarme di inquinamento.
 conduttore e manda la comunicazione dalla **casella ordinaria** oppure dalla
 **PEC**. Fra i conduttori attivi la PEC è quasi la metà.
 
-**Si può aggiungere anche l'SMS, ma solo spuntandolo.** In *Invia notifica*,
-sotto al testo email, c'è un secondo riquadro, *Testo SMS*, e sotto ancora la
-spunta **«Invia anche via SMS»**: **spenta di default**, perché ogni SMS ha un
-costo. Se la si spunta, il testo SMS diventa **obbligatorio** e parte davvero,
+**Di base parte anche l'SMS.** In *Invia notifica*, sotto al testo email, c'è
+un secondo riquadro, *Testo SMS*, e sotto ancora la spunta **«Invia anche via
+SMS»**: **accesa di default** quando gli SMS sono configurati — chi non vuole
+mandarlo la toglie. Finché la spunta è accesa il testo SMS è **obbligatorio** e
+parte davvero,
 attraverso il fornitore configurato in Impostazioni — ma solo verso chi ha un
 numero di cellulare in anagrafica, **circa la metà** dei conduttori attivi: chi
 non ce l'ha non riceve l'SMS, e lo si vede nel dettaglio dello Storico.
@@ -406,12 +407,13 @@ Sotto la tabella:
   già pronto e riempie in un colpo solo oggetto, testo email e testo SMS. I
   template si gestiscono nella sezione [Template](#8-template). *Un template
   senza testo SMS non cancella quello eventualmente già scritto a mano.*
-- **Testo SMS** — **facoltativo**, a meno di spuntare «Invia anche via SMS»
-  qui sotto: in quel caso diventa obbligatorio. Sotto al campo c'è un contatore
+- **Testo SMS** — **obbligatorio** finché «Invia anche via SMS», qui sotto, è
+  accesa; togliendo la spunta diventa facoltativo. Sotto al campo c'è un contatore
   `nn/160 caratteri`: oltre i 160 il messaggio potrebbe essere spezzato in più
   SMS.
-- **Invia anche via SMS** — la spunta che fa davvero partire l'SMS, **spenta
-  di default** perché ogni messaggio ha un costo. Accesa, mostra quanti dei
+- **Invia anche via SMS** — la spunta che fa davvero partire l'SMS, **accesa
+  di default**. Se gli SMS non sono configurati resta spenta e non si può
+  spuntare, con l'avviso «SMS non configurati»: la mail parte lo stesso. Accesa, mostra quanti dei
   destinatari selezionati hanno un numero: solo a quelli arriverà, gli altri
   restano senza.
 

@@ -114,8 +114,10 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
   return (
     <Dialog open={notificaId !== null} onOpenChange={(open) => !open && onClose()}>
       {/* Da telefono il dettaglio è più alto e più largo dello schermo: il
-          riquadro scorre per conto suo e resta staccato dai bordi (issue #90). */}
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          riquadro scorre per conto suo e resta staccato dai bordi (issue #90).
+          Su schermo largo arriva a 1400px: con nove colonne in 896px la
+          tabella scorreva di lato e le ultime restavano fuori (issue #116). */}
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-[1400px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Dettaglio notifica</DialogTitle>
           <DialogDescription>Messaggio inviato e destinatari raggiunti da questa comunicazione.</DialogDescription>
@@ -189,8 +191,44 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
               </Button>
             </div>
 
-            <div className="max-h-[250px] sm:max-h-[350px] overflow-auto border rounded-lg">
-              <table className="w-full min-w-[900px] text-sm">
+            {/* Da telefono nove colonne non stanno in nessun modo: una scheda
+                per destinatario, e scorre il popup intero (issue #116). */}
+            <div className="md:hidden space-y-2">
+              {dettaglio.destinatari.map((d) => (
+                <div key={d.id} className="border rounded-lg p-3 text-sm space-y-1.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="font-semibold">{d.descrizioneConduttore ?? "—"}</span>
+                      {d.utenteTest && (
+                        <span className="ml-2 text-[11px] rounded px-1.5 py-0.5 font-medium bg-amber-100 text-amber-800">
+                          Test
+                        </span>
+                      )}
+                      <div className="font-mono text-xs text-gray-500">{d.codiceConduttore ?? "—"}</div>
+                    </div>
+                    <BadgeCanale canale={d.canale === "pec" || d.canale === "normale" ? d.canale : null} />
+                  </div>
+                  <div className="break-words">
+                    <span className="font-mono text-xs">{d.codiceRoggia ?? "—"}</span>
+                    <div className="text-gray-700">{d.descrizioneRoggia ?? "—"}</div>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="break-all">{d.mail ?? <span className="text-gray-400">Nessuna mail</span>}</span>
+                    <span className="whitespace-nowrap"><Esito esito={d.esitoEmail} canale="email" /></span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span>{d.sms ?? <span className="text-gray-400">Nessun numero</span>}</span>
+                    <span className="whitespace-nowrap"><Esito esito={d.esitoSms} canale="sms" /></span>
+                  </div>
+                </div>
+              ))}
+              {dettaglio.destinatari.length === 0 && (
+                <p className="py-8 text-center text-gray-400 text-sm">Nessun destinatario registrato per questa notifica</p>
+              )}
+            </div>
+
+            <div className="hidden md:block max-h-[350px] overflow-auto border rounded-lg">
+              <table className="w-full min-w-[1100px] text-sm">
                 <thead className="sticky top-0 bg-gray-50">
                   <tr>
                     {["Codice Conduttore", "Descrizione Conduttore", "Codice Roggia", "Descrizione Roggia", "SMS", "Esito SMS", "Mail", "Esito email", "Canale"].map((h) => (

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
-import { adminUsersApi, type SafeAppUser } from "@/lib/api";
+import { adminUsersApi, type SafeAppUser, type RichiestaAccesso } from "@/lib/api";
 import Sidebar from "@/components/sidebar";
 import PageHeader from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -48,21 +48,22 @@ function UserModal({
   open,
   onClose,
   editing,
-  usernamePrecompilato,
+  richiesta,
 }: {
   open: boolean;
   onClose: () => void;
   editing: SafeAppUser | null;
-  usernamePrecompilato?: string;
+  /** L'utente nasce da «Abilita» su questa richiesta di accesso. */
+  richiesta?: RichiestaAccesso;
 }) {
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [form, setForm] = useState<UserFormData>({
-    username: editing?.username ?? usernamePrecompilato ?? "",
+    username: editing?.username ?? richiesta?.username ?? "",
     password: "",
     role: editing?.role ?? "user",
-    authSource: (editing?.authSource as "locale" | "ad" | undefined) ?? (usernamePrecompilato ? "ad" : "locale"),
+    authSource: (editing?.authSource as "locale" | "ad" | undefined) ?? (richiesta ? "ad" : "locale"),
     isActive: editing?.isActive ?? true,
   });
 
@@ -79,7 +80,7 @@ function UserModal({
       // Non ripescare data.password qui: per un utente Active Directory è "" e
       // riaggiungerla annullerebbe l'omissione fatta sopra, facendo fallire il
       // parse lato server prima ancora che authSource venga letto.
-      return adminUsersApi.create(payload);
+      return adminUsersApi.create({ ...payload, ...(richiesta ? { richiestaId: richiesta.id } : {}) });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
@@ -103,6 +104,11 @@ function UserModal({
       ? requisitiMancanti(form.password).length > 0
       : passwordObbligatoria);
 
+  // Issue #116: lo username arrivato da AD — da una richiesta di accesso o di
+  // un utente AD già censito — non si tocca: cambiato, il bind fallirebbe per
+  // sempre. Il server applica la stessa regola (erroreCambioUsername).
+  const usernameBloccato = !!richiesta || editing?.authSource === "ad";
+
   const roleOptions = currentUser?.role === "superadmin" ? ROLE_OPTIONS : ROLE_OPTIONS.filter((r) => r.value !== "superadmin");
 
   return (
@@ -114,7 +120,16 @@ function UserModal({
         <div className="space-y-4 py-2">
           <div className="space-y-1">
             <Label>Username</Label>
-            <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+            <Input
+              value={form.username}
+              disabled={usernameBloccato}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+            />
+            {usernameBloccato && (
+              <p className="text-xs text-gray-500">
+                Lo username arriva da Active Directory e non si modifica.
+              </p>
+            )}
           </div>
           <div className="space-y-1">
             <Label>Sorgente credenziali</Label>
@@ -183,7 +198,7 @@ export default function Admin() {
   });
 
   const [userModal, setUserModal] = useState<{ open: boolean; editing: SafeAppUser | null }>({ open: false, editing: null });
-  const [usernamePrecompilato, setUsernamePrecompilato] = useState<string | undefined>(undefined);
+  const [richiestaDaAbilitare, setRichiestaDaAbilitare] = useState<RichiestaAccesso | undefined>(undefined);
   const [deleteUser, setDeleteUser] = useState<SafeAppUser | null>(null);
 
   const deleteUserMutation = useMutation({
@@ -308,8 +323,8 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent>
                   <RichiesteAccesso
-                    onAbilita={(username) => {
-                      setUsernamePrecompilato(username);
+                    onAbilita={(richiesta) => {
+                      setRichiestaDaAbilitare(richiesta);
                       setUserModal({ open: true, editing: null });
                     }}
                   />
@@ -326,10 +341,10 @@ export default function Admin() {
           open={userModal.open}
           onClose={() => {
             setUserModal({ open: false, editing: null });
-            setUsernamePrecompilato(undefined);
+            setRichiestaDaAbilitare(undefined);
           }}
           editing={userModal.editing}
-          usernamePrecompilato={usernamePrecompilato}
+          richiesta={richiestaDaAbilitare}
         />
       )}
 

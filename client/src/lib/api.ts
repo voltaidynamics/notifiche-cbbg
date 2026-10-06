@@ -411,6 +411,7 @@ export const adminUsersApi = {
     role: string;
     authSource?: "locale" | "ad";
     isActive?: boolean;
+    richiestaId?: number; // da «Abilita» su una richiesta di accesso (issue #116)
   }): Promise<SafeAppUser> =>
     apiRequest("POST", "/api/admin/users", data).then((res) => res.json()),
 
@@ -555,6 +556,10 @@ export const gestioneCodiciApi = {
   imposta: (gerarchia: GerarchiaCodice, codice: string, attivo: boolean): Promise<{ gerarchia: GerarchiaCodice; codice: string; attivo: boolean }> =>
     apiRequest("PUT", "/api/gestione-codici", { gerarchia, codice, attivo }).then((res) => res.json()),
 };
+
+/** Se gli SMS possono partire (issue #117): accende di default la spunta di Invia notifica. */
+export const smsDisponibile = (): Promise<{ configurato: boolean }> =>
+  apiRequest("GET", "/api/notifications/sms-disponibile").then((res) => res.json());
 
 export const utentiTestApi = {
   /** Solo nomi e due booleani: i recapiti non escono da Impostazioni. */

@@ -15,7 +15,7 @@ import { UserPlus, Trash2, Inbox } from "lucide-react";
  * «non sei abilitato» senza che nessuno capisca perché. Qui lo username lo
  * scrive AD stesso.
  */
-export function RichiesteAccesso({ onAbilita }: { onAbilita: (username: string) => void }) {
+export function RichiesteAccesso({ onAbilita }: { onAbilita: (richiesta: RichiestaAccessoRow) => void }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   // La richiesta è l'unica traccia dello username esatto di dominio: scartarla
@@ -63,7 +63,7 @@ export function RichiesteAccesso({ onAbilita }: { onAbilita: (username: string) 
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <Button size="sm" onClick={() => onAbilita(r.username)}>
+                <Button size="sm" onClick={() => onAbilita(r)}>
                   <UserPlus size={14} className="mr-1" /> Abilita
                 </Button>
                 <Button

@@ -161,3 +161,20 @@ export function validaRichiestaInvio(raw: {
 export function mancanoDestinatari(n: { conduttori: number; utentiTestAttivi: number }): boolean {
   return n.conduttori === 0 && n.utentiTestAttivi === 0;
 }
+
+/**
+ * Lo stato della spunta «Invia anche via SMS» in Invia notifica (issue #117).
+ *
+ * Accesa di default, perché di base una comunicazione parte per mail e per SMS;
+ * spenta e non selezionabile finché gli SMS non sono configurati, perché accesa
+ * senza credenziali il server rifiuterebbe l'invio per intero e non partirebbe
+ * più nemmeno la mail. `smsConfigurato` è `undefined` finché la pagina non l'ha
+ * letto; `scelta` è `null` finché l'operatore non ha toccato la spunta.
+ */
+export function spuntaSms(
+  smsConfigurato: boolean | undefined,
+  scelta: boolean | null,
+): { accesa: boolean; disponibile: boolean } {
+  if (smsConfigurato !== true) return { accesa: false, disponibile: false };
+  return { accesa: scelta ?? true, disponibile: true };
+}

@@ -1,7 +1,7 @@
 // Le regole della richiesta di invio interattivo e il token del pixel (issue #23).
 
 import { describe, it, expect } from "vitest";
-import { validaRichiestaInvio, mancanoDestinatari } from "@shared/invio-notifica";
+import { validaRichiestaInvio, mancanoDestinatari, spuntaSms } from "@shared/invio-notifica";
 import { tokenDestinatario, leggiTokenTracking } from "../tracking-token";
 
 const buona = {
@@ -218,6 +218,28 @@ describe("validaRichiestaInvio", () => {
 
     it("conduttori scelti: si parte comunque", () => {
       expect(mancanoDestinatari({ conduttori: 3, utentiTestAttivi: 0 })).toBe(false);
+    });
+  });
+
+  // Issue #117: la mail parte con l'SMS di default, ma solo se l'SMS può partire.
+  describe("spuntaSms", () => {
+    it("SMS configurati e nessuna scelta dell'operatore: accesa", () => {
+      expect(spuntaSms(true, null)).toEqual({ accesa: true, disponibile: true });
+    });
+
+    it("l'operatore che la spegne la tiene spenta", () => {
+      expect(spuntaSms(true, false)).toEqual({ accesa: false, disponibile: true });
+    });
+
+    // Accesa senza credenziali, il server rifiuterebbe l'invio per intero:
+    // nessuno riuscirebbe più a spedire nemmeno la mail.
+    it("SMS non configurati: spenta e non selezionabile, qualunque scelta", () => {
+      expect(spuntaSms(false, null)).toEqual({ accesa: false, disponibile: false });
+      expect(spuntaSms(false, true)).toEqual({ accesa: false, disponibile: false });
+    });
+
+    it("finché la configurazione non è arrivata: spenta", () => {
+      expect(spuntaSms(undefined, null)).toEqual({ accesa: false, disponibile: false });
     });
   });
 });
