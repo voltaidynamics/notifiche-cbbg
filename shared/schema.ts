@@ -520,13 +520,28 @@ export type NotificationRecipientDetail = {
   canale: string | null;
   /** Se questa riga e' un utente di test e non un conduttore vero (issue #36). */
   utenteTest: boolean;
+  /** Se l'app ha passato la mail al server SMTP (issue #111): vedi `esitoEmail()`. */
+  esitoEmail: EsitoInvio;
+  /** Come sopra per l'SMS; null = nessun SMS partito per questa riga. */
+  esitoSms: EsitoInvio | null;
 };
+
+/**
+ * Cosa l'app sa davvero di un invio: se lo ha passato al server (SMTP o
+ * piattaforma SMS) e quello lo ha accettato. Non dice nulla su consegna o
+ * apertura, che non si tracciano.
+ */
+export type EsitoInvio = "inviato" | "nonInviato" | "inAttesa";
 
 export type NotificationHistoryDetail = NotificationHistoryRow & {
   messaggio: string;
   /** Testo SMS registrato con la notifica (issue #28): null se non c'è mai stato. */
   messaggioSms: string | null;
   destinatari: NotificationRecipientDetail[];
+  /** Mail accettate dal server SMTP, su `destinatari.length` (issue #111). */
+  emailInviate: number;
+  /** SMS accettati dalla piattaforma. */
+  smsInviati: number;
 };
 
 /** Filtri accettati da GET /api/notifications/storico. */

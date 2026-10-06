@@ -182,8 +182,8 @@ tratta:
 - quando il codice ha una roggia madre nella seconda gerarchia, il suo nome
   comparirà sotto, come riferimento — non è un dato in più da controllare, solo
   a chi conosce la tratta col nome della roggia più che con quello del codice;
-- **«Chiusa dal <data>»**: la data è un collegamento e porta alla notifica che
-  ha prodotto quella chiusura.
+- **«Chiusa dal <data>»**: cliccando la data si apre il dettaglio della
+  notifica che ha prodotto quella chiusura, lo stesso dello Storico.
 
 Il conteggio è per tratta: una notifica che chiude quattro tratte lo fa salire
 di quattro, e chiudere un pozzo con venti tratte lo fa salire di venti. Una
@@ -191,8 +191,9 @@ tratta chiusa due volte — da sé e con la sua madre — conta una volta sola.
 
 ### Ultime notifiche
 
-Le sei comunicazioni più recenti, con data, ora e numero di destinatari. La
-freccia a destra apre il dettaglio.
+Le sei comunicazioni più recenti, con data, ora e numero di destinatari.
+Cliccando una riga si apre il suo dettaglio, la stessa finestra che si apre
+dallo Storico (capitolo 6, *Il dettaglio di una notifica*).
 
 ### I due grafici
 
@@ -483,8 +484,8 @@ Cosa succede:
 - **La spedizione prosegue in sottofondo.** La risposta arriva appena la
   notifica è registrata, non quando l'ultima email è partita: su un invio ampio
   ci vogliono minuti.
-- **L'esito email per email si legge nella pagina della notifica**, che si apre
-  dalla Dashboard (vedi *Capitolo 6 → L'esito dell'invio*).
+- **L'esito email per email si legge nel dettaglio della notifica**, dallo
+  Storico o dalla Dashboard (vedi *Capitolo 6 → L'esito dell'invio*).
 
 ### Se l'invio viene rifiutato
 
@@ -584,12 +585,19 @@ Si clicca una riga qualunque. Si apre una finestra con:
 |---|---|
 | **Codice / Descrizione Conduttore** | Chi ha ricevuto, come risultava all'anagrafica *in quel momento*. Il badge ambra **Test** segna la copia inviata a un utente di test |
 | **Codice / Descrizione Roggia** | Su quali tratte è passata la comunicazione |
-| **SMS** | Il numero a cui era indirizzato l'SMS; «—» se il conduttore non aveva un numero. **Non dice** se l'SMS è partito |
-| **Mail** | L'indirizzo a cui era indirizzata la mail; «—» se non ne aveva uno. **Non dice** se la mail è partita |
+| **SMS** | Il numero a cui era indirizzato l'SMS; «—» se il conduttore non aveva un numero |
+| **Esito SMS** | Se l'SMS è partito: vedi *L'esito dell'invio* qui sotto |
+| **Mail** | L'indirizzo a cui era indirizzata la mail; «—» se non ne aveva uno |
+| **Esito email** | Se la mail è partita: vedi *L'esito dell'invio* qui sotto |
 | **Canale** | Badge viola **PEC** oppure **Email**. È «—» sulle notifiche più vecchie, precedenti ai due canali |
 
+- Sopra la tabella, il conteggio **email inviate su destinatari** e **SMS
+  inviati**.
 - **Esporta dettaglio CSV** scarica l'elenco completo dei destinatari di quella
-  notifica.
+  notifica, esiti compresi.
+
+La stessa finestra si apre anche dalla **Dashboard**: da una riga delle *Ultime
+notifiche* o dalla data *«Chiusa dal …»* di una tratta chiusa.
 
 I dati del destinatario sono una **fotografia scattata all'invio**: se il
 conduttore cambia indirizzo il mese dopo, lo Storico continua a dire dove era
@@ -597,28 +605,24 @@ stata mandata la comunicazione. È il comportamento voluto.
 
 ### L'esito dell'invio
 
-Se una mail o un SMS sono **partiti davvero** lo dice la **pagina della
-notifica**, che si apre dalla **Dashboard**: la freccia accanto a una delle
-*Ultime notifiche*, oppure il collegamento *«Chiusa dal <data>»* di una tratta
-chiusa. Contiene:
+Le colonne **Esito email** ed **Esito SMS** del dettaglio dicono se l'app è
+riuscita a **spedire** ciascun messaggio:
 
-- **Riepilogo**: tratta, tipo, classificazione, legame, numero di destinatari,
-  date e autore;
-- **Statistiche Consegna**: sulle comunicazioni partite da *Invia notifica*
-  questo riquadro resta vuoto, e non è un guasto;
-- **Destinatari**, con l'indirizzo email e le colonne **Stato Email** (*In
-  attesa*, *Inviata*, *Fallita*, *Aperta*) e **Stato SMS** (*In attesa*,
-  *Inviato*, *Fallito*). È questa la tabella da guardare. La colonna *Nome*
-  resta vuota: chi è il destinatario lo dice il dettaglio dello Storico.
+| Esito | Significato |
+|---|---|
+| **Inviata / Inviato** | Il server di posta (o la piattaforma SMS) ha accettato il messaggio |
+| **Non inviata / Non inviato** | Il messaggio non è partito: manca l'indirizzo o il numero, oppure il server lo ha rifiutato |
+| **In attesa** | Solo per le email: la spedizione è ancora in corso |
+| **—** | Solo per gli SMS: per quella comunicazione nessun SMS è partito, di solito perché la spunta «Invia anche via SMS» non c'era |
 
-Due cose da sapere:
+**«Inviata» non vuol dire «arrivata» né «letta»**: l'app sa solo di aver
+consegnato il messaggio al server, che poi lo recapita per conto suo. Se
+consegna e lettura vanno verificate, per le email certificate fanno fede le
+ricevute della PEC.
 
-- **Senza la spunta «Invia anche via SMS» lo Stato SMS resta *In attesa***:
-  l'SMS non è mai partito, e non partirà.
-- La Dashboard elenca solo le **sei** comunicazioni più recenti. Per una più
-  vecchia la pagina si apre scrivendo nella barra degli indirizzi
-  `…/notifiche/<numero>`, dove il numero è l'ID della prima colonna dello
-  Storico senza la `N` e gli zeri iniziali: `N00042` diventa `…/notifiche/42`.
+I messaggi partono **uno alla volta**: prima tutte le email, poi tutti gli SMS.
+Su un invio ampio ci vogliono minuti, e intanto le righe ancora da spedire
+restano *In attesa*.
 
 ---
 
@@ -802,14 +806,14 @@ Due cause possibili: quella comunicazione è partita senza la spunta «Invia
 anche via SMS» (il testo si scrive comunque, ma senza la spunta non parte),
 oppure quel conduttore non ha un numero di cellulare in anagrafica — succede
 a circa metà dei conduttori attivi. Nel dettaglio dello Storico, colonna *SMS*
-vuota («—») vuol dire nessun numero. Nella pagina della notifica (capitolo 6,
-*L'esito dell'invio*), *Stato SMS* **In attesa** vuol dire che la spunta non
-c'era, **Fallito** che la spunta c'era ma l'invio non è riuscito.
+vuota («—») vuol dire nessun numero; colonna *Esito SMS* «—» vuol dire che la
+spunta non c'era, **Non inviato** che la spunta c'era ma l'invio non è riuscito
+(capitolo 6, *L'esito dell'invio*).
 
 **Nel dettaglio dello Storico la colonna SMS è vuota.**
 Il conduttore non aveva un numero di cellulare in anagrafica al momento
 dell'invio. La colonna mostra il numero, non l'esito: se l'SMS sia partito lo
-dice la pagina della notifica.
+dice la colonna accanto, *Esito SMS*.
 
 **Una roggia, un impianto o un pozzo non compare più.**
 Un amministratore l'ha spento in *Gestione Codici* (capitolo 5, *Codici che
@@ -831,7 +835,7 @@ amministratore: i contatti che si stanno usando potrebbero essere vecchi.
 
 **Ho inviato ma nello Storico la notifica sembra ferma.**
 La spedizione prosegue in sottofondo e su un invio ampio richiede minuti. Si
-riapre la pagina della notifica dopo qualche minuto per vedere gli esiti
+riapre il dettaglio della notifica dopo qualche minuto per vedere gli esiti
 aggiornati.
 **Non si rinvia la stessa comunicazione**: si spedirebbe due volte a tutti.
 

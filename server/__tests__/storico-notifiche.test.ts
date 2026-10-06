@@ -6,6 +6,9 @@ import {
   matchHistoryFilters,
   costruisciStorico,
   toRecipientDetail,
+  esitoEmail,
+  esitoSms,
+  buildHistoryDetail,
 } from "@shared/storico-notifiche";
 import type { Notification, NotificationRecipient } from "@shared/schema";
 
@@ -200,7 +203,40 @@ describe("toRecipientDetail", () => {
       descrizioneRoggia: "Roggia Comuna - tratto capofonte",
       sms: "331 1234567",
       mail: "mario.rossi@email.it",
+      esitoEmail: "inviato",
+      esitoSms: null,
     });
+  });
+});
+
+describe("esito dell'invio nel dettaglio (issue #111)", () => {
+  it("una mail è inviata se il server SMTP l'ha accettata, aperta o no", () => {
+    expect(esitoEmail("sent")).toBe("inviato");
+    // Le aperture non si dichiarano: l'aperta resta una inviata.
+    expect(esitoEmail("opened")).toBe("inviato");
+    expect(esitoEmail("failed")).toBe("nonInviato");
+    expect(esitoEmail("pending")).toBe("inAttesa");
+  });
+
+  it("un SMS mai partito non è «in attesa»: senza la spunta non partirà mai", () => {
+    expect(esitoSms("pending")).toBeNull();
+    expect(esitoSms("sent")).toBe("inviato");
+    expect(esitoSms("delivered")).toBe("inviato");
+    expect(esitoSms("failed")).toBe("nonInviato");
+  });
+
+  it("il dettaglio conta le mail e gli SMS inviati", () => {
+    const d = buildHistoryDetail(notifica(), [
+      destinatario({ id: 1, emailStatus: "sent", smsStatus: "sent" }),
+      destinatario({ id: 2, emailStatus: "opened", smsStatus: "failed" }),
+      destinatario({ id: 3, emailStatus: "failed", smsStatus: "failed" }),
+      destinatario({ id: 4, email: null, emailStatus: "failed", smsStatus: "pending" }),
+    ]);
+    expect(d.destinatari).toHaveLength(4);
+    expect(d.emailInviate).toBe(2);
+    expect(d.smsInviati).toBe(1);
+    expect(d.messaggio).toBe("Testo");
+    expect(d.destinatari.map((x) => x.esitoEmail)).toEqual(["inviato", "inviato", "nonInviato", "nonInviato"]);
   });
 });
 

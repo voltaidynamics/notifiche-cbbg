@@ -1,10 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
 import Sidebar from "@/components/sidebar";
 import PageHeader from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart } from "@/components/bar-chart";
+import { DettaglioNotifica } from "@/components/dettaglio-notifica";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Clock } from "lucide-react";
@@ -45,6 +45,8 @@ function conteggioPerGiorno(giorni: Date[], date: (Date | string | null | undefi
 
 export default function Dashboard() {
   const isMobile = useIsMobile();
+  // La notifica aperta nel popup del dettaglio, lo stesso dello Storico (issue #111).
+  const [dettaglioId, setDettaglioId] = useState<number | null>(null);
 
   const { data: stato } = useQuery({
     queryKey: ["/api/consorzio/stato-rogge"],
@@ -129,9 +131,13 @@ export default function Dashboard() {
                         {c.notificaId === null ? (
                           <span className="text-xs font-semibold text-red-500">{formatDate(c.chiusaDal)}</span>
                         ) : (
-                          <Link href={`/notifiche/${c.notificaId}`} className="text-xs font-semibold text-red-500 hover:underline">
+                          <button
+                            type="button"
+                            onClick={() => setDettaglioId(c.notificaId)}
+                            className="text-xs font-semibold text-red-500 hover:underline"
+                          >
                             {formatDate(c.chiusaDal)}
-                          </Link>
+                          </button>
                         )}
                       </span>
                     </li>
@@ -151,20 +157,24 @@ export default function Dashboard() {
                 </h3>
                 <ul className="divide-y max-h-56 overflow-y-auto">
                   {ultimeNotifiche.map((notif) => (
-                    <li key={notif.id} className="flex items-center justify-between py-2 gap-3">
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold truncate">{notif.subject}</div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                          <Clock size={10} />
-                          {formatDateTime(notif.sentAt ?? notif.createdAt)} · {notif.recipientCount} dest.
-                        </div>
-                      </div>
-                      <Link
-                        href={`/notifiche/${notif.id}`}
-                        className="flex-shrink-0 w-7 h-7 border rounded-md flex items-center justify-center text-primary hover:bg-gray-50"
+                    <li key={notif.id}>
+                      {/* Tutta la riga apre il dettaglio, come nello Storico (issue #111). */}
+                      <button
+                        type="button"
+                        onClick={() => setDettaglioId(notif.id)}
+                        className="w-full flex items-center justify-between py-2 gap-3 text-left hover:bg-gray-50 rounded-md"
                       >
-                        <ArrowRight size={14} />
-                      </Link>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold truncate">{notif.subject}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                            <Clock size={10} />
+                            {formatDateTime(notif.sentAt ?? notif.createdAt)} · {notif.recipientCount} dest.
+                          </div>
+                        </div>
+                        <span className="flex-shrink-0 w-7 h-7 border rounded-md flex items-center justify-center text-primary">
+                          <ArrowRight size={14} />
+                        </span>
+                      </button>
                     </li>
                   ))}
                   {ultimeNotifiche.length === 0 && (
@@ -197,6 +207,8 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      <DettaglioNotifica notificaId={dettaglioId} onClose={() => setDettaglioId(null)} />
     </div>
   );
 }

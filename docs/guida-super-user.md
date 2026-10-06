@@ -696,12 +696,10 @@ conoscerle prima che diventino segnalazioni.
 - **La sessione dura 8 ore e non ricontrolla Active Directory**: chi viene
   disabilitato sul dominio resta operativo fino alla scadenza. Per chiuderlo
   subito si disattiva l'utenza.
-- **L'esito di ogni mail non si legge dallo Storico**: il dettaglio dello
-  Storico mostra dove è stata indirizzata, la *pagina della notifica* se è
-  partita. Quella pagina si apre solo dalla Dashboard (le ultime sei
-  comunicazioni) o scrivendo `…/notifiche/42` nella barra degli indirizzi (per
-  l'ID `N00042` dello Storico). Il
-  messaggio a schermo dopo l'invio dice ancora «si vede nello Storico».
+- **L'esito di ogni messaggio dice «inviato», non «consegnato»**: il dettaglio
+  della notifica (Storico o Dashboard) mostra se il server di posta o la
+  piattaforma SMS hanno accettato ciascun messaggio. Consegna e apertura non si
+  tracciano.
 - **I testi dei template partono come sono scritti**: niente variabili `{{…}}`,
   niente HTML.
 

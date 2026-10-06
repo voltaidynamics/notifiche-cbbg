@@ -9,7 +9,6 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Notifications from "@/pages/notifications";
-import NotificationDetail from "@/pages/notification-detail";
 import Templates from "@/pages/templates";
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
@@ -29,9 +28,6 @@ function Router() {
       </Route>
       <Route path="/invia-notifica">
         <ProtectedRoute pageSlug="invia-notifica"><InviaNotifica /></ProtectedRoute>
-      </Route>
-      <Route path="/notifiche/:id">
-        <ProtectedRoute pageSlug="notifiche"><NotificationDetail /></ProtectedRoute>
       </Route>
       <Route path="/notifiche">
         <ProtectedRoute pageSlug="notifiche"><Notifications /></ProtectedRoute>

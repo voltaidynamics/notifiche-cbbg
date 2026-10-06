@@ -38,7 +38,7 @@ import type { GerarchiaRogge, ConteggiGerarchiaRogge, NomiGerarchiaRogge } from 
 import { componiRigheRoggeMadri } from "@shared/righe-anagrafiche";
 import { db } from "./db";
 import { eq, ne, sql, and, inArray, lte, desc, or, type SQL } from "drizzle-orm";
-import { costruisciStorico, buildHistoryRow, toRecipientDetail } from "@shared/storico-notifiche";
+import { costruisciStorico, buildHistoryDetail } from "@shared/storico-notifiche";
 
 export interface IStorage {
   // Segments
@@ -877,12 +877,7 @@ export class MemStorage implements IStorage {
     const n = this.notificationsMap.get(id);
     if (!n) return undefined;
     const recipients = Array.from(this.recipientsMap.values()).filter(r => r.notificationId === id);
-    return {
-      ...buildHistoryRow(n, recipients),
-      messaggio: n.message,
-      messaggioSms: n.messageSms,
-      destinatari: recipients.map(toRecipientDetail),
-    };
+    return buildHistoryDetail(n, recipients);
   }
 
   // Notification Recipients
@@ -1819,12 +1814,7 @@ export class PostgreSQLStorage implements IStorage {
     if (!n) return undefined;
     const recipients = await db.select().from(notificationRecipients)
       .where(eq(notificationRecipients.notificationId, id));
-    return {
-      ...buildHistoryRow(n, recipients),
-      messaggio: n.message,
-      messaggioSms: n.messageSms,
-      destinatari: recipients.map(toRecipientDetail),
-    };
+    return buildHistoryDetail(n, recipients);
   }
 
   // Notification Recipients

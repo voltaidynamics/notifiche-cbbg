@@ -1,5 +1,7 @@
 import type {
+  EsitoInvio,
   Notification,
+  NotificationHistoryDetail,
   NotificationRecipient,
   NotificationHistoryRow,
   NotificationHistoryFilters,
@@ -25,6 +27,31 @@ export function dataNotifica(n: Pick<Notification, "sentAt" | "createdAt">): Dat
   return n.sentAt ?? n.createdAt;
 }
 
+/**
+ * L'esito di una mail come lo mostra il dettaglio (issue #111): «inviata»
+ * vuol dire che il server SMTP l'ha accettata, non che è arrivata.
+ * `opened` (il pixel) conta come inviata: le aperture non le dichiariamo,
+ * perché senza `APP_URL` il pixel non c'è e il dato non sarebbe affidabile.
+ * `pending` è un invio ancora in corso — o interrotto da un riavvio.
+ */
+export function esitoEmail(status: string): EsitoInvio {
+  if (status === "sent" || status === "opened") return "inviato";
+  if (status === "failed") return "nonInviato";
+  return "inAttesa";
+}
+
+/**
+ * Come `esitoEmail`, ma `pending` vale null: gli SMS partono solo con la spunta
+ * «Invia anche via SMS», e senza la spunta restano `pending` per sempre —
+ * «in attesa» direbbe che prima o poi partiranno. `delivered` non lo scrive
+ * nessuno (la piattaforma non conferma la consegna), ma conta come inviato.
+ */
+export function esitoSms(status: string): EsitoInvio | null {
+  if (status === "sent" || status === "delivered") return "inviato";
+  if (status === "failed") return "nonInviato";
+  return null;
+}
+
 export function toRecipientDetail(r: NotificationRecipient): NotificationRecipientDetail {
   return {
     id: r.id,
@@ -36,6 +63,24 @@ export function toRecipientDetail(r: NotificationRecipient): NotificationRecipie
     mail: r.email,
     canale: r.canale,
     utenteTest: r.utenteTest,
+    esitoEmail: esitoEmail(r.emailStatus),
+    esitoSms: esitoSms(r.smsStatus),
+  };
+}
+
+/** Il dettaglio di una notifica, uguale per le due implementazioni di IStorage. */
+export function buildHistoryDetail(
+  n: Notification,
+  recipients: NotificationRecipient[],
+): NotificationHistoryDetail {
+  const destinatari = recipients.map(toRecipientDetail);
+  return {
+    ...buildHistoryRow(n, recipients),
+    messaggio: n.message,
+    messaggioSms: n.messageSms,
+    destinatari,
+    emailInviate: destinatari.filter((d) => d.esitoEmail === "inviato").length,
+    smsInviati: destinatari.filter((d) => d.esitoSms === "inviato").length,
   };
 }
 

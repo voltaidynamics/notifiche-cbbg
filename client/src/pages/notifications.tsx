@@ -2,13 +2,12 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/sidebar";
 import PageHeader from "@/components/page-header";
-import { BadgeCanale } from "@/components/badge-canale";
+import {
+  DettaglioNotifica, badgeTipo, badgeClassificazione, badgeLegame, etichetta, formatDateTime, scaricaCsv,
+} from "@/components/dettaglio-notifica";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -19,9 +18,8 @@ import { notificationsApi } from "@/lib/api";
 import {
   TIPI_NOTIFICA, CLASSIFICAZIONI_NOTIFICA,
   ETICHETTE_TIPO, ETICHETTE_CLASSIFICAZIONE,
-  COLORI_TIPO, COLORI_CLASSIFICAZIONE,
 } from "@shared/classificazione";
-import { ETICHETTE_LEGAME, COLORI_LEGAME } from "@shared/legame";
+import { ETICHETTE_LEGAME } from "@shared/legame";
 import type { NotificationHistoryFilters, NotificationHistoryRow } from "@shared/schema";
 
 type SortKey = "codice" | "utente" | "data" | "numRogge" | "numDestinatari" | "tipo" | "classificazione" | "legame";
@@ -38,34 +36,6 @@ const FILTRI_VUOTI: NotificationHistoryFilters = {
 
 // Il Select di shadcn non accetta value="" per l'opzione "tutti".
 const TUTTI = "__tutti__";
-
-const etichetta = (mappa: Record<string, string>, v: string) => mappa[v] ?? v;
-
-function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString("it-IT", {
-    day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
-  });
-}
-
-/** Campo CSV con escaping di virgolette, virgole e a capo. */
-function csvField(v: string | number | null | undefined): string {
-  const s = v === null || v === undefined ? "" : String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
-function scaricaCsv(nomeFile: string, righe: (string | number | null)[][]) {
-  const csv = righe.map((r) => r.map(csvField).join(",")).join("\n");
-  // BOM: senza, Excel in italiano apre il CSV con gli accenti sbagliati.
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = nomeFile;
-  link.click();
-  URL.revokeObjectURL(url);
-}
 
 export default function Notifications() {
   const isMobile = useIsMobile();
@@ -87,12 +57,6 @@ export default function Notifications() {
   const { data: storicoCompleto = [] } = useQuery({
     queryKey: ["/api/notifications/storico", FILTRI_VUOTI],
     queryFn: () => notificationsApi.getStorico({}),
-  });
-
-  const { data: dettaglio } = useQuery({
-    queryKey: ["/api/notifications/storico/dettaglio", dettaglioId],
-    queryFn: () => notificationsApi.getStoricoDetail(dettaglioId as number),
-    enabled: dettaglioId !== null,
   });
 
   const utenti = useMemo(() => {
@@ -145,21 +109,6 @@ export default function Notifications() {
     ]);
   };
 
-  const esportaDettaglioCsv = () => {
-    if (!dettaglio) return;
-    scaricaCsv(`dettaglio_${dettaglio.codice}.csv`, [
-      ["ID Notifica", "Utente", "Data", "Tipo", "Classificazione", "Legame", "Codice Conduttore", "Descrizione Conduttore",
-        "Codice Roggia", "Descrizione Roggia", "SMS", "Mail", "Canale", "Utente di test"],
-      ...dettaglio.destinatari.map((d) => [
-        dettaglio.codice, dettaglio.utente, formatDateTime(dettaglio.data),
-        etichetta(ETICHETTE_TIPO, dettaglio.tipo), etichetta(ETICHETTE_CLASSIFICAZIONE, dettaglio.classificazione),
-        dettaglio.legame === null ? "" : etichetta(ETICHETTE_LEGAME, dettaglio.legame),
-        d.codiceConduttore, d.descrizioneConduttore, d.codiceRoggia, d.descrizioneRoggia, d.sms, d.mail, d.canale,
-        d.utenteTest ? "Si" : "No",
-      ]),
-    ]);
-  };
-
   const attiva = (fn: () => void) => (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
   };
@@ -176,21 +125,6 @@ export default function Notifications() {
       <span className="inline-flex items-center gap-1">{label}<ArrowUpDown size={11} /></span>
     </th>
   );
-
-  const badge = (valore: string, colori: Record<string, string>, etichette: Record<string, string>) => (
-    <span className={cn(
-      "inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold",
-      colori[valore] ?? "bg-gray-100 text-gray-600",
-    )}>
-      {etichetta(etichette, valore)}
-    </span>
-  );
-
-  const badgeTipo = (v: string) => badge(v, COLORI_TIPO, ETICHETTE_TIPO);
-  const badgeClassificazione = (v: string) => badge(v, COLORI_CLASSIFICAZIONE, ETICHETTE_CLASSIFICAZIONE);
-  // Null sulle notifiche partite prima della scelta del legame (issue #27).
-  const badgeLegame = (v: string | null) =>
-    v === null ? <span className="text-gray-400">—</span> : badge(v, COLORI_LEGAME, ETICHETTE_LEGAME);
 
   return (
     <div className={cn("flex h-screen bg-gray-50", isMobile && "flex-col")}>
@@ -353,124 +287,7 @@ export default function Notifications() {
         </div>
       </main>
 
-      {/* MODALE DETTAGLIO (ESC chiude: gestito da Dialog) */}
-      <Dialog open={dettaglioId !== null} onOpenChange={(open) => !open && setDettaglioId(null)}>
-        {/* Da telefono il dettaglio è più alto e più largo dello schermo: il
-            riquadro scorre per conto suo e resta staccato dai bordi (issue #90). */}
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader>
-            <DialogTitle>Dettaglio notifica</DialogTitle>
-            <DialogDescription>Messaggio inviato e destinatari raggiunti da questa comunicazione.</DialogDescription>
-          </DialogHeader>
-
-          {!dettaglio && <div className="py-8 text-center text-gray-400">Caricamento…</div>}
-
-          {dettaglio && (
-            <div className="space-y-3 min-w-0">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 bg-gray-50 rounded-lg p-3">
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">ID Notifica</span>
-                  <span className="text-sm font-medium">{dettaglio.codice}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Utente</span>
-                  <span className="text-sm font-medium">{dettaglio.utente ?? "—"}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Data e ora</span>
-                  <span className="text-sm font-medium">{formatDateTime(dettaglio.data)}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Tipo</span>
-                  <span className="mt-0.5">{badgeTipo(dettaglio.tipo)}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Classificazione</span>
-                  <span className="mt-0.5">{badgeClassificazione(dettaglio.classificazione)}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Legame</span>
-                  <span className="mt-0.5">{badgeLegame(dettaglio.legame)}</span>
-                </div>
-              </div>
-
-              {/* Il messaggio realmente spedito per questa notifica: richiesto
-                  dal tester in issue #12. Scorre per conto suo, così un testo
-                  lungo non spinge fuori schermo l'elenco dei destinatari. */}
-              <div className="border rounded-lg p-3">
-                <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Oggetto</span>
-                <p className="text-sm font-medium mb-3 break-words">{dettaglio.subject}</p>
-                <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Messaggio inviato</span>
-                <div className="mt-1 max-h-[160px] overflow-y-auto text-sm whitespace-pre-wrap text-gray-700">
-                  {dettaglio.messaggio || <span className="text-gray-400">—</span>}
-                </div>
-
-                {/* Solo se c'è: resta null sulle notifiche precedenti al testo
-                    SMS e su tutte quelle dei percorsi legacy (issue #28). */}
-                {dettaglio.messaggioSms && (
-                  <>
-                    <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold mt-3 block">Testo SMS</span>
-                    <div className="mt-1 max-h-[160px] overflow-y-auto text-sm whitespace-pre-wrap text-gray-700">
-                      {dettaglio.messaggioSms}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="flex justify-end">
-                <Button variant="outline" size="sm" onClick={esportaDettaglioCsv} disabled={dettaglio.destinatari.length === 0}>
-                  <Download size={14} className="mr-1.5" />Esporta dettaglio CSV
-                </Button>
-              </div>
-
-              <div className="max-h-[250px] sm:max-h-[350px] overflow-auto border rounded-lg">
-                <table className="w-full min-w-[720px] text-sm">
-                  <thead className="sticky top-0 bg-gray-50">
-                    <tr>
-                      {["Codice Conduttore", "Descrizione Conduttore", "Codice Roggia", "Descrizione Roggia", "SMS", "Mail", "Canale"].map((h) => (
-                        <th key={h} className="text-left text-[11px] uppercase tracking-wide text-gray-500 font-semibold px-3 py-2 border-b">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dettaglio.destinatari.map((d) => (
-                      <tr key={d.id} className="border-b last:border-0">
-                        <td className="px-3 py-2 font-semibold font-mono text-xs">{d.codiceConduttore ?? "—"}</td>
-                        <td className="px-3 py-2">
-                          {d.descrizioneConduttore ?? "—"}
-                          {/* Senza, a distanza di mesi una comunicazione di
-                              collaudo sembra una comunicazione vera andata a
-                              tre persone sole. */}
-                          {d.utenteTest && (
-                            <span className="ml-2 text-[11px] rounded px-1.5 py-0.5 font-medium bg-amber-100 text-amber-800">
-                              Test
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 font-mono text-xs">{d.codiceRoggia ?? "—"}</td>
-                        <td className="px-3 py-2">{d.descrizioneRoggia ?? "—"}</td>
-                        <td className="px-3 py-2">{d.sms ?? <span className="text-gray-400">—</span>}</td>
-                        <td className="px-3 py-2">{d.mail ?? <span className="text-gray-400">—</span>}</td>
-                        {/* Per una PEC «da quale casella è partita» è la domanda
-                            che conta: resta "—" sulle notifiche precedenti ai
-                            due canali, che nessuno ha registrato. */}
-                        <td className="px-3 py-2">
-                          <BadgeCanale canale={d.canale === "pec" || d.canale === "normale" ? d.canale : null} />
-                        </td>
-                      </tr>
-                    ))}
-                    {dettaglio.destinatari.length === 0 && (
-                      <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">
-                        Nessun destinatario registrato per questa notifica
-                      </td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <DettaglioNotifica notificaId={dettaglioId} onClose={() => setDettaglioId(null)} />
     </div>
   );
 }
