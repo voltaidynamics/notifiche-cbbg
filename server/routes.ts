@@ -39,6 +39,7 @@ import {
   salvaConfigEmail, salvaConfigEmailPec, salvaConfigSms, emailConfigurata,
   type ConfigEmail, type ConfigSms,
 } from "./config-notifiche";
+import { inviaEmailProva, richiestaEmailProvaSchema } from "./email-prova";
 import { creaSource, estraiArray } from "./sync/source";
 import { leggiCodici, TroppiCodici } from "./codici-query";
 import { validaLegame } from "@shared/legame";
@@ -1367,6 +1368,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message || "Test email fallito" });
     }
+  });
+
+  // Mail vera a un indirizzo scelto sul momento, con le credenziali salvate del
+  // canale indicato: «Test Connessione» prova solo il login (server/email-prova.ts).
+  app.post("/api/settings/email/invia-prova", requireAdmin, async (req: Request, res: Response) => {
+    const richiesta = richiestaEmailProvaSchema.safeParse(req.body);
+    if (!richiesta.success) {
+      return res.status(400).json({ message: richiesta.error.issues[0]?.message ?? "Richiesta non valida" });
+    }
+    const esito = await inviaEmailProva(richiesta.data.canale, richiesta.data.destinatario);
+    if (!esito.inviata) return res.status(400).json({ message: esito.motivo });
+    res.json({ success: true, message: `Mail di prova inviata a ${esito.destinatario} da ${esito.mittente}` });
   });
 
   // La PEC ha il suo account, separato da quello ordinario (issue #23): metà dei

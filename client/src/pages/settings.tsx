@@ -41,6 +41,7 @@ import { analizzaArray, analizzaConteggi, riassumiConteggi } from "@shared/esito
 import { recapitoMancante } from "@shared/utenti-test";
 import type { UtenteTest } from "@shared/schema";
 import { SchedaAd } from "@/components/settings/scheda-ad";
+import { InviaEmailProva } from "@/components/settings/invia-email-prova";
 import { BadgeCanale } from "@/components/badge-canale";
 import { useAuth } from "@/lib/auth";
 
@@ -440,6 +441,12 @@ export default function Settings() {
                       </div>
                     </form>
                   </Form>
+
+                  <InviaEmailProva
+                    canale="normale"
+                    configurata={!!emailSalvata?.configurata}
+                    modificheNonSalvate={emailForm.formState.isDirty}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -493,6 +500,12 @@ export default function Settings() {
                       </div>
                     </form>
                   </Form>
+
+                  <InviaEmailProva
+                    canale="pec"
+                    configurata={!!pecSalvata?.configurata}
+                    modificheNonSalvate={pecForm.formState.isDirty}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
