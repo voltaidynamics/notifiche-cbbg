@@ -324,10 +324,8 @@ export async function preparaInvio(
   //
   // È l'unico punto di scrittura: se fallisce, fallisce l'invio — non esiste
   // una comunicazione partita senza i suoi eventi.
-  await archivio.createNotificationTargets(
-    notification.id,
-    await targetDellaSelezione(archivio, richiesta.tratte, richiesta.madri),
-  );
+  const target = await targetDellaSelezione(archivio, richiesta.tratte, richiesta.madri);
+  await archivio.createNotificationTargets(notification.id, target);
 
   // Le righe destinatario nascono prima dell'invio, come nello scheduler: danno
   // l'id da mettere nel token del pixel, e tengono lo Storico popolato anche se
@@ -367,7 +365,14 @@ export async function preparaInvio(
   // `keyroggia` porta i codici selezionati come per un conduttore, o una
   // comunicazione di sola prova comparirebbe nello Storico come «0 rogge» pur
   // avendo nominato una tratta.
+  //
+  // Con i codici vanno anche i loro nomi, gli stessi fotografati nei target:
+  // senza, il dettaglio dello Storico mostrava «—» come descrizione di ogni
+  // prova (issue #118).
   const codiciSelezionati = [...richiesta.tratte, ...richiesta.madri].join(SEPARATORE_TRATTE);
+  const nomiSelezionati = descrizioniTratte(
+    target.map((t) => ({ keyroggia: t.codice, roggiaDescrizione: t.descrizione })),
+  );
   for (const u of utentiTest) {
     const canale = canaleDi(u.tipoEmail);
     const riga = await archivio.createNotificationRecipient({
@@ -376,7 +381,7 @@ export async function preparaInvio(
       keykey: null,
       conduttoreDescrizione: u.nome,
       keyroggia: codiciSelezionati || null,
-      roggiaDescrizione: null,
+      roggiaDescrizione: nomiSelezionati,
       email: u.email,
       phone: u.telefono,
       canale,

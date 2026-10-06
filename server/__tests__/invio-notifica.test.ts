@@ -298,6 +298,19 @@ describe("inviaNotificaDaTratte", () => {
     expect(righe.filter((r) => !r.utenteTest)).toHaveLength(1);
   });
 
+  // Issue #118: col solo codice, il dettaglio dello Storico mostrava «—» nella
+  // colonna Descrizione Roggia di ogni prova.
+  it("mette in snapshot anche i nomi dei codici selezionati, madri comprese", async () => {
+    await s.createUtenteTest({ nome: "Francesco", email: "collaudo@consorzio.it", tipoEmail: "normale", telefono: null, attivo: true, createdBy: null });
+
+    const esito = await invia({ ...RICHIESTA, tratte: ["R01D02000"], madri: ["R01"], destinatari: [] }, trasportoFinto());
+    if (!esito.ok) throw new Error(esito.errore);
+
+    const [test] = (await s.getRecipientsByNotificationId(esito.notificationId)).filter((r) => r.utenteTest);
+    expect(test.keyroggia).toBe("R01D02000, R01");
+    expect(test.roggiaDescrizione).toBe("Bolgare valle, R01 - Roggia bolgare");
+  });
+
   // Il caso della issue: l'operatore toglie la spunta a tutti e collauda.
   it("parte anche senza nessun conduttore selezionato, se c'e' un utente di test attivo", async () => {
     await s.createUtenteTest({ nome: "Francesco", email: "collaudo@consorzio.it", tipoEmail: "normale", telefono: null, attivo: true, createdBy: null });
