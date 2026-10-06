@@ -6,6 +6,7 @@ const config: ConfigEmail = {
   service: "smtp",
   user: "consorzio@x.it",
   password: "segreta",
+  mittente: "",
   smtpHost: "smtp.x.it",
   smtpPort: 465,
   smtpSecure: true,
@@ -30,6 +31,16 @@ describe("inviaEmailProva", () => {
     expect(t.inviati).toHaveLength(1);
     expect(t.inviati[0]).toMatchObject({ from: "consorzio@x.it", to: "io@x.it" });
     expect(String(t.inviati[0].subject)).toContain("PEC");
+  });
+
+  it("con un mittente salvato, il From è lui e non lo username", async () => {
+    const t = trasportoFinto();
+    const esito = await inviaEmailProva("normale", "io@x.it", {
+      config: { ...config, user: "1132a1555b5fd6ae90f1", mittente: "test@x.it" },
+      trasporto: t,
+    });
+    expect(esito).toMatchObject({ inviata: true, mittente: "test@x.it" });
+    expect(t.inviati[0]).toMatchObject({ from: "test@x.it" });
   });
 
   it("senza credenziali salvate non apre nessun trasporto", async () => {

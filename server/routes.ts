@@ -36,7 +36,7 @@ import { componiStatoSync } from "./sync/stato";
 import { WS_ENTITIES, chiaveSetting, leggiConfigWs, CHIAVE_BASE, type WsEntity } from "./sync/config";
 import {
   getConfigEmail, getConfigEmailPec, getConfigSms,
-  salvaConfigEmail, salvaConfigEmailPec, salvaConfigSms, emailConfigurata,
+  salvaConfigEmail, salvaConfigEmailPec, salvaConfigSms, emailConfigurata, mittenteDi,
   type ConfigEmail, type ConfigSms,
 } from "./config-notifiche";
 import { inviaEmailProva, richiestaEmailProvaSchema } from "./email-prova";
@@ -206,10 +206,17 @@ function configEmailDaRichiesta(body: any, attuale: ConfigEmail = getConfigEmail
     service: testoONull(body?.emailService) ?? attuale.service,
     user: testoONull(body?.emailUser) ?? attuale.user,
     password: testoONull(body?.emailPassword) ?? attuale.password,
+    mittente: typeof body?.emailMittente === "string" ? body.emailMittente.trim() : attuale.mittente,
     smtpHost: testoONull(body?.smtpHost) ?? attuale.smtpHost,
     smtpPort: portaDaRichiesta(body?.smtpPort) ?? attuale.smtpPort,
     smtpSecure: typeof body?.smtpSecure === "boolean" ? body.smtpSecure : attuale.smtpSecure,
   };
+}
+
+/** Il mittente è facoltativo, ma se c'è dev'essere un indirizzo. */
+function erroreMittente(v: unknown): string | null {
+  if (typeof v !== "string" || v.trim() === "") return null;
+  return z.string().email().safeParse(v.trim()).success ? null : "Mittente: indirizzo email non valido";
 }
 
 function configSmsDaRichiesta(body: any): ConfigSms {
@@ -965,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             try {
               const info = await transporter.sendMail({
-                from: configEmail.user,
+                from: mittenteDi(configEmail),
                 to: recipient.email,
                 subject,
                 html: htmlWithTracking,
@@ -1336,6 +1343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({
       emailService: c.service,
       emailUser: c.user,
+      emailMittente: c.mittente,
       smtpHost: c.smtpHost ?? "",
       smtpPort: c.smtpPort === null ? "" : String(c.smtpPort),
       smtpSecure: c.smtpSecure,
@@ -1346,11 +1354,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/settings/email", requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { emailService, emailUser, emailPassword, smtpHost, smtpPort, smtpSecure } = req.body;
+      const { emailService, emailUser, emailPassword, emailMittente, smtpHost, smtpPort, smtpSecure } = req.body;
+      const errore = erroreMittente(emailMittente);
+      if (errore) return res.status(400).json({ message: errore });
       await salvaConfigEmail(storage, {
         service: emailService,
         user: emailUser,
         password: emailPassword,
+        mittente: typeof emailMittente === "string" ? emailMittente : undefined,
         smtpHost: smtpHost ?? null,
         smtpPort: portaDaRichiesta(smtpPort),
         smtpSecure: typeof smtpSecure === "boolean" ? smtpSecure : undefined,
@@ -1391,6 +1402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({
       emailService: c.service,
       emailUser: c.user,
+      emailMittente: c.mittente,
       smtpHost: c.smtpHost ?? "",
       smtpPort: c.smtpPort === null ? "" : String(c.smtpPort),
       smtpSecure: c.smtpSecure,
@@ -1401,11 +1413,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/settings/email-pec", requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { emailService, emailUser, emailPassword, smtpHost, smtpPort, smtpSecure } = req.body;
+      const { emailService, emailUser, emailPassword, emailMittente, smtpHost, smtpPort, smtpSecure } = req.body;
+      const errore = erroreMittente(emailMittente);
+      if (errore) return res.status(400).json({ message: errore });
       await salvaConfigEmailPec(storage, {
         service: emailService,
         user: emailUser,
         password: emailPassword,
+        mittente: typeof emailMittente === "string" ? emailMittente : undefined,
         smtpHost: smtpHost ?? null,
         smtpPort: portaDaRichiesta(smtpPort),
         smtpSecure: typeof smtpSecure === "boolean" ? smtpSecure : undefined,

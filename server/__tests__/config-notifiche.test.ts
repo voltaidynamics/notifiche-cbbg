@@ -10,6 +10,7 @@ import {
   salvaConfigSms,
   getConfigEmail,
   getConfigSms,
+  mittenteDi,
   CHIAVI_EMAIL,
   CHIAVI_SMS,
 } from "../config-notifiche";
@@ -23,6 +24,7 @@ describe("leggiConfigEmail", () => {
         [CHIAVI_EMAIL.service]: "smtp",
         [CHIAVI_EMAIL.user]: "db@example.com",
         [CHIAVI_EMAIL.password]: "pw-db",
+        [CHIAVI_EMAIL.mittente]: "avvisi@example.com",
         [CHIAVI_EMAIL.smtpHost]: "smtp.example.com",
         [CHIAVI_EMAIL.smtpPort]: "465",
         [CHIAVI_EMAIL.smtpSecure]: "true",
@@ -33,6 +35,7 @@ describe("leggiConfigEmail", () => {
       service: "smtp",
       user: "db@example.com",
       password: "pw-db",
+      mittente: "avvisi@example.com",
       smtpHost: "smtp.example.com",
       smtpPort: 465,
       smtpSecure: true,
@@ -61,6 +64,7 @@ describe("leggiConfigEmail", () => {
       service: "gmail",
       user: "",
       password: "",
+      mittente: "",
       smtpHost: null,
       smtpPort: null,
       smtpSecure: false,
@@ -152,6 +156,31 @@ describe("persistenza della configurazione", () => {
 
     expect(getConfigEmail().user).toBe("nuovo@b.it");
     expect(getConfigEmail().password).toBe("segreta");
+  });
+
+  it("salva un mittente diverso dallo username, e il vuoto lo toglie", async () => {
+    // Il servizio SMTP dei test fa login con «1132a1555b5fd6ae90f1», che non
+    // è un indirizzo: il From deve poter essere un altro.
+    await salvaConfigEmail(s, { service: "smtp", user: "1132a1555b5fd6ae90f1", password: "pw", mittente: "test@consorzio.it" });
+    expect(mittenteDi(getConfigEmail())).toBe("test@consorzio.it");
+    expect(getConfigEmail().user).toBe("1132a1555b5fd6ae90f1");
+    expect((await s.getAllSettings())[CHIAVI_EMAIL.mittente]).toBe("test@consorzio.it");
+
+    // Un salvataggio che non nomina il mittente lo lascia stare…
+    await salvaConfigEmail(s, { password: "" });
+    expect(getConfigEmail().mittente).toBe("test@consorzio.it");
+
+    // …uno che lo svuota lo toglie, e il From torna lo username.
+    await salvaConfigEmail(s, { mittente: "  " });
+    expect(getConfigEmail().mittente).toBe("");
+    expect(mittenteDi(getConfigEmail())).toBe("1132a1555b5fd6ae90f1");
+  });
+
+  it("il mittente della PEC è separato da quello ordinario", async () => {
+    await salvaConfigEmail(s, { user: "a@b.it", password: "pw", mittente: "ordinaria@b.it" });
+    await salvaConfigEmailPec(s, { user: "utente-pec", password: "pw", mittente: "consorzio@pec.it" });
+    expect(mittenteDi(getConfigEmail())).toBe("ordinaria@b.it");
+    expect(mittenteDi(getConfigEmailPec())).toBe("consorzio@pec.it");
   });
 
   it("una password SMS vuota non cancella quella gia' salvata", async () => {

@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -48,14 +49,37 @@ import { useAuth } from "@/lib/auth";
 // Email settings schema
 // I segreti sono facoltativi: il server non li rimanda al client, quindi il campo
 // resta vuoto anche quando una password è salvata. Vuoto = "lascia quella che c'è".
-const emailSettingsSchema = z.object({
-  emailService: z.enum(["gmail", "smtp"]),
-  emailUser: z.string().email("Email non valida"),
-  emailPassword: z.string().optional(),
-  smtpHost: z.string().optional(),
-  smtpPort: z.string().optional(),
-  smtpSecure: z.boolean().optional(),
-});
+//
+// Con SMTP lo username non è per forza un indirizzo (quello del servizio dei test
+// è `1132a1555b5fd6ae90f1`): in quel caso serve un mittente a parte, perché
+// nessun server accetta un From che non sia un indirizzo.
+const indirizzo = z.string().email();
+const emailSettingsSchema = z
+  .object({
+    emailService: z.enum(["gmail", "smtp"]),
+    emailUser: z.string().trim().min(1, "Campo obbligatorio"),
+    emailMittente: z.string().trim().optional(),
+    emailPassword: z.string().optional(),
+    smtpHost: z.string().optional(),
+    smtpPort: z.string().optional(),
+    smtpSecure: z.boolean().optional(),
+  })
+  .superRefine((v, ctx) => {
+    const userEmail = indirizzo.safeParse(v.emailUser).success;
+    if (v.emailService === "gmail" && !userEmail) {
+      ctx.addIssue({ code: "custom", path: ["emailUser"], message: "Email non valida" });
+    }
+    if (v.emailMittente && !indirizzo.safeParse(v.emailMittente).success) {
+      ctx.addIssue({ code: "custom", path: ["emailMittente"], message: "Indirizzo email non valido" });
+    }
+    if (v.emailService === "smtp" && !v.emailMittente && !userEmail) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["emailMittente"],
+        message: "Lo username non è un indirizzo: indica il mittente",
+      });
+    }
+  });
 
 // SMS settings schema — Register.it (sfera.net)
 const smsSettingsSchema = z.object({
@@ -113,9 +137,14 @@ function CampiPosta({
         name="emailUser"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>{servizio === "gmail" ? "Email" : "Username"}</FormLabel>
             <FormControl>
-              <Input type="email" placeholder="esempio@gmail.com" {...field} />
+              <Input
+                type={servizio === "gmail" ? "email" : "text"}
+                autoComplete="off"
+                placeholder={servizio === "gmail" ? "esempio@gmail.com" : "username di accesso al server SMTP"}
+                {...field}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -148,6 +177,23 @@ function CampiPosta({
 
       {servizio === "smtp" && (
         <>
+          <FormField
+            control={form.control}
+            name="emailMittente"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mittente</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="lascia vuoto se coincide con lo username" {...field} />
+                </FormControl>
+                <FormDescription>
+                  L'indirizzo «Da» dei messaggi, se diverso dallo username di accesso.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="smtpHost"
@@ -206,6 +252,7 @@ export default function Settings() {
     defaultValues: {
       emailService: "gmail",
       emailUser: "",
+      emailMittente: "",
       emailPassword: "",
       smtpHost: "",
       smtpPort: "587",
@@ -221,6 +268,7 @@ export default function Settings() {
     defaultValues: {
       emailService: "smtp",
       emailUser: "",
+      emailMittente: "",
       emailPassword: "",
       smtpHost: "",
       smtpPort: "465",
@@ -259,6 +307,7 @@ export default function Settings() {
     emailForm.reset({
       emailService: emailSalvata.emailService === "smtp" ? "smtp" : "gmail",
       emailUser: emailSalvata.emailUser,
+      emailMittente: emailSalvata.emailMittente ?? "",
       emailPassword: "", // il server non la rimanda: si ridigita solo per cambiarla
       smtpHost: emailSalvata.smtpHost,
       smtpPort: emailSalvata.smtpPort || "587",
@@ -271,6 +320,7 @@ export default function Settings() {
     pecForm.reset({
       emailService: pecSalvata.emailService === "gmail" ? "gmail" : "smtp",
       emailUser: pecSalvata.emailUser,
+      emailMittente: pecSalvata.emailMittente ?? "",
       emailPassword: "", // il server non la rimanda: si ridigita solo per cambiarla
       smtpHost: pecSalvata.smtpHost,
       smtpPort: pecSalvata.smtpPort || "465",

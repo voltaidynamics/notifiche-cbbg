@@ -18,7 +18,7 @@
 
 import { storage } from "./storage";
 import {
-  getConfigEmail, getConfigEmailPec, emailConfigurata,
+  getConfigEmail, getConfigEmailPec, emailConfigurata, mittenteDi,
   getConfigSms, smsConfigurata, type ConfigSms,
   CANALI_EMAIL, ETICHETTE_CANALE, canaleDi, type CanaleEmail, type ConfigEmail,
 } from "./config-notifiche";
@@ -468,7 +468,7 @@ export async function spedisciPreparato(
       // parte dalla PEC del consorzio, una mail ordinaria dalla casella
       // ordinaria.
       const info = await trasportoDi(canale).sendMail({
-        from: preparato.config[canale].user,
+        from: mittenteDi(preparato.config[canale]),
         to: email,
         // Il titolo della comunicazione, e nient'altro: è la issue #23.
         subject: preparato.titolo,

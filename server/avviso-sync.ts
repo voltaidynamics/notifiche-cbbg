@@ -16,7 +16,7 @@ import type { SyncLog } from "@shared/schema";
 import { syncAll, SyncGiaInCorso, type EsitoSync } from "./sync/sync-all";
 import { storage } from "./storage";
 import { createTransporter } from "./email";
-import { getConfigEmail, emailConfigurata, type ConfigEmail } from "./config-notifiche";
+import { getConfigEmail, emailConfigurata, mittenteDi, type ConfigEmail } from "./config-notifiche";
 
 export const CHIAVE_DESTINATARI = "sync.avvisi.destinatari";
 
@@ -231,7 +231,7 @@ export async function inviaAvvisoSync(msg: Messaggio, deps: DepsAvviso = {}): Pr
   try {
     const trasporto = deps.trasporto ?? createTransporter(config);
     await trasporto.sendMail({
-      from: config.user,
+      from: mittenteDi(config),
       to: destinatari.join(", "),
       subject: msg.oggetto,
       html: msg.html,

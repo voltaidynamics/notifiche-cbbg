@@ -19,8 +19,14 @@ export { CANALI_EMAIL, ETICHETTE_CANALE, canaleDi, type CanaleEmail } from "@sha
 
 export type ConfigEmail = {
   service: string;          // "gmail" | "smtp" | altro servizio Nodemailer
-  user: string;
+  user: string;             // username di login SMTP
   password: string;
+  /**
+   * Indirizzo «From» dei messaggi; vuoto = lo username. Esiste perché non tutti
+   * i servizi SMTP fanno login con l'indirizzo: quello dei test ha uno username
+   * come `1132a1555b5fd6ae90f1`, che come mittente nessun server accetterebbe.
+   */
+  mittente: string;
   smtpHost: string | null;  // usati solo con service === "smtp"
   smtpPort: number | null;
   smtpSecure: boolean;
@@ -41,6 +47,7 @@ export const CHIAVI_EMAIL = {
   service: "email.service",
   user: "email.user",
   password: "email.password",
+  mittente: "email.from",
   smtpHost: "email.smtpHost",
   smtpPort: "email.smtpPort",
   smtpSecure: "email.smtpSecure",
@@ -59,6 +66,7 @@ export const CHIAVI_EMAIL_PEC = {
   service: "emailPec.service",
   user: "emailPec.user",
   password: "emailPec.password",
+  mittente: "emailPec.from",
   smtpHost: "emailPec.smtpHost",
   smtpPort: "emailPec.smtpPort",
   smtpSecure: "emailPec.smtpSecure",
@@ -118,6 +126,7 @@ export function leggiConfigEmail(
     service: primoValorizzato(settings[CHIAVI_EMAIL.service], env.EMAIL_SERVICE) || "gmail",
     user: primoValorizzato(settings[CHIAVI_EMAIL.user], env.EMAIL_USER),
     password: primoValorizzato(settings[CHIAVI_EMAIL.password], env.EMAIL_PASSWORD),
+    mittente: primoValorizzato(settings[CHIAVI_EMAIL.mittente], env.EMAIL_FROM),
     smtpHost: valoreONull(settings[CHIAVI_EMAIL.smtpHost]) ?? valoreONull(env.SMTP_HOST),
     smtpPort: numeroONull(porta ?? undefined),
     smtpSecure: booleano(sicura, false),
@@ -142,6 +151,7 @@ export function leggiConfigEmailPec(
     service: primoValorizzato(settings[CHIAVI_EMAIL_PEC.service], env.EMAIL_PEC_SERVICE) || "smtp",
     user: primoValorizzato(settings[CHIAVI_EMAIL_PEC.user], env.EMAIL_PEC_USER),
     password: primoValorizzato(settings[CHIAVI_EMAIL_PEC.password], env.EMAIL_PEC_PASSWORD),
+    mittente: primoValorizzato(settings[CHIAVI_EMAIL_PEC.mittente], env.EMAIL_PEC_FROM),
     smtpHost: valoreONull(settings[CHIAVI_EMAIL_PEC.smtpHost]) ?? valoreONull(env.SMTP_PEC_HOST),
     smtpPort: numeroONull(porta ?? undefined),
     // La PEC viaggia su TLS implicito (465) presso tutti i gestori italiani:
@@ -160,6 +170,11 @@ export function leggiConfigSms(
     clientid: primoValorizzato(settings[CHIAVI_SMS.clientid], env.SMS_CLIENTID),
     password: primoValorizzato(settings[CHIAVI_SMS.password], env.SMS_PASSWORD),
   };
+}
+
+/** L'indirizzo «From» con cui parte un messaggio: il mittente, o lo username. */
+export function mittenteDi(c: ConfigEmail): string {
+  return c.mittente || c.user;
 }
 
 export function emailConfigurata(c: ConfigEmail): boolean {
@@ -229,6 +244,7 @@ export async function salvaConfigEmail(
     service: string;
     user: string;
     password: string;
+    mittente: string;
     smtpHost: string | null;
     smtpPort: number | null;
     smtpSecure: boolean;
@@ -238,6 +254,9 @@ export async function salvaConfigEmail(
     service: valoreONull(patch.service) ?? configEmail.service,
     user: valoreONull(patch.user) ?? configEmail.user,
     password: segretoAggiornato(patch.password, configEmail.password),
+    // Non è un segreto: la pagina lo rimostra, quindi vuoto vuol dire «nessun
+    // mittente a parte», cioè torna lo username.
+    mittente: patch.mittente === undefined ? configEmail.mittente : (valoreONull(patch.mittente) ?? ""),
     smtpHost: patch.smtpHost === undefined
       ? configEmail.smtpHost
       : valoreONull(patch.smtpHost ?? undefined),
@@ -248,6 +267,7 @@ export async function salvaConfigEmail(
   await archivio.setSetting(CHIAVI_EMAIL.service, aggiornata.service);
   await archivio.setSetting(CHIAVI_EMAIL.user, aggiornata.user);
   await archivio.setSetting(CHIAVI_EMAIL.password, aggiornata.password);
+  await archivio.setSetting(CHIAVI_EMAIL.mittente, aggiornata.mittente);
   await archivio.setSetting(CHIAVI_EMAIL.smtpHost, aggiornata.smtpHost ?? "");
   await archivio.setSetting(
     CHIAVI_EMAIL.smtpPort,
@@ -265,6 +285,7 @@ export async function salvaConfigEmailPec(
     service: string;
     user: string;
     password: string;
+    mittente: string;
     smtpHost: string | null;
     smtpPort: number | null;
     smtpSecure: boolean;
@@ -274,6 +295,9 @@ export async function salvaConfigEmailPec(
     service: valoreONull(patch.service) ?? configEmailPec.service,
     user: valoreONull(patch.user) ?? configEmailPec.user,
     password: segretoAggiornato(patch.password, configEmailPec.password),
+    // Non è un segreto: la pagina lo rimostra, quindi vuoto vuol dire «nessun
+    // mittente a parte», cioè torna lo username.
+    mittente: patch.mittente === undefined ? configEmailPec.mittente : (valoreONull(patch.mittente) ?? ""),
     smtpHost: patch.smtpHost === undefined
       ? configEmailPec.smtpHost
       : valoreONull(patch.smtpHost ?? undefined),
@@ -284,6 +308,7 @@ export async function salvaConfigEmailPec(
   await archivio.setSetting(CHIAVI_EMAIL_PEC.service, aggiornata.service);
   await archivio.setSetting(CHIAVI_EMAIL_PEC.user, aggiornata.user);
   await archivio.setSetting(CHIAVI_EMAIL_PEC.password, aggiornata.password);
+  await archivio.setSetting(CHIAVI_EMAIL_PEC.mittente, aggiornata.mittente);
   await archivio.setSetting(CHIAVI_EMAIL_PEC.smtpHost, aggiornata.smtpHost ?? "");
   await archivio.setSetting(
     CHIAVI_EMAIL_PEC.smtpPort,
