@@ -268,14 +268,14 @@ export const settingsApi = {
   // I segreti non tornano mai dal server: si sa solo se sono impostati.
   getEmailSettings: (): Promise<{
     emailService: "gmail" | "smtp"; emailUser: string; emailMittente: string; smtpHost: string;
-    smtpPort: string; smtpSecure: boolean; passwordImpostata: boolean; configurata: boolean;
+    smtpPort: string; smtpSecure: boolean; autenticazione: boolean; passwordImpostata: boolean; configurata: boolean;
   }> => apiRequest("GET", "/api/settings/email").then((res) => res.json()),
 
   // Il secondo account di posta: la PEC (issue #23). Stessa forma di quello
   // ordinario, chiavi diverse in `app_settings`.
   getEmailPecSettings: (): Promise<{
     emailService: "gmail" | "smtp"; emailUser: string; emailMittente: string; smtpHost: string;
-    smtpPort: string; smtpSecure: boolean; passwordImpostata: boolean; configurata: boolean;
+    smtpPort: string; smtpSecure: boolean; autenticazione: boolean; passwordImpostata: boolean; configurata: boolean;
   }> => apiRequest("GET", "/api/settings/email-pec").then((res) => res.json()),
 
   saveEmailPecSettings: (data: any): Promise<{ success: boolean; message: string }> =>

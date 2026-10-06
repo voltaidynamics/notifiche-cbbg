@@ -9,6 +9,7 @@ const base: ConfigEmail = {
   smtpHost: null,
   smtpPort: null,
   smtpSecure: false,
+  autenticazione: true,
 };
 
 describe("createTransporter", () => {
@@ -28,6 +29,29 @@ describe("createTransporter", () => {
     expect((t.options as any).host).toBe("mail.consorzio.it");
     expect((t.options as any).port).toBe(2525);
     expect((t.options as any).secure).toBe(true);
+  });
+
+  it("senza autenticazione non passa `auth` a Nodemailer", () => {
+    // Con `auth` presente, e la password vuota, Nodemailer muore su «Missing
+    // credentials» appena il server annuncia AUTH.
+    const t = createTransporter({
+      ...base,
+      service: "smtp",
+      user: "",
+      password: "",
+      smtpHost: "192.168.0.48",
+      smtpPort: 25,
+      autenticazione: false,
+    });
+    expect((t.options as any).host).toBe("192.168.0.48");
+    expect((t.options as any).auth).toBeUndefined();
+  });
+
+  it("con l'autenticazione accesa, o su Gmail, `auth` c'è", () => {
+    const smtp = createTransporter({ ...base, service: "smtp", smtpHost: "mail.consorzio.it" });
+    expect((smtp.options as any).auth).toEqual({ user: "mittente@consorzio.it", pass: "segreta" });
+    const gmail = createTransporter({ ...base, autenticazione: false });
+    expect((gmail.options as any).auth).toEqual({ user: "mittente@consorzio.it", pass: "segreta" });
   });
 
   it("ripiega sulla porta 587 quando la porta non è configurata", () => {

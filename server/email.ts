@@ -7,7 +7,7 @@
  * gmail partendo dalla stessa configurazione.
  */
 import nodemailer from "nodemailer";
-import { getConfigEmail, type ConfigEmail } from "./config-notifiche";
+import { getConfigEmail, senzaLogin, type ConfigEmail } from "./config-notifiche";
 
 export function createTransporter(config: ConfigEmail = getConfigEmail()) {
   if (config.service === "smtp" && config.smtpHost) {
@@ -15,7 +15,10 @@ export function createTransporter(config: ConfigEmail = getConfigEmail()) {
       host: config.smtpHost,
       port: config.smtpPort ?? 587,
       secure: config.smtpSecure,
-      auth: { user: config.user, pass: config.password },
+      // Con `auth` presente Nodemailer tenta il login appena il server annuncia
+      // AUTH, e con la password vuota muore su «Missing credentials»: un relay
+      // senza autenticazione va chiamato senza `auth`, non con `auth` vuoto.
+      ...(senzaLogin(config) ? {} : { auth: { user: config.user, pass: config.password } }),
     });
   }
   return nodemailer.createTransport({

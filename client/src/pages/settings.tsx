@@ -57,15 +57,21 @@ const indirizzo = z.string().email();
 const emailSettingsSchema = z
   .object({
     emailService: z.enum(["gmail", "smtp"]),
-    emailUser: z.string().trim().min(1, "Campo obbligatorio"),
+    emailUser: z.string().trim(),
     emailMittente: z.string().trim().optional(),
     emailPassword: z.string().optional(),
     smtpHost: z.string().optional(),
     smtpPort: z.string().optional(),
     smtpSecure: z.boolean().optional(),
+    autenticazione: z.boolean().optional(),
   })
   .superRefine((v, ctx) => {
     const userEmail = indirizzo.safeParse(v.emailUser).success;
+    // Gmail il login lo vuole sempre; un server SMTP solo se non è dichiarato senza.
+    const conLogin = v.emailService === "gmail" || v.autenticazione !== false;
+    if (conLogin && !v.emailUser) {
+      ctx.addIssue({ code: "custom", path: ["emailUser"], message: "Campo obbligatorio" });
+    }
     if (v.emailService === "gmail" && !userEmail) {
       ctx.addIssue({ code: "custom", path: ["emailUser"], message: "Email non valida" });
     }
@@ -76,7 +82,7 @@ const emailSettingsSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["emailMittente"],
-        message: "Lo username non è un indirizzo: indica il mittente",
+        message: conLogin ? "Lo username non è un indirizzo: indica il mittente" : "Senza autenticazione il mittente è obbligatorio",
       });
     }
   });
@@ -108,6 +114,9 @@ function CampiPosta({
   servizio: string;
   passwordImpostata: boolean;
 }) {
+  // Un relay della rete locale (tipicamente sulla 25) accetta posta senza login:
+  // username e password spariscono, e restano salvati per quando si riaccende.
+  const conLogin = servizio === "gmail" || form.watch("autenticazione") !== false;
   return (
     <>
       <FormField
@@ -132,6 +141,28 @@ function CampiPosta({
         )}
       />
 
+      {servizio === "smtp" && (
+        <FormField
+          control={form.control}
+          name="autenticazione"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between">
+              <div>
+                <FormLabel>Il server richiede l'autenticazione</FormLabel>
+                <FormDescription>
+                  Spegnilo per un server di posta interno che accetta i messaggi senza username e password.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch checked={field.value !== false} onCheckedChange={field.onChange} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      )}
+
+      {conLogin && (
+      <>
       <FormField
         control={form.control}
         name="emailUser"
@@ -174,6 +205,8 @@ function CampiPosta({
           </FormItem>
         )}
       />
+      </>
+      )}
 
       {servizio === "smtp" && (
         <>
@@ -257,6 +290,7 @@ export default function Settings() {
       smtpHost: "",
       smtpPort: "587",
       smtpSecure: true,
+      autenticazione: true,
     },
   });
 
@@ -273,6 +307,7 @@ export default function Settings() {
       smtpHost: "",
       smtpPort: "465",
       smtpSecure: true,
+      autenticazione: true,
     },
   });
 
@@ -312,6 +347,7 @@ export default function Settings() {
       smtpHost: emailSalvata.smtpHost,
       smtpPort: emailSalvata.smtpPort || "587",
       smtpSecure: emailSalvata.smtpSecure,
+      autenticazione: emailSalvata.autenticazione !== false,
     });
   }, [emailSalvata]);
 
@@ -325,6 +361,7 @@ export default function Settings() {
       smtpHost: pecSalvata.smtpHost,
       smtpPort: pecSalvata.smtpPort || "465",
       smtpSecure: pecSalvata.smtpSecure,
+      autenticazione: pecSalvata.autenticazione !== false,
     });
   }, [pecSalvata]);
 

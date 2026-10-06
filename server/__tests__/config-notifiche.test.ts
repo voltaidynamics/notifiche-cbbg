@@ -39,6 +39,7 @@ describe("leggiConfigEmail", () => {
       smtpHost: "smtp.example.com",
       smtpPort: 465,
       smtpSecure: true,
+      autenticazione: true,
     });
   });
 
@@ -68,6 +69,7 @@ describe("leggiConfigEmail", () => {
       smtpHost: null,
       smtpPort: null,
       smtpSecure: false,
+      autenticazione: true,
     });
   });
 
@@ -116,6 +118,22 @@ describe("emailConfigurata / smsConfigurata", () => {
     ).toBe(true);
   });
 
+  it("senza autenticazione bastano server SMTP e mittente", () => {
+    // Il relay interno del consorzio (192.168.0.48:25) non fa login.
+    const relay = {
+      ...leggiConfigEmail({}, ENV_VUOTO),
+      service: "smtp",
+      smtpHost: "192.168.0.48",
+      smtpPort: 25,
+      autenticazione: false,
+    };
+    expect(emailConfigurata(relay)).toBe(false); // nessun indirizzo per il «From»
+    expect(emailConfigurata({ ...relay, mittente: "avvisi@consorzio.it" })).toBe(true);
+    expect(emailConfigurata({ ...relay, mittente: "avvisi@consorzio.it", smtpHost: null })).toBe(false);
+    // Gmail il login lo vuole comunque, interruttore o no.
+    expect(emailConfigurata({ ...relay, service: "gmail", mittente: "avvisi@consorzio.it" })).toBe(false);
+  });
+
   it("richiedono Client ID e password per gli SMS", () => {
     expect(smsConfigurata({ clientid: "cbbg", password: "" })).toBe(false);
     expect(smsConfigurata({ clientid: "cbbg", password: "segreta" })).toBe(true);
@@ -156,6 +174,18 @@ describe("persistenza della configurazione", () => {
 
     expect(getConfigEmail().user).toBe("nuovo@b.it");
     expect(getConfigEmail().password).toBe("segreta");
+  });
+
+  it("l'autenticazione è accesa finché non la si spegne, e lo spegnimento sopravvive al riavvio", async () => {
+    expect(getConfigEmail().autenticazione).toBe(true);
+    await salvaConfigEmail(s, { service: "smtp", smtpHost: "192.168.0.48", smtpPort: 25, mittente: "avvisi@consorzio.it", autenticazione: false });
+    expect(getConfigEmail().autenticazione).toBe(false);
+    const settings = await s.getAllSettings();
+    expect(settings[CHIAVI_EMAIL.autenticazione]).toBe("false");
+    expect(emailConfigurata(leggiConfigEmail(settings, ENV_VUOTO))).toBe(true);
+    // Un salvataggio che non la nomina la lascia com'è.
+    await salvaConfigEmail(s, { mittente: "altro@consorzio.it" });
+    expect(getConfigEmail().autenticazione).toBe(false);
   });
 
   it("salva un mittente diverso dallo username, e il vuoto lo toglie", async () => {

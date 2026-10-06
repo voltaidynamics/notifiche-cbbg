@@ -210,6 +210,7 @@ function configEmailDaRichiesta(body: any, attuale: ConfigEmail = getConfigEmail
     smtpHost: testoONull(body?.smtpHost) ?? attuale.smtpHost,
     smtpPort: portaDaRichiesta(body?.smtpPort) ?? attuale.smtpPort,
     smtpSecure: typeof body?.smtpSecure === "boolean" ? body.smtpSecure : attuale.smtpSecure,
+    autenticazione: typeof body?.autenticazione === "boolean" ? body.autenticazione : attuale.autenticazione,
   };
 }
 
@@ -1347,6 +1348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       smtpHost: c.smtpHost ?? "",
       smtpPort: c.smtpPort === null ? "" : String(c.smtpPort),
       smtpSecure: c.smtpSecure,
+      autenticazione: c.autenticazione,
       passwordImpostata: c.password !== "",
       configurata: emailConfigurata(c),
     });
@@ -1354,7 +1356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/settings/email", requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { emailService, emailUser, emailPassword, emailMittente, smtpHost, smtpPort, smtpSecure } = req.body;
+      const { emailService, emailUser, emailPassword, emailMittente, smtpHost, smtpPort, smtpSecure, autenticazione } = req.body;
       const errore = erroreMittente(emailMittente);
       if (errore) return res.status(400).json({ message: errore });
       await salvaConfigEmail(storage, {
@@ -1365,6 +1367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         smtpHost: smtpHost ?? null,
         smtpPort: portaDaRichiesta(smtpPort),
         smtpSecure: typeof smtpSecure === "boolean" ? smtpSecure : undefined,
+        autenticazione: typeof autenticazione === "boolean" ? autenticazione : undefined,
       });
       res.json({ success: true, message: "Configurazione email salvata" });
     } catch (error) {
@@ -1406,6 +1409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       smtpHost: c.smtpHost ?? "",
       smtpPort: c.smtpPort === null ? "" : String(c.smtpPort),
       smtpSecure: c.smtpSecure,
+      autenticazione: c.autenticazione,
       passwordImpostata: c.password !== "",
       configurata: emailConfigurata(c),
     });
@@ -1413,7 +1417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/settings/email-pec", requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { emailService, emailUser, emailPassword, emailMittente, smtpHost, smtpPort, smtpSecure } = req.body;
+      const { emailService, emailUser, emailPassword, emailMittente, smtpHost, smtpPort, smtpSecure, autenticazione } = req.body;
       const errore = erroreMittente(emailMittente);
       if (errore) return res.status(400).json({ message: errore });
       await salvaConfigEmailPec(storage, {
@@ -1424,6 +1428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         smtpHost: smtpHost ?? null,
         smtpPort: portaDaRichiesta(smtpPort),
         smtpSecure: typeof smtpSecure === "boolean" ? smtpSecure : undefined,
+        autenticazione: typeof autenticazione === "boolean" ? autenticazione : undefined,
       });
       res.json({ success: true, message: "Configurazione PEC salvata" });
     } catch (error) {

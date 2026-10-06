@@ -30,6 +30,14 @@ export type ConfigEmail = {
   smtpHost: string | null;  // usati solo con service === "smtp"
   smtpPort: number | null;
   smtpSecure: boolean;
+  /**
+   * Falso = il server SMTP accetta posta senza login (un relay della rete
+   * locale, tipicamente sulla 25). Un flag e non «username vuoto»: lo username
+   * vuoto in `app_settings` ripiega su `EMAIL_USER` di `.env`, e la password
+   * vuota vuol dire «tieni quella salvata». Vale solo con `service === "smtp"`:
+   * Gmail il login lo vuole sempre.
+   */
+  autenticazione: boolean;
 };
 
 export type ConfigSms = {
@@ -51,6 +59,7 @@ export const CHIAVI_EMAIL = {
   smtpHost: "email.smtpHost",
   smtpPort: "email.smtpPort",
   smtpSecure: "email.smtpSecure",
+  autenticazione: "email.auth",
 } as const;
 
 /**
@@ -70,6 +79,7 @@ export const CHIAVI_EMAIL_PEC = {
   smtpHost: "emailPec.smtpHost",
   smtpPort: "emailPec.smtpPort",
   smtpSecure: "emailPec.smtpSecure",
+  autenticazione: "emailPec.auth",
 } as const;
 
 export const CHIAVI_SMS = {
@@ -130,6 +140,7 @@ export function leggiConfigEmail(
     smtpHost: valoreONull(settings[CHIAVI_EMAIL.smtpHost]) ?? valoreONull(env.SMTP_HOST),
     smtpPort: numeroONull(porta ?? undefined),
     smtpSecure: booleano(sicura, false),
+    autenticazione: booleano(valoreONull(settings[CHIAVI_EMAIL.autenticazione]), true),
   };
 }
 
@@ -159,6 +170,7 @@ export function leggiConfigEmailPec(
     // proprio per questo che `booleano` non deve mandare a `false` un valore
     // che non riconosce.
     smtpSecure: booleano(sicura, true),
+    autenticazione: booleano(valoreONull(settings[CHIAVI_EMAIL_PEC.autenticazione]), true),
   };
 }
 
@@ -177,7 +189,14 @@ export function mittenteDi(c: ConfigEmail): string {
   return c.mittente || c.user;
 }
 
+/** Il login si fa sempre, tranne su un server SMTP dichiarato senza autenticazione. */
+export function senzaLogin(c: ConfigEmail): boolean {
+  return c.service === "smtp" && c.autenticazione === false;
+}
+
 export function emailConfigurata(c: ConfigEmail): boolean {
+  // Senza login servono solo il server e un indirizzo da mettere nel «From».
+  if (senzaLogin(c)) return !!c.smtpHost && mittenteDi(c) !== "";
   return c.user !== "" && c.password !== "";
 }
 
@@ -248,6 +267,7 @@ export async function salvaConfigEmail(
     smtpHost: string | null;
     smtpPort: number | null;
     smtpSecure: boolean;
+    autenticazione: boolean;
   }>,
 ): Promise<ConfigEmail> {
   const aggiornata: ConfigEmail = {
@@ -262,6 +282,7 @@ export async function salvaConfigEmail(
       : valoreONull(patch.smtpHost ?? undefined),
     smtpPort: patch.smtpPort === undefined ? configEmail.smtpPort : patch.smtpPort,
     smtpSecure: patch.smtpSecure === undefined ? configEmail.smtpSecure : patch.smtpSecure,
+    autenticazione: patch.autenticazione === undefined ? configEmail.autenticazione : patch.autenticazione,
   };
 
   await archivio.setSetting(CHIAVI_EMAIL.service, aggiornata.service);
@@ -274,6 +295,7 @@ export async function salvaConfigEmail(
     aggiornata.smtpPort === null ? "" : String(aggiornata.smtpPort),
   );
   await archivio.setSetting(CHIAVI_EMAIL.smtpSecure, aggiornata.smtpSecure ? "true" : "false");
+  await archivio.setSetting(CHIAVI_EMAIL.autenticazione, aggiornata.autenticazione ? "true" : "false");
 
   configEmail = aggiornata;
   return aggiornata;
@@ -289,6 +311,7 @@ export async function salvaConfigEmailPec(
     smtpHost: string | null;
     smtpPort: number | null;
     smtpSecure: boolean;
+    autenticazione: boolean;
   }>,
 ): Promise<ConfigEmail> {
   const aggiornata: ConfigEmail = {
@@ -303,6 +326,7 @@ export async function salvaConfigEmailPec(
       : valoreONull(patch.smtpHost ?? undefined),
     smtpPort: patch.smtpPort === undefined ? configEmailPec.smtpPort : patch.smtpPort,
     smtpSecure: patch.smtpSecure === undefined ? configEmailPec.smtpSecure : patch.smtpSecure,
+    autenticazione: patch.autenticazione === undefined ? configEmailPec.autenticazione : patch.autenticazione,
   };
 
   await archivio.setSetting(CHIAVI_EMAIL_PEC.service, aggiornata.service);
@@ -315,6 +339,7 @@ export async function salvaConfigEmailPec(
     aggiornata.smtpPort === null ? "" : String(aggiornata.smtpPort),
   );
   await archivio.setSetting(CHIAVI_EMAIL_PEC.smtpSecure, aggiornata.smtpSecure ? "true" : "false");
+  await archivio.setSetting(CHIAVI_EMAIL_PEC.autenticazione, aggiornata.autenticazione ? "true" : "false");
 
   configEmailPec = aggiornata;
   return aggiornata;
