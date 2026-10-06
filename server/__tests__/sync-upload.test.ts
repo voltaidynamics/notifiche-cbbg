@@ -16,6 +16,16 @@ function fixture(nome: string): string {
   return readFileSync(join(CARTELLA_FIXTURE, nome), "utf8");
 }
 
+// La cartella è gitignorata (dati personali dei conduttori) e non va nella copia
+// del cliente: senza, i test «dati veri» si saltano invece di fallire.
+const SENZA_DATI_VERI = !existsSync(CARTELLA_FIXTURE);
+
+// Righe di un export vero, per contare dal file stesso cosa ci si aspetta: i JSON
+// cambiano a ogni export del consorzio, un numero scritto qui invecchia al primo.
+function righeFixture(nome: string): Record<string, unknown>[] {
+  return estraiArray(JSON.parse(fixture(nome).replace(/^\uFEFF/, ""))) as Record<string, unknown>[];
+}
+
 // Riga minima e valida per ciascuna entità: usata come base "genererica" nei
 // test di meccanica (forme accettate, BOM, salvataggio) che prima usavano
 // l'entità "comuni", non più fra le otto.
@@ -132,13 +142,18 @@ describe("validaPayload — parser per entità", () => {
 });
 
 describe("validaPayload — avvisi sulle righe scartate (A4)", () => {
-  it("tratteImpianti: avvisa sulle aggregazioni non IM senza rifiutare (dati veri)", () => {
-    // dati-ws/tester-2026-09/LEGAME_RDA9_MADRE_I_getimpiantirogge_all.json:
-    // 1104 righe, di cui 731 IM, 312 ZM e 61 NM (373 da scartare).
-    const esito = validaPayload("tratteImpianti", fixture("LEGAME_RDA9_MADRE_I_getimpiantirogge_all.json"));
-    expect(esito.righe).toBe(1104);
+  it.skipIf(SENZA_DATI_VERI)("tratteImpianti: avvisa sulle aggregazioni non IM senza rifiutare (dati veri)", () => {
+    // getimpiantirogge/all mescola IM con le aggregazioni NM e ZM (373 righe
+    // all'export del 25/09/2026): l'avviso deve contare proprio quelle.
+    const nome = "LEGAME_RDA9_MADRE_I_getimpiantirogge_all.json";
+    const righe = righeFixture(nome);
+    const nonIm = righe.filter((r) => !String(r.codiceimpianto).startsWith("IM")).length;
+    expect(nonIm).toBeGreaterThan(0); // altrimenti il test non prova più niente
+
+    const esito = validaPayload("tratteImpianti", fixture(nome));
+    expect(esito.righe).toBe(righe.length);
     expect(esito.avvisi).toHaveLength(1);
-    expect(esito.avvisi[0]).toMatch(/373/);
+    expect(esito.avvisi[0]).toMatch(new RegExp(`\\b${nonIm}\\b`));
     expect(esito.avvisi[0]).toMatch(/aggregazioni diverse da IM/i);
   });
 
@@ -155,12 +170,18 @@ describe("validaPayload — avvisi sulle righe scartate (A4)", () => {
     expect(() => validaPayload("tratteImpianti", testo)).toThrow(/verrebbero scartate/i);
   });
 
-  it("legamiLiveOrari: nessun avviso su un vero export senza codici N (dati veri)", () => {
-    // dati-ws/tester-2026-09/LEGAME_LIVE_S_getconduttoriroggelive_S.json: 1479
-    // righe, nessuna su un codice che comincia per N.
-    const esito = validaPayload("legamiLiveOrari", fixture("LEGAME_LIVE_S_getconduttoriroggelive_S.json"));
-    expect(esito.righe).toBe(1479);
-    expect(esito.avvisi).toEqual([]);
+  it.skipIf(SENZA_DATI_VERI)("legamiLiveOrari: accetta il vero export, e avvisa solo se ha codici N o monchi (dati veri)", () => {
+    const nome = "LEGAME_LIVE_S_getconduttoriroggelive_S.json";
+    const righe = righeFixture(nome);
+    const scartabili = righe.filter((r) => {
+      const k = String(r.keyroggia).trim();
+      return k.startsWith("N") || k.length < 3;
+    }).length;
+
+    const esito = validaPayload("legamiLiveOrari", fixture(nome));
+    expect(esito.righe).toBe(righe.length);
+    if (scartabili === 0) expect(esito.avvisi).toEqual([]);
+    else expect(esito.avvisi[0]).toMatch(new RegExp(`\\b${scartabili}\\b`));
   });
 
   it("legamiLiveOrari: avvisa sui codici N senza rifiutare", () => {
@@ -201,17 +222,30 @@ describe("validaPayload — avvisi sulle righe scartate (A4)", () => {
     expect(() => validaPayload("legamiLiveOrari", testo)).toThrow(/verrebbero scartate/i);
   });
 
-  it("tratteOrari: avvisa sui non-gruppi di consegna nel vero export (dati veri)", () => {
-    // dati-ws/tester-2026-09/ELENCO_SDA9_getroggeorari_S.json: 198 righe, ma
-    // 91 di quelle non sono gruppi di consegna (scarichi, sfiati, nodi,
-    // saracinesche: il consorzio ci ha chiesto di scartarle).
-    const esito = validaPayload("tratteOrari", fixture("ELENCO_SDA9_getroggeorari_S.json"));
-    expect(esito.righe).toBe(198);
+  it.skipIf(SENZA_DATI_VERI)("tratteOrari: accetta il vero export senza avvisi sui gruppi di consegna (dati veri)", () => {
+    // Fino al 22/09/2026 getroggeorari/S mandava 198 righe, 91 delle quali nodi
+    // tecnici di S45 da scartare; dall'export del 25/09 il consorzio li filtra a
+    // monte (107 righe). Il caso dello scarto è coperto dal test sintetico sotto.
+    const nome = "ELENCO_SDA9_getroggeorari_S.json";
+    const esito = validaPayload("tratteOrari", fixture(nome));
+    expect(esito.righe).toBe(righeFixture(nome).length);
+    for (const a of esito.avvisi) expect(a).not.toMatch(/non sono gruppi di consegna/i);
+  });
+
+  it("tratteOrari: avvisa sui non-gruppi di consegna senza rifiutare", () => {
+    // Settima posizione: G = gruppo di consegna, cifra = codice di S02/S08/S30
+    // (da tenere), un'altra lettera = sfiato, scarico, nodo, saracinesca.
+    const testo = JSON.stringify([
+      { keyroggia: "S45DA0G001", name: "Gruppo" },
+      { keyroggia: "S02DA00002", name: "Cifra in settima posizione" },
+      { keyroggia: "S45DA0S001", name: "Sfiato" },
+      { keyroggia: "S45DA0N002", name: "Nodo" },
+    ]);
+    const esito = validaPayload("tratteOrari", testo);
+    expect(esito.righe).toBe(4);
     expect(esito.avvisi).toHaveLength(1);
-    // Il messaggio nomina entrambe le cause, non solo "troppo corto"
-    expect(esito.avvisi[0]).toMatch(/91/);
+    expect(esito.avvisi[0]).toMatch(/\b2\b/);
     expect(esito.avvisi[0]).toMatch(/non sono gruppi di consegna/i);
-    expect(esito.avvisi[0]).toMatch(/troppo corto/i);
   });
 
   it("tratteOrari: avvisa sui keyroggia troppo corti senza rifiutare", () => {
@@ -393,7 +427,7 @@ describe("validaPayload — discrimina coppie di entità che i parser tolleranti
       .toThrow(/non sembra un'anagrafica di impianti/i);
   });
 
-  it("accetta un vero export di madri impianti (dati veri)", () => {
+  it.skipIf(SENZA_DATI_VERI)("accetta un vero export di madri impianti (dati veri)", () => {
     // dati-ws/tester-2026-09/ANAGRAFICA_I_getimpianti.json: 62 impianti.
     const esito = validaPayload("madriImpianti", fixture("ANAGRAFICA_I_getimpianti.json"));
     expect(esito.righe).toBe(62);
@@ -407,32 +441,32 @@ describe("validaPayload — discrimina coppie di entità che i parser tolleranti
       .toThrow(/non sembra un'anagrafica di impianti a orari/i);
   });
 
-  it("accetta un vero export di madri a orari (dati veri)", () => {
+  it.skipIf(SENZA_DATI_VERI)("accetta un vero export di madri a orari (dati veri)", () => {
     // dati-ws/tester-2026-09/ANAGRAFICA_S_getroggemadri_orarigruppiconsegna.json: 4 madri.
     const esito = validaPayload("madriOrari", fixture("ANAGRAFICA_S_getroggemadri_orarigruppiconsegna.json"));
     expect(esito.righe).toBe(4);
   });
 
-  it("rifiuta un file di tratte a orari (getroggeorari/S) scelto per tratte con impianto", () => {
+  it.skipIf(SENZA_DATI_VERI)("rifiuta un file di tratte a orari (getroggeorari/S) scelto per tratte con impianto (dati veri)", () => {
     // ELENCO_SDA9 non porta codiceimpianto su nessuna riga.
     expect(() => validaPayload("tratteImpianti", fixture("ELENCO_SDA9_getroggeorari_S.json")))
       .toThrow(/getroggeorari\/S/);
   });
 
-  it("rifiuta un file di tratte con impianto (getimpiantirogge/all) scelto per tratte a orari", () => {
+  it.skipIf(SENZA_DATI_VERI)("rifiuta un file di tratte con impianto (getimpiantirogge/all) scelto per tratte a orari (dati veri)", () => {
     // Esempio del brief: LEGAME_RDA9 porta codiceimpianto su ogni riga, e
     // tratteOrari non lo vuole su nessuna.
     expect(() => validaPayload("tratteOrari", fixture("LEGAME_RDA9_MADRE_I_getimpiantirogge_all.json")))
       .toThrow(/getimpiantirogge\/all/);
   });
 
-  it("rifiuta un file di tratte (senza keykey) scelto per legami", () => {
+  it.skipIf(SENZA_DATI_VERI)("rifiuta un file di tratte (senza keykey) scelto per legami (dati veri)", () => {
     // ELENCO_SDA9 non porta keykey su nessuna riga: non è un file di legami.
     expect(() => validaPayload("legamiLiveOrari", fixture("ELENCO_SDA9_getroggeorari_S.json")))
       .toThrow(/non sembra un elenco di legami/i);
   });
 
-  it("rifiuta un file di conduttori scelto per legami (dati veri, correzione post-revisione)", () => {
+  it.skipIf(SENZA_DATI_VERI)("rifiuta un file di conduttori scelto per legami (dati veri, correzione post-revisione)", () => {
     // Scambio plausibile segnalato dal revisore: i conduttori hanno anche
     // loro un keykey (il primo discriminatore non basta a distinguerli), e
     // il file dei legami si chiama "getconduttoriroggelive_S.json" — la
@@ -471,7 +505,7 @@ describe("validaPayload — discrimina coppie di entità che i parser tolleranti
       .toThrow(/iniziano per S, non per R.*getroggeorari\/R/is);
   });
 
-  it("accetta comunque un vero export di madri e tratte a orari (dati veri)", () => {
+  it.skipIf(SENZA_DATI_VERI)("accetta comunque un vero export di madri e tratte a orari (dati veri)", () => {
     // Le fixture vere hanno tutte i loro codici S: il nuovo controllo non deve
     // toccarle.
     expect(validaPayload("madriOrari", fixture("ANAGRAFICA_S_getroggemadri_orarigruppiconsegna.json")).righe)
