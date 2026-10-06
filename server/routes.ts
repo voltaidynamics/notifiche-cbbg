@@ -40,6 +40,7 @@ import {
   type ConfigEmail, type ConfigSms,
 } from "./config-notifiche";
 import { inviaEmailProva, richiestaEmailProvaSchema } from "./email-prova";
+import { inviaSmsProva, richiestaSmsProvaSchema } from "./sms-prova";
 import { creaSource, estraiArray } from "./sync/source";
 import { leggiCodici, TroppiCodici } from "./codici-query";
 import { validaLegame } from "@shared/legame";
@@ -1443,6 +1444,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Errore nel salvataggio delle impostazioni SMS" });
     }
+  });
+
+  // SMS vero al numero scelto, con le credenziali salvate: la prova sopra
+  // interroga solo il credito (server/sms-prova.ts).
+  app.post("/api/settings/sms/invia-prova", requireAdmin, async (req: Request, res: Response) => {
+    const richiesta = richiestaSmsProvaSchema.safeParse(req.body);
+    if (!richiesta.success) {
+      return res.status(400).json({ message: richiesta.error.issues[0]?.message ?? "Richiesta non valida" });
+    }
+    const esito = await inviaSmsProva(richiesta.data.numero);
+    if (!esito.inviato) return res.status(400).json({ message: esito.motivo });
+    res.json({ success: true, message: `SMS di prova inviato a ${esito.numero}` });
   });
 
   app.post("/api/settings/sms/test", requireAdmin, async (req: Request, res: Response) => {

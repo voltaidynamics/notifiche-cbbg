@@ -300,6 +300,10 @@ export const settingsApi = {
   inviaEmailProva: (data: { canale: "normale" | "pec"; destinatario: string }): Promise<{ success: boolean; message: string }> =>
     apiRequest("POST", "/api/settings/email/invia-prova", data).then((res) => res.json()),
 
+  // SMS vero con le credenziali salvate, verso un numero scelto ora: costa un messaggio.
+  inviaSmsProva: (data: { numero: string }): Promise<{ success: boolean; message: string }> =>
+    apiRequest("POST", "/api/settings/sms/invia-prova", data).then((res) => res.json()),
+
   saveSMSSettings: (data: any): Promise<{ success: boolean; message: string }> =>
     apiRequest("POST", "/api/settings/sms", data).then((res) => res.json()),
 

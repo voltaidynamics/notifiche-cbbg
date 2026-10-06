@@ -41,7 +41,7 @@ import { analizzaArray, analizzaConteggi, riassumiConteggi } from "@shared/esito
 import { recapitoMancante } from "@shared/utenti-test";
 import type { UtenteTest } from "@shared/schema";
 import { SchedaAd } from "@/components/settings/scheda-ad";
-import { InviaEmailProva } from "@/components/settings/invia-email-prova";
+import { InvioDiProva } from "@/components/settings/invio-di-prova";
 import { BadgeCanale } from "@/components/badge-canale";
 import { useAuth } from "@/lib/auth";
 
@@ -442,10 +442,18 @@ export default function Settings() {
                     </form>
                   </Form>
 
-                  <InviaEmailProva
-                    canale="normale"
+                  <InvioDiProva
+                    id="email-prova-normale"
+                    titolo="Invia email di test"
+                    descrizione={<>Spedisce una mail vera con le credenziali Email <strong>salvate</strong>, all'indirizzo che scegli.</>}
+                    etichettaCanale="Email"
+                    tipoCampo="email"
+                    placeholder="indirizzo@esempio.it"
                     configurata={!!emailSalvata?.configurata}
                     modificheNonSalvate={emailForm.formState.isDirty}
+                    invia={(destinatario) => settingsApi.inviaEmailProva({ canale: "normale", destinatario })}
+                    titoloSuccesso="Mail di prova inviata"
+                    suggerimento="Controlla la casella (anche lo spam)."
                   />
                 </CardContent>
               </Card>
@@ -501,10 +509,18 @@ export default function Settings() {
                     </form>
                   </Form>
 
-                  <InviaEmailProva
-                    canale="pec"
+                  <InvioDiProva
+                    id="email-prova-pec"
+                    titolo="Invia email di test"
+                    descrizione={<>Spedisce una mail vera con le credenziali PEC <strong>salvate</strong>, all'indirizzo che scegli.</>}
+                    etichettaCanale="PEC"
+                    tipoCampo="email"
+                    placeholder="indirizzo@esempio.it"
                     configurata={!!pecSalvata?.configurata}
                     modificheNonSalvate={pecForm.formState.isDirty}
+                    invia={(destinatario) => settingsApi.inviaEmailProva({ canale: "pec", destinatario })}
+                    titoloSuccesso="Mail di prova inviata"
+                    suggerimento="Controlla la casella (anche lo spam)."
                   />
                 </CardContent>
               </Card>
@@ -587,6 +603,19 @@ export default function Settings() {
                       </div>
                     </form>
                   </Form>
+
+                  <InvioDiProva
+                    id="sms-prova"
+                    titolo="Invia SMS di test"
+                    descrizione={<>Spedisce un SMS vero con le credenziali <strong>salvate</strong> al numero che scegli. Consuma un messaggio del credito.</>}
+                    etichettaCanale="SMS"
+                    tipoCampo="tel"
+                    placeholder="333 1234567"
+                    configurata={!!smsSalvata?.configurata}
+                    modificheNonSalvate={smsForm.formState.isDirty}
+                    invia={(numero) => settingsApi.inviaSmsProva({ numero })}
+                    titoloSuccesso="SMS di prova inviato"
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
