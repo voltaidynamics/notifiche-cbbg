@@ -26,13 +26,13 @@ const GUIDE = [
   {
     sorgente: "docs/guida-utente.md",
     destinazione: "client/public/guida-utente.html",
-    titolo: "Guida utente — Notifiche Canali Irrigui",
+    titolo: "Guida utente — Notifiche Impianti",
     occhiello: "Utente e Osservatore",
   },
   {
     sorgente: "docs/guida-super-user.md",
     destinazione: "client/public/guida-super-user.html",
-    titolo: "Guida super user — Notifiche Canali Irrigui",
+    titolo: "Guida super user — Notifiche Impianti",
     occhiello: "Admin e Super Admin",
   },
 ];
@@ -193,7 +193,7 @@ function pagina({ titolo, occhiello, corpo }) {
   <body>
     <header class="intestazione">
       <div class="dentro">
-        <strong>Notifiche Canali Irrigui</strong>
+        <strong>Notifiche Impianti</strong>
         <span>Guida per ${occhiello}</span>
       </div>
     </header>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Guida utente — Notifiche Canali Irrigui</title>
+    <title>Guida utente — Notifiche Impianti</title>
     <!--
       PAGINA GENERATA — non modificarla a mano.
       La fonte è in docs/, si rigenera con: npm run guide:build
@@ -97,12 +97,12 @@
   <body>
     <header class="intestazione">
       <div class="dentro">
-        <strong>Notifiche Canali Irrigui</strong>
+        <strong>Notifiche Impianti</strong>
         <span>Guida per Utente e Osservatore</span>
       </div>
     </header>
     <main class="foglio">
-<h1 id="guida-utente--notifiche-canali-irrigui">Guida utente — Notifiche Canali Irrigui</h1>
+<h1 id="guida-utente--notifiche-impianti">Guida utente — Notifiche Impianti</h1>
 <p>Guida per chi usa l&#39;applicazione tutti i giorni: <strong>Utente</strong> e <strong>Osservatore</strong>.
 Le funzioni riservate agli amministratori (Gestione Utenti, Gestione Codici,
 Impostazioni) sono
@@ -189,20 +189,23 @@ crea l&#39;utenza:</p>
 <p>Il colore del riquadro dice che cosa fare, prima ancora del testo:</p>
 <ul>
 <li><strong>Rosso — «Credenziali non valide»</strong>: la password potrebbe essere sbagliata.
-Riprovare ha senso.</li>
+Riprovare ha senso, ma con attenzione: per un&#39;utenza <strong>Active Directory</strong> lo
+stesso messaggio compare anche se la password di dominio è <strong>scaduta</strong> o se
+l&#39;account di dominio è <strong>bloccato o disabilitato</strong> — il consorzio risponde
+solo «sì» o «no», senza dire perché. Se si è sicuri della password, si prova
+ad accedere al PC del consorzio: lì il motivo si vede. Insistere su un account
+bloccato allunga il blocco.</li>
 <li><strong>Ambra — tutto il resto</strong>: riprovare <em>non</em> serve. Il messaggio dice che cosa
 fare:<ul>
 <li><em>«Utente non abilitato. Contatta un amministratore per richiedere
 l&#39;accesso.»</em> → la password di dominio era giusta, ma l&#39;utenza non è ancora
 stata abilitata in questa applicazione. La richiesta è già arrivata
 all&#39;amministratore: basta segnalarglielo.</li>
-<li><em>«Account disabilitato»</em> → l&#39;utenza esiste ma è stata disattivata.</li>
-<li><em>«Account di dominio disabilitato»</em> / <em>«bloccato per troppi tentativi»</em> →
-serve un sistemista. <strong>Con l&#39;account bloccato, riprovare allunga il
-blocco.</strong></li>
-<li><em>«La tua password di dominio è scaduta»</em> → si cambia dal PC, poi si rientra.</li>
-<li><em>«Active Directory non è raggiungibile»</em> → problema di rete o di server,
-non di credenziali.</li>
+<li><em>«Account disabilitato»</em> → l&#39;utenza esiste ma è stata disattivata in questa
+applicazione.</li>
+<li><em>«Active Directory non è raggiungibile. Riprova più tardi o contatta un
+amministratore.»</em> → il servizio del consorzio che verifica le password di
+dominio non risponde: problema di rete o di server, non di credenziali.</li>
 </ul>
 </li>
 </ul>
@@ -244,6 +247,15 @@ super user</em>, che aggiunge i capitoli sulla configurazione.</li>
 <em>Impostazioni</em>.</li>
 <li><strong>Esci</strong>.</li>
 </ul>
+<h3 id="messaggi-di-conferma-e-messaggi-di-errore">Messaggi di conferma e messaggi di errore</h3>
+<p>Le <strong>conferme</strong> («Invio avviato», «Configurazione salvata»…) compaiono in un
+piccolo avviso che sparisce da solo dopo qualche secondo.</p>
+<p>Gli <strong>errori</strong> invece si aprono in una <strong>finestra al centro dello schermo</strong>, che
+resta lì finché non si preme <strong>Ho capito</strong>: un errore non deve poter sparire
+mentre si guarda altrove. Se gli errori sono più d&#39;uno, si vedono uno alla
+volta. Il testo è quello del server quando c&#39;è; se il server non risponde o
+risponde con una pagina tecnica, la finestra lo dice in italiano (per esempio
+un problema di rete o la sessione scaduta).</p>
 <h3 id="i-ruoli">I ruoli</h3>
 <div class="tabella"><table>
 <thead>
@@ -293,16 +305,12 @@ tratta chiusa due volte — da sé e con la sua madre — conta una volta sola.<
 Cliccando una riga si apre il suo dettaglio, la stessa finestra che si apre
 dallo Storico (capitolo 6, <em>Il dettaglio di una notifica</em>).</p>
 <h3 id="i-due-grafici">I due grafici</h3>
-<p><strong>Chiusure</strong> e <strong>Notifiche</strong> degli ultimi 30 giorni, un barra per giorno.</p>
-<h3 id="il-badge-esempio">Il badge «esempio»</h3>
-<p>Quando una sezione non ha ancora dati veri (nessuna chiusura registrata, nessuna
-notifica inviata) mostra dei <strong>dati di esempio</strong> con l&#39;etichetta arancione
-<code>ESEMPIO</code>. Servono a far vedere come si presenterà la sezione: <strong>non sono dati
-reali</strong>. Spariscono da soli alla prima chiusura o alla prima notifica vera, e
-<strong>ricompaiono ogni volta che la sezione torna vuota</strong>: il riquadro «Tratte
-chiuse» quando tutte le tratte sono state riaperte, i grafici in un mese senza
-chiusure o senza notifiche. Un numero rosso con il badge <code>ESEMPIO</code> accanto non
-è una tratta chiusa.</p>
+<p><strong>Chiusure</strong> e <strong>Notifiche</strong> degli ultimi 30 giorni, una barra per giorno.</p>
+<h3 id="quando-è-vuota">Quando è vuota</h3>
+<p>La Dashboard mostra <strong>solo dati veri</strong>, mai dati di esempio. Alla prima
+installazione parte vuota: <em>«Nessuna tratta chiusa»</em>, <em>«Nessuna notifica
+inviata»</em> e grafici a zero. È il comportamento corretto, non un guasto: si
+riempie da sola con le prime comunicazioni.</p>
 <hr>
 <h2 id="5-invia-notifica">5. Invia notifica</h2>
 <p>È la sezione più importante. Si compila dall&#39;alto verso il basso, e ogni passo
@@ -606,8 +614,8 @@ ci vogliono minuti.</li>
 Storico o dalla Dashboard (vedi <em>Capitolo 6 → L&#39;esito dell&#39;invio</em>).</li>
 </ul>
 <h3 id="se-linvio-viene-rifiutato">Se l&#39;invio viene rifiutato</h3>
-<p>Compare un messaggio rosso <strong>«Invio non riuscito»</strong> con la ragione. La più
-frequente:</p>
+<p>Si apre una finestra <strong>«Invio non riuscito»</strong> con la ragione, da chiudere con
+<em>Ho capito</em>. Non è partito nulla: si corregge e si riprova. La più frequente:</p>
 <blockquote>
 <p><em>«Configurazione PEC assente: 47 destinatari su 120 vanno raggiunti via PEC —
 imposta le credenziali PEC in Impostazioni»</em></p>
@@ -690,9 +698,9 @@ potesse scegliere.</p>
 <p>In fondo il conteggio dei record trovati.</p>
 <p><strong>Esporta CSV</strong> scarica esattamente le righe visibili, con i filtri applicati.
 Il file si apre correttamente in Excel italiano, accenti compresi.</p>
-<p>Anche qui, se non è mai stata inviata nessuna comunicazione, si vedono <strong>dati di
-esempio</strong> con il badge <code>ESEMPIO</code>, che rispondono ai filtri come farebbero i dati
-veri.</p>
+<p>Se non è mai stata inviata nessuna comunicazione, o se nessuna corrisponde ai
+filtri, la tabella dice <em>«Nessuna notifica trovata»</em>: lo Storico mostra solo
+comunicazioni vere, mai dati di esempio.</p>
 <h3 id="il-dettaglio-di-una-notifica">Il dettaglio di una notifica</h3>
 <p>Si clicca una riga qualunque. Si apre una finestra con:</p>
 <ul>
@@ -933,10 +941,9 @@ dettaglio si passa direttamente alla modifica.</p>
 <td>La versione corta, precaricata in <em>Invia notifica</em> insieme a titolo e testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS»</td>
 </tr>
 </tbody></table></div>
-<p>Se non esiste ancora nessun template, in <em>Invia notifica</em> il pulsante per
-caricarne uno propone tre testi di partenza già pronti (<em>Comunicazione chiusura
-tratta</em>, <em>Avviso manutenzione programmata</em>, <em>Comunicazione riapertura</em>), che
-riempiono solo il testo email.</p>
+<p>Alla prima installazione non c&#39;è nessun template, e in <em>Invia notifica</em> la
+tendina dice <em>«Nessun template»</em>: non ci sono testi di partenza precaricati, i
+modelli li crea chi usa l&#39;applicazione da questa sezione.</p>
 <p>L&#39;icona cestino elimina il template, con una conferma. L&#39;eliminazione <strong>non
 tocca le comunicazioni già inviate</strong>: il loro testo resta nello Storico.</p>
 <hr>

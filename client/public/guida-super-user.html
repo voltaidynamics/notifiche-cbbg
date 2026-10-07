@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Guida super user — Notifiche Canali Irrigui</title>
+    <title>Guida super user — Notifiche Impianti</title>
     <!--
       PAGINA GENERATA — non modificarla a mano.
       La fonte è in docs/, si rigenera con: npm run guide:build
@@ -97,12 +97,12 @@
   <body>
     <header class="intestazione">
       <div class="dentro">
-        <strong>Notifiche Canali Irrigui</strong>
+        <strong>Notifiche Impianti</strong>
         <span>Guida per Admin e Super Admin</span>
       </div>
     </header>
     <main class="foglio">
-<h1 id="guida-super-user--notifiche-canali-irrigui">Guida super user — Notifiche Canali Irrigui</h1>
+<h1 id="guida-super-user--notifiche-impianti">Guida super user — Notifiche Impianti</h1>
 <p>Guida per <strong>Admin</strong> e <strong>Super Admin</strong>: le sezioni di configurazione, la gestione
 degli accessi, l&#39;integrazione con il consorzio e le regole operative da
 rispettare.</p>
@@ -219,7 +219,7 @@ nella scheda Utenti.</p>
 </tr>
 <tr>
 <td><strong>Password</strong></td>
-<td>Compare <strong>solo</strong> per la sorgente Locale. In modifica: vuota = non cambia</td>
+<td>Compare <strong>solo</strong> per la sorgente Locale. In modifica: vuota = non cambia. Sotto il campo, l&#39;elenco dei requisiti si spunta in verde man mano che vengono rispettati</td>
 </tr>
 <tr>
 <td><strong>Ruolo</strong></td>
@@ -230,7 +230,20 @@ nella scheda Utenti.</p>
 <td>Solo in modifica. Disattivare blocca l&#39;accesso senza perdere lo storico</td>
 </tr>
 </tbody></table></div>
-<p>Username di almeno 3 caratteri, password di almeno 8. Lo stato si cambia anche
+<p>Lo username deve avere almeno 3 caratteri. La password locale deve avere:</p>
+<ul>
+<li><strong>almeno 12 caratteri</strong>;</li>
+<li><strong>una lettera maiuscola</strong> e <strong>una minuscola</strong>;</li>
+<li><strong>un numero</strong>;</li>
+<li><strong>un carattere speciale</strong> (qualunque carattere che non sia lettera o numero,
+anche lo spazio).</li>
+</ul>
+<p>Finché manca un requisito il pulsante di salvataggio resta spento. La regola
+vale quando una password si <strong>imposta o si cambia</strong>: quelle già salvate prima
+non vengono ricontrollate. Non ci sono scadenza, blocco dopo tentativi falliti
+né cambio obbligatorio al primo accesso. Gli utenti Active Directory non hanno
+una password nell&#39;applicazione, quindi la regola non li riguarda.</p>
+<p>Lo stato si cambia anche
 direttamente dall&#39;interruttore nella colonna <em>Stato</em>. L&#39;icona cestino elimina
 l&#39;utenza, con conferma.</p>
 <p>Regole che l&#39;applicazione fa rispettare da sé:</p>
@@ -323,8 +336,9 @@ pagina e rifare la selezione.</p>
 <hr>
 <h2 id="4-le-due-sorgenti-di-credenziali">4. Le due sorgenti di credenziali</h2>
 <p>Ogni utenza dichiara <strong>in anticipo</strong> chi valida la sua password: l&#39;applicazione
-(hash locale) oppure il domain controller. <strong>Non è un ripiego a cascata</strong>, ed è
-la regola di sicurezza più importante dell&#39;applicazione.</p>
+(hash locale) oppure Active Directory, attraverso il web service del consorzio.
+<strong>Non è un ripiego a cascata</strong>, ed è la regola di sicurezza più importante
+dell&#39;applicazione.</p>
 <p>Il motivo è concreto: se si provasse prima la password locale e poi, fallendo,
 Active Directory, un&#39;utenza locale con lo stesso username di una persona di
 dominio <strong>vincerebbe per sempre</strong> — anche dopo che il consorzio ha disabilitato
@@ -342,17 +356,21 @@ passando a Locale bisogna fornirne una.</li>
 <blockquote>
 <p><strong>Deve sempre esistere almeno un Super Admin con sorgente Locale.</strong></p>
 </blockquote>
-<p>È l&#39;unico che riesce a entrare quando il domain controller non risponde.
-<strong>L&#39;applicazione lo impone</strong>: rifiuta di convertire ad AD, cambiare ruolo,
+<p>È l&#39;unico che riesce a entrare quando il servizio di verifica del consorzio non
+risponde. <strong>L&#39;applicazione lo impone</strong>: rifiuta di convertire ad AD, cambiare ruolo,
 disattivare o eliminare l&#39;ultimo Super Admin locale attivo, con il messaggio
 <em>«Deve restare almeno un superadmin locale…»</em>. Resta una regola operativa
 tenerne la <strong>password</strong> conosciuta e aggiornata: un&#39;utenza locale di cui nessuno
 ricorda la password non fa entrare nessuno.</p>
-<h3 id="altre-due-cose-vere">Altre due cose vere</h3>
+<h3 id="altre-tre-cose-vere">Altre tre cose vere</h3>
 <ul>
-<li>Un <strong>bind LDAP con password vuota riesce</strong> su molti server (è
-l&#39;<em>unauthenticated bind</em> della specifica). L&#39;applicazione rifiuta le password
-vuote in due punti distinti, prima ancora di parlare con il dominio.</li>
+<li><strong>La password di dominio non la verifica l&#39;applicazione, ma il web service
+del consorzio</strong> (servizio <code>getuserAD</code>), che risponde solo «valida» o «non
+valida». Per questo password scaduta, account bloccato e account disabilitato
+sul dominio <strong>non si distinguono</strong>: all&#39;utente compaiono tutti come
+<em>«Credenziali non valide»</em>.</li>
+<li>Una <strong>password vuota non viene mai mandata</strong> al servizio del consorzio:
+l&#39;applicazione la rifiuta prima.</li>
 <li><strong>La sessione dura 8 ore e non richiede AD durante la sua vita.</strong> Chi viene
 disabilitato sul dominio a metà giornata resta operativo fino alla scadenza
 della sessione. Per chiuderlo subito si disattiva l&#39;utenza qui in <em>Gestione
@@ -374,12 +392,20 @@ comunicazioni ai conduttori senza indirizzo PEC.</p>
 <td><em>Gmail</em> oppure <em>SMTP Personalizzato</em></td>
 </tr>
 <tr>
-<td><strong>Email</strong></td>
-<td>L&#39;indirizzo mittente</td>
+<td><strong>Il server richiede l&#39;autenticazione</strong></td>
+<td>Solo con SMTP personalizzato, acceso di default. Si spegne per un server di posta interno che accetta i messaggi senza username e password: in quel caso spariscono i due campi seguenti</td>
+</tr>
+<tr>
+<td><strong>Email</strong> (Gmail) / <strong>Username</strong> (SMTP)</td>
+<td>Con Gmail è l&#39;indirizzo della casella. Con SMTP è lo username di accesso al server, che non sempre è un indirizzo</td>
 </tr>
 <tr>
 <td><strong>App Password</strong> / <strong>Password</strong></td>
 <td>Con Gmail serve una <strong>App Password</strong>, non la password dell&#39;account</td>
+</tr>
+<tr>
+<td><strong>Mittente</strong></td>
+<td>Solo con SMTP personalizzato: l&#39;indirizzo che compare come «Da» nei messaggi, se diverso dallo username. Vuoto = si usa lo username</td>
 </tr>
 <tr>
 <td><strong>Server SMTP</strong>, <strong>Porta SMTP</strong>, <strong>Connessione Sicura (TLS)</strong></td>
@@ -389,6 +415,14 @@ comunicazioni ai conduttori senza indirizzo PEC.</p>
 <p>Due pulsanti: <strong>Test Connessione</strong> (prova le credenziali scritte a schermo,
 senza salvare; con il campo password vuoto usa quella già memorizzata) e
 <strong>Salva Configurazione</strong>.</p>
+<h3 id="invia-email-di-test">Invia email di test</h3>
+<p>Sotto il modulo, un campo per un indirizzo qualunque e il pulsante <strong>Invia
+email di test</strong>: spedisce <strong>una mail vera</strong> con le credenziali <strong>salvate</strong> —
+non con quelle scritte a schermo — all&#39;indirizzo indicato. È la prova che il
+<em>Test Connessione</em> non può dare: un server può accettare il login e poi
+rifiutare il mittente. Il pulsante resta spento finché la configurazione non è
+salvata, e se nel modulo ci sono modifiche non salvate la scheda lo ricorda.
+Se non arriva, controllare anche lo spam.</p>
 <p>Due regole del salvataggio, valide anche per PEC e SMS:</p>
 <ul>
 <li><strong>I segreti non tornano mai indietro al browser.</strong> L&#39;interfaccia sa solo se
@@ -402,8 +436,9 @@ restano solo come valore di partenza.</p>
 <h2 id="6-impostazioni--pec">6. Impostazioni → PEC</h2>
 <p>Scheda <strong>PEC</strong>: la <strong>seconda casella</strong>, per i conduttori con indirizzo
 certificato. Gli stessi campi della scheda Email, con credenziali proprie e un
-test SMTP proprio. Il valore predefinito è <strong>SMTP sulla porta 465 con TLS</strong>: i
-gestori PEC italiani espongono un server proprio, non un servizio noto.</p>
+test SMTP proprio, compreso il pulsante <strong>Invia email di test</strong> che spedisce
+dalla casella PEC salvata. Il valore predefinito è <strong>SMTP sulla porta 465 con
+TLS</strong>: i gestori PEC italiani espongono un server proprio, non un servizio noto.</p>
 <h3 id="perché-è-una-scheda-a-parte-e-non-un-dettaglio">Perché è una scheda a parte, e non un dettaglio</h3>
 <p>L&#39;anagrafica distingue i destinatari, e fra i conduttori attivi sono circa
 <strong>1775 posta ordinaria contro 1479 PEC</strong>. Da una casella ordinaria una PEC non
@@ -442,6 +477,9 @@ ID</em> e <em>Password</em> — con <strong>Prova credenziali</strong> e <strong
 prova interroga il credito residuo e non spende un SMS. Se fallisce con
 credenziali giuste, l&#39;IP del server non è ancora abilitato nella whitelist del
 pannello Register.it: la scheda lo ricorda.</p>
+<p>Sotto il modulo, <strong>Invia SMS di test</strong> spedisce <strong>un SMS vero</strong> con le
+credenziali salvate al numero indicato. A differenza della prova credenziali,
+<strong>consuma un messaggio del credito</strong>.</p>
 <blockquote>
 <p><strong>Il canale SMS è attivo.</strong> In <em>Invia notifica</em> la spunta «Invia anche via
 SMS» è <strong>accesa di default</strong> quando queste credenziali ci sono: il testo SMS
@@ -567,11 +605,19 @@ guardare è quali entità risultano caricate.</p>
 <hr>
 <h2 id="9-impostazioni--active-directory">9. Impostazioni → Active Directory</h2>
 <p>Scheda visibile <strong>solo al Super Admin</strong>, come <em>Utenti di test</em>: sono le uniche
-due con questo livello. Per Active Directory la ragione è precisa: <strong>chi modifica host e certificato decide
-quale macchina riceve le password di dominio del personale.</strong></p>
-<p>A differenza di email, PEC e SMS, <strong>qui non c&#39;è nessun ripiego su
-variabili d&#39;ambiente</strong>: i dati del domain controller si inseriscono
-dall&#39;interfaccia, in sede.</p>
+due con questo livello. Per Active Directory la ragione è precisa: <strong>chi sceglie
+l&#39;indirizzo del servizio di verifica decide dove vanno le password di dominio
+del personale.</strong></p>
+<h3 id="come-funziona">Come funziona</h3>
+<p>L&#39;applicazione <strong>non parla con il domain controller</strong>. La password di
+un&#39;utenza Active Directory la verifica il <strong>web service del consorzio</strong>, con il
+servizio <code>getuserAD</code>: l&#39;applicazione gli passa username e password e lui
+risponde soltanto <em>valida</em> o <em>non valida</em>. Qualunque altra risposta — nessuna
+risposta entro il tempo massimo, un errore, una pagina inattesa — vale come
+<em>«Active Directory non è raggiungibile»</em>: un servizio guasto non deve mai
+sembrare né una password sbagliata né una giusta.</p>
+<p>A differenza di email, PEC e SMS, <strong>qui non c&#39;è nessun ripiego su variabili
+d&#39;ambiente</strong>: si configura solo da questa scheda.</p>
 <h3 id="i-campi">I campi</h3>
 <div class="tabella"><table>
 <thead>
@@ -585,58 +631,43 @@ dall&#39;interfaccia, in sede.</p>
 <td>L&#39;interruttore generale</td>
 </tr>
 <tr>
-<td><strong>Domain controller</strong></td>
-<td>Es. <code>dc01.consorzio.local</code></td>
-</tr>
-<tr>
-<td><strong>Porta</strong></td>
-<td>636 per LDAPS, 389 per StartTLS</td>
-</tr>
-<tr>
-<td><strong>Suffisso di dominio</strong></td>
-<td>Viene aggiunto allo username: <code>m.rossi@consorzio.local</code></td>
-</tr>
-<tr>
-<td><strong>Sicurezza del canale</strong></td>
-<td><em>LDAPS (consigliato, porta 636)</em>, <em>StartTLS (porta 389)</em>, <em>Nessuna cifratura</em></td>
-</tr>
-<tr>
-<td><strong>Certificato della CA interna (PEM)</strong></td>
-<td>Il certificato del DC è quasi sempre emesso dalla CA del dominio, che il server non conosce: va incollato qui</td>
-</tr>
-<tr>
-<td><strong>Non verificare il certificato del server</strong></td>
-<td>Ultima risorsa</td>
+<td><strong>URL dell&#39;endpoint di verifica</strong></td>
+<td><strong>Di solito si lascia vuoto</strong>: vale allora l&#39;<em>URL base</em> della scheda WebService più <code>/RestTabelle/RestTabelle.svc/getuserAD</code>, e se la base cambia l&#39;indirizzo la segue. Si compila solo se il servizio sta altrove. Deve iniziare con <code>http://</code> o <code>https://</code></td>
 </tr>
 <tr>
 <td><strong>Timeout (millisecondi)</strong></td>
-<td></td>
+<td>Quanto aspettare la risposta prima di considerare il servizio irraggiungibile</td>
 </tr>
 </tbody></table></div>
-<p>Due avvisi compaiono da soli e vanno letti, non chiusi con un&#39;alzata di spalle:</p>
+<p>Il servizio riceve <strong>la password dentro l&#39;indirizzo</strong> chiamato, e usa la stessa
+<em>Stringa di autenticazione</em> del WebService. Ne seguono due cose da sapere:</p>
 <ul>
-<li><strong>Nessuna cifratura</strong>: le password di dominio viaggiano in chiaro sulla rete.</li>
-<li><strong>Verifica del certificato disattivata</strong>: chiunque risponda su quell&#39;indirizzo
-riceve le password di dominio del personale. Da usare solo dopo aver provato
-a incollare il certificato della CA.</li>
+<li>la password di dominio finisce nei <strong>log di accesso del web service del
+consorzio</strong>: è il funzionamento che il consorzio ha scelto. Da parte
+dell&#39;applicazione non esce: nei suoi log e nelle prove compare mascherata;</li>
+<li>se l&#39;indirizzo è in <code>http://</code>, compare un avviso ambra: <strong>username e
+password del personale viaggiano in chiaro</strong> sulla rete fino al web service.</li>
 </ul>
-<h3 id="prova-connessione">Prova connessione</h3>
-<p>Sotto ai campi, dopo aver <strong>salvato</strong>:</p>
+<h3 id="prova-endpoint">Prova endpoint</h3>
+<p>Sotto ai campi, il pulsante <strong>Prova endpoint</strong>:</p>
 <ul>
-<li>si può indicare uno username e una password di dominio (facoltativi, <strong>non
-vengono salvati</strong>) per provare anche l&#39;autenticazione;</li>
-<li><strong>la prova usa la configurazione già salvata</strong>, non quella scritta e non
-ancora salvata: salvare prima di premere.</li>
+<li>chiama il servizio con <strong>credenziali inventate</strong> e passa solo se riceve
+<em>non valida</em>. Se riceve <em>valida</em>, la prova <strong>fallisce</strong> con un avviso:
+vorrebbe dire che il servizio accetta chiunque, e l&#39;autenticazione non va
+attivata finché il consorzio non lo corregge;</li>
+<li>facoltativamente si possono scrivere uno username e una password di dominio
+veri (<strong>non vengono salvati</strong>): se il primo controllo passa, la scheda dice
+anche se quelle credenziali sono state accettate o rifiutate;</li>
+<li><strong>la prova usa la configurazione già salvata</strong>, anche con l&#39;interruttore
+spento: dopo aver cambiato URL o timeout, salvare prima di premere.</li>
 </ul>
-<p>L&#39;esito arriva su due righe indipendenti — <em>il server risponde</em> e <em>le credenziali
-sono valide</em> — perché sono due domande diverse: un DC raggiungibile con
-credenziali sbagliate non è una contraddizione.</p>
 <h3 id="cosa-aspettarsi-al-collaudo">Cosa aspettarsi al collaudo</h3>
-<p>La macchina di sviluppo non vede il domain controller del consorzio: <strong>il primo
-contatto con AD vero avviene al collaudo, in sede</strong>, ed è lì che si compilano
-questi quattro dati. Da qui la scelta di tenere la scheda montata anche quando
-si guarda un&#39;altra tab: il certificato PEM incollato non si perde cambiando
-scheda.</p>
+<p>La macchina di sviluppo non vede il web service del consorzio: <strong>il primo
+contatto con Active Directory vero avviene al collaudo, in sede</strong>. L&#39;ordine
+consigliato è: WebService configurato e funzionante → <em>Prova endpoint</em> con
+credenziali inventate → <em>Prova endpoint</em> con le proprie credenziali di dominio
+→ solo allora accendere l&#39;interruttore, tenendo sempre un Super Admin locale
+(capitolo 4).</p>
 <hr>
 <h2 id="10-impostazioni--utenti-di-test">10. Impostazioni → Utenti di test</h2>
 <p>Scheda visibile <strong>solo al Super Admin</strong>, con lo stesso livello della scheda
@@ -652,8 +683,10 @@ conduttori sono stati selezionati.</p>
 <p><strong>È un interruttore per persona, non generale.</strong> Ogni riga della tabella ha il
 proprio interruttore Attivo/Non attivo: si può tenere censita una persona e
 spegnerla temporaneamente, senza cancellarla.</p>
-<p><strong>I campi</strong>: <em>Nome</em> (obbligatorio), <em>Email</em> con il suo canale — <em>Email
-ordinaria</em> o <em>PEC</em> — e <em>Telefono</em>. Un utente di test <strong>PEC</strong> si comporta come un
+<p><strong>Nuovo utente di test</strong> (e la matita su una riga) apre una finestra con i
+campi <em>Nome</em> (obbligatorio), <em>Email</em> con il suo <em>Canale</em> — <em>Email ordinaria</em> o
+<em>PEC</em> — <em>Telefono</em> e l&#39;interruttore <em>Riceve le comunicazioni</em>. Il cestino lo
+elimina, con conferma. Un utente di test <strong>PEC</strong> si comporta come un
 conduttore PEC: se la PEC non è configurata, l&#39;invio viene rifiutato per intero.
 In <em>Invia notifica</em> ogni operatore vede i nomi degli utenti di test che
 riceveranno la copia.</p>
@@ -877,9 +910,15 @@ Chiedere il <strong>colore</strong> del messaggio. Rosso = password. Ambra = leg
 che dice già cosa fare. Se dice <em>«Utente non abilitato»</em>, la richiesta è già in
 <em>Gestione Utenti → Richieste di accesso</em>: si abilita da lì, così lo username è
 quello esatto di dominio.</p>
-<p><strong>Tutti sono chiusi fuori e l&#39;accesso locale funziona.</strong>
-Il domain controller non risponde. Entrare con il Super Admin <strong>locale</strong> e
-controllare <em>Impostazioni → Active Directory → Prova connessione</em>.</p>
+<p><strong>Tutti gli utenti di dominio vedono «Active Directory non è raggiungibile», e l&#39;accesso locale funziona.</strong>
+Il servizio di verifica del consorzio non risponde. Entrare con il Super Admin
+<strong>locale</strong> e controllare <em>Impostazioni → Active Directory → Prova endpoint</em>;
+se fallisce anche la <em>Prova</em> delle entità in <em>Impostazioni → WebService</em>, il
+problema è il web service del consorzio nel suo complesso.</p>
+<p><strong>Le email non arrivano, ma «Test Connessione» riesce.</strong>
+Usare <strong>Invia email di test</strong> (scheda Email o PEC) verso un indirizzo di cui si
+controlla la casella, spam compreso: prova l&#39;invio vero con le credenziali
+salvate, mittente compreso.</p>
 <p><strong>Lo stato di una tratta è sbagliato.</strong>
 Non c&#39;è nulla da modificare: si invia la notifica opposta sugli stessi codici.
 Se lo stato sbagliato deriva da una notifica errata, il collegamento «Chiusa dal

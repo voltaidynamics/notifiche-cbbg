@@ -1,4 +1,4 @@
-# Guida utente — Notifiche Canali Irrigui
+# Guida utente — Notifiche Impianti
 
 Guida per chi usa l'applicazione tutti i giorni: **Utente** e **Osservatore**.
 Le funzioni riservate agli amministratori (Gestione Utenti, Gestione Codici,
@@ -92,20 +92,23 @@ Con Active Directory lo **username deve essere identico a quello di dominio**
 Il colore del riquadro dice che cosa fare, prima ancora del testo:
 
 - **Rosso — «Credenziali non valide»**: la password potrebbe essere sbagliata.
-  Riprovare ha senso.
+  Riprovare ha senso, ma con attenzione: per un'utenza **Active Directory** lo
+  stesso messaggio compare anche se la password di dominio è **scaduta** o se
+  l'account di dominio è **bloccato o disabilitato** — il consorzio risponde
+  solo «sì» o «no», senza dire perché. Se si è sicuri della password, si prova
+  ad accedere al PC del consorzio: lì il motivo si vede. Insistere su un account
+  bloccato allunga il blocco.
 - **Ambra — tutto il resto**: riprovare *non* serve. Il messaggio dice che cosa
   fare:
   - *«Utente non abilitato. Contatta un amministratore per richiedere
     l'accesso.»* → la password di dominio era giusta, ma l'utenza non è ancora
     stata abilitata in questa applicazione. La richiesta è già arrivata
     all'amministratore: basta segnalarglielo.
-  - *«Account disabilitato»* → l'utenza esiste ma è stata disattivata.
-  - *«Account di dominio disabilitato»* / *«bloccato per troppi tentativi»* →
-    serve un sistemista. **Con l'account bloccato, riprovare allunga il
-    blocco.**
-  - *«La tua password di dominio è scaduta»* → si cambia dal PC, poi si rientra.
-  - *«Active Directory non è raggiungibile»* → problema di rete o di server,
-    non di credenziali.
+  - *«Account disabilitato»* → l'utenza esiste ma è stata disattivata in questa
+    applicazione.
+  - *«Active Directory non è raggiungibile. Riprova più tardi o contatta un
+    amministratore.»* → il servizio del consorzio che verifica le password di
+    dominio non risponde: problema di rete o di server, non di credenziali.
 
 ### Uscire
 
@@ -153,6 +156,18 @@ In cima a ogni sezione, sempre nello stesso posto:
   *Impostazioni*.
 - **Esci**.
 
+### Messaggi di conferma e messaggi di errore
+
+Le **conferme** («Invio avviato», «Configurazione salvata»…) compaiono in un
+piccolo avviso che sparisce da solo dopo qualche secondo.
+
+Gli **errori** invece si aprono in una **finestra al centro dello schermo**, che
+resta lì finché non si preme **Ho capito**: un errore non deve poter sparire
+mentre si guarda altrove. Se gli errori sono più d'uno, si vedono uno alla
+volta. Il testo è quello del server quando c'è; se il server non risponde o
+risponde con una pagina tecnica, la finestra lo dice in italiano (per esempio
+un problema di rete o la sessione scaduta).
+
 ### I ruoli
 
 | Ruolo | Che cosa può fare |
@@ -198,18 +213,14 @@ dallo Storico (capitolo 6, *Il dettaglio di una notifica*).
 
 ### I due grafici
 
-**Chiusure** e **Notifiche** degli ultimi 30 giorni, un barra per giorno.
+**Chiusure** e **Notifiche** degli ultimi 30 giorni, una barra per giorno.
 
-### Il badge «esempio»
+### Quando è vuota
 
-Quando una sezione non ha ancora dati veri (nessuna chiusura registrata, nessuna
-notifica inviata) mostra dei **dati di esempio** con l'etichetta arancione
-`ESEMPIO`. Servono a far vedere come si presenterà la sezione: **non sono dati
-reali**. Spariscono da soli alla prima chiusura o alla prima notifica vera, e
-**ricompaiono ogni volta che la sezione torna vuota**: il riquadro «Tratte
-chiuse» quando tutte le tratte sono state riaperte, i grafici in un mese senza
-chiusure o senza notifiche. Un numero rosso con il badge `ESEMPIO` accanto non
-è una tratta chiusa.
+La Dashboard mostra **solo dati veri**, mai dati di esempio. Alla prima
+installazione parte vuota: *«Nessuna tratta chiusa»*, *«Nessuna notifica
+inviata»* e grafici a zero. È il comportamento corretto, non un guasto: si
+riempie da sola con le prime comunicazioni.
 
 ---
 
@@ -491,8 +502,8 @@ Cosa succede:
 
 ### Se l'invio viene rifiutato
 
-Compare un messaggio rosso **«Invio non riuscito»** con la ragione. La più
-frequente:
+Si apre una finestra **«Invio non riuscito»** con la ragione, da chiudere con
+*Ho capito*. Non è partito nulla: si corregge e si riprova. La più frequente:
 
 > *«Configurazione PEC assente: 47 destinatari su 120 vanno raggiunti via PEC —
 > imposta le credenziali PEC in Impostazioni»*
@@ -568,9 +579,9 @@ In fondo il conteggio dei record trovati.
 **Esporta CSV** scarica esattamente le righe visibili, con i filtri applicati.
 Il file si apre correttamente in Excel italiano, accenti compresi.
 
-Anche qui, se non è mai stata inviata nessuna comunicazione, si vedono **dati di
-esempio** con il badge `ESEMPIO`, che rispondono ai filtri come farebbero i dati
-veri.
+Se non è mai stata inviata nessuna comunicazione, o se nessuna corrisponde ai
+filtri, la tabella dice *«Nessuna notifica trovata»*: lo Storico mostra solo
+comunicazioni vere, mai dati di esempio.
 
 ### Il dettaglio di una notifica
 
@@ -748,10 +759,9 @@ Pulsante **Nuovo Template**, oppure l'icona matita sulla riga.
 | **Corpo Email** * | Il testo, che parte **esattamente com'è scritto**. Non ci sono variabili: una scritta come `{{data}}` arriverebbe al conduttore così, con le parentesi. Anche i tag HTML arrivano come testo; gli a capo invece si conservano |
 | **Testo SMS** * | La versione corta, precaricata in *Invia notifica* insieme a titolo e testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS» |
 
-Se non esiste ancora nessun template, in *Invia notifica* il pulsante per
-caricarne uno propone tre testi di partenza già pronti (*Comunicazione chiusura
-tratta*, *Avviso manutenzione programmata*, *Comunicazione riapertura*), che
-riempiono solo il testo email.
+Alla prima installazione non c'è nessun template, e in *Invia notifica* la
+tendina dice *«Nessun template»*: non ci sono testi di partenza precaricati, i
+modelli li crea chi usa l'applicazione da questa sezione.
 
 L'icona cestino elimina il template, con una conferma. L'eliminazione **non
 tocca le comunicazioni già inviate**: il loro testo resta nello Storico.
