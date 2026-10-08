@@ -181,6 +181,27 @@ async function targetDellaSelezione(
 }
 
 /**
+ * Le tratte nominate da una selezione, per lo snapshot degli utenti di test:
+ * quelle spuntate, poi quelle di ogni madre scelta per intero, senza doppioni.
+ */
+function tratteDellaSelezione(
+  target: TargetNotifica[],
+  figlie: TrattaSelezionabile[],
+): { keyroggia: string; roggiaDescrizione: string | null }[] {
+  const out = new Map<string, string | null>();
+  for (const t of target) {
+    if (t.livello === "tratta") {
+      if (!out.has(t.codice)) out.set(t.codice, t.descrizione);
+      continue;
+    }
+    const sue = figlie.filter((f) => f.codicemadre === t.codice);
+    if (sue.length === 0 && !out.has(t.codice)) out.set(t.codice, t.descrizione);
+    for (const f of sue) if (!out.has(f.keyroggia)) out.set(f.keyroggia, f.name);
+  }
+  return [...out].map(([keyroggia, roggiaDescrizione]) => ({ keyroggia, roggiaDescrizione }));
+}
+
+/**
  * Spedisce una comunicazione ai conduttori scelti sulle tratte selezionate.
  *
  * `createdBy` arriva dalla sessione e non dal corpo della richiesta: chi ha
@@ -369,10 +390,18 @@ export async function preparaInvio(
   // Con i codici vanno anche i loro nomi, gli stessi fotografati nei target:
   // senza, il dettaglio dello Storico mostrava «—» come descrizione di ogni
   // prova (issue #118).
-  const codiciSelezionati = [...richiesta.tratte, ...richiesta.madri].join(SEPARATORE_TRATTE);
-  const nomiSelezionati = descrizioniTratte(
-    target.map((t) => ({ keyroggia: t.codice, roggiaDescrizione: t.descrizione })),
+  //
+  // Una madre scelta per intero (i pozzi) entra con le sue tratte, non col suo
+  // codice (issue #85): lo Storico conta e mostra le tratte, e chiudere un
+  // pozzo da tre tratte deve risultare tre tratte chiuse, come in Dashboard.
+  // Una madre senza tratte nel registro resta col suo codice: meglio quello
+  // che nessuna riga.
+  const tratteSelezionate = tratteDellaSelezione(
+    target,
+    richiesta.madri.length > 0 ? await archivio.getTratteDiMadri(richiesta.madri) : [],
   );
+  const codiciSelezionati = tratteSelezionate.map((t) => t.keyroggia).join(SEPARATORE_TRATTE);
+  const nomiSelezionati = descrizioniTratte(tratteSelezionate);
   for (const u of utentiTest) {
     const canale = canaleDi(u.tipoEmail);
     const riga = await archivio.createNotificationRecipient({

@@ -307,8 +307,24 @@ describe("inviaNotificaDaTratte", () => {
     if (!esito.ok) throw new Error(esito.errore);
 
     const [test] = (await s.getRecipientsByNotificationId(esito.notificationId)).filter((r) => r.utenteTest);
-    expect(test.keyroggia).toBe("R01D02000, R01");
-    expect(test.roggiaDescrizione).toBe("Bolgare valle, R01 - Roggia bolgare");
+    // Issue #85: la madre entra con le sue tratte, non col suo codice; la
+    // tratta spuntata anche a mano non si ripete.
+    expect(test.keyroggia).toBe("R01D02000, R01D01000");
+    expect(test.roggiaDescrizione).toBe("Bolgare valle, Bolgare capofonte");
+  });
+
+  // Issue #85: chiudere un pozzo da due tratte deve risultare nello Storico
+  // come due tratte chiuse, non come una riga col codice dell'impianto.
+  it("nello Storico un pozzo scelto per intero conta le sue tratte", async () => {
+    await s.createUtenteTest({ nome: "Francesco", email: "collaudo@consorzio.it", tipoEmail: "normale", telefono: null, attivo: true, createdBy: null });
+
+    const esito = await invia({ ...RICHIESTA, tratte: [], madri: ["R01"], destinatari: [] }, trasportoFinto());
+    if (!esito.ok) throw new Error(esito.errore);
+
+    const [riga] = await s.getNotificationHistory({});
+    expect(riga.numRogge).toBe(2);
+    const [test] = (await s.getRecipientsByNotificationId(esito.notificationId)).filter((r) => r.utenteTest);
+    expect(test.keyroggia).toBe("R01D01000, R01D02000");
   });
 
   // Il caso della issue: l'operatore toglie la spunta a tutti e collauda.
