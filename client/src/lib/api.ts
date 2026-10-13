@@ -1,4 +1,5 @@
 import { apiRequest } from "./queryClient";
+import type { RigaBounce } from "@shared/bounce";
 import type {
   NetworkSegment,
   SegmentWithUserCount,
@@ -383,6 +384,58 @@ export const adSettingsApi = {
     apiRequest("POST", "/api/settings/ad", data).then((res) => res.json()),
   test: (credenziali?: { username: string; password: string }): Promise<EsitoProvaAd> =>
     apiRequest("POST", "/api/settings/ad/test", credenziali ?? {}).then((res) => res.json()),
+};
+
+// Bounce dalla casella Microsoft 365 (issue #126). Gli stessi tipi di
+// server/config-bounce.ts, che la pagina non può importare.
+export type EsitoLetturaBounce = {
+  quando: string;
+  riuscita: boolean;
+  messaggio: string;
+  esaminati: number;
+  bounce: number;
+  abbinati: number;
+};
+
+export type ConfigBounce = {
+  enabled: boolean;
+  tenantId: string;
+  clientId: string;
+  casella: string;
+  secretScadenza: string;
+  riepilogo: boolean;
+  destinatari: string[];
+  secretImpostato: boolean;
+  giorniAllaScadenza: number | null;
+  ultimoEsito: EsitoLetturaBounce | null;
+  mittenteEmail: string;
+};
+
+export type PatchConfigBounce = {
+  enabled?: boolean;
+  tenantId?: string;
+  clientId?: string;
+  /** Vuoto = tieni quello salvato. */
+  clientSecret?: string;
+  casella?: string;
+  secretScadenza?: string;
+  riepilogo?: boolean;
+  destinatari?: string;
+};
+
+export const bounceApi = {
+  get: (): Promise<ConfigBounce> =>
+    apiRequest("GET", "/api/settings/bounce").then((res) => res.json()),
+  save: (data: PatchConfigBounce): Promise<ConfigBounce> =>
+    apiRequest("POST", "/api/settings/bounce", data).then((res) => res.json()),
+  test: (): Promise<{ riuscita: boolean; messaggio: string }> =>
+    apiRequest("POST", "/api/settings/bounce/test", {}).then((res) => res.json()),
+  leggiOra: (): Promise<EsitoLetturaBounce> =>
+    apiRequest("POST", "/api/settings/bounce/leggi", {}).then((res) => res.json()),
+  riepilogoProva: (): Promise<{ message: string }> =>
+    apiRequest("POST", "/api/settings/bounce/riepilogo-prova", {}).then((res) => res.json()),
+  elenco: (): Promise<RigaBounce[]> =>
+    apiRequest("GET", "/api/bounce").then((res) => res.json()),
 };
 
 export type RichiestaAccesso = {

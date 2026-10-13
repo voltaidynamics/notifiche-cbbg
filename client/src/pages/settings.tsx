@@ -31,11 +31,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Settings as SettingsIcon, Mail, MessageSquare, Shield, ShieldCheck, AlertTriangle, Database, RefreshCw, Upload, FlaskConical, Plus, Pencil, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, Mail, MessageSquare, Shield, ShieldCheck, AlertTriangle, Database, RefreshCw, Upload, FlaskConical, Plus, Pencil, Trash2, MailWarning } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { messaggioErrore } from "@/lib/messaggio-errore";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSyncAnagrafiche } from "@/hooks/use-sync-anagrafiche";
+import { SchedaBounce } from "@/components/settings/scheda-bounce";
 import { settingsApi, utentiTestApi } from "@/lib/api";
 import { WS_ENTITIES, ETICHETTE_ENTITA, PERCORSI_WS } from "@shared/wsEntities";
 import { analizzaArray, analizzaConteggi, riassumiConteggi } from "@shared/esito-sync";
@@ -441,7 +442,7 @@ export default function Settings() {
       <Sidebar />
 
       <main className={`flex-1 overflow-y-auto ${isMobile ? "pt-16 pb-20" : ""}`}>
-        <PageHeader title="Impostazioni" subtitle="Configura email, PEC, SMS e sincronizzazione" icon={SettingsIcon} />
+        <PageHeader title="Impostazioni" subtitle="Configura email, PEC, SMS, bounce e sincronizzazione" icon={SettingsIcon} />
 
         <div className={`${isMobile ? "p-4" : "p-6"}`}>
           <Tabs defaultValue="email" className="w-full">
@@ -467,6 +468,10 @@ export default function Settings() {
               <TabsTrigger value="ws" className="flex flex-1 items-center">
                 <Database size={16} className="mr-2" />
                 WebService
+              </TabsTrigger>
+              <TabsTrigger value="bounce" className="flex flex-1 items-center">
+                <MailWarning size={16} className="mr-2" />
+                Bounce
               </TabsTrigger>
               {isSuperadmin && (
                 <TabsTrigger value="ad" className="flex flex-1 items-center">
@@ -717,6 +722,21 @@ export default function Settings() {
                 </CardHeader>
                 <CardContent>
                   <SchedaWs />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Mail non recapitate, dalla casella Microsoft 365 (issue #126). */}
+            <TabsContent value="bounce">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MailWarning className="mr-2" size={20} />
+                    Bounce
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SchedaBounce />
                 </CardContent>
               </Card>
             </TabsContent>

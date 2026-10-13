@@ -168,14 +168,21 @@ export const notificationRecipients = pgTable("notification_recipients", {
    * risposta giusta — prima gli utenti di test non esistevano.
    */
   utenteTest: boolean("utente_test").notNull().default(false),
-  emailStatus: text("email_status").notNull().default("pending"), // "pending" | "sent" | "failed" | "opened"
+  emailStatus: text("email_status").notNull().default("pending"), // "pending" | "sent" | "failed" | "opened" | "bounced"
   smsStatus: text("sms_status").notNull().default("pending"), // "pending" | "sent" | "delivered" | "failed"
   emailMessageId: text("email_message_id"),
   smsSid: text("sms_sid"),
   emailOpenedAt: timestamp("email_opened_at"),
   smsDeliveredAt: timestamp("sms_delivered_at"),
   sentAt: timestamp("sent_at"),
+  // Mail tornata indietro (issue #126), letta dalla casella dei bounce:
+  // `email_status` diventa "bounced" e qui resta il perché.
+  emailBounceCodice: text("email_bounce_codice"),   // status DSN, es. "5.1.1"
+  emailBounceTipo: text("email_bounce_tipo"),       // TipoBounce di shared/bounce.ts
+  emailBounceAt: timestamp("email_bounce_at"),
 }, (t) => [
+  // Il bounce si abbina alla mail col suo Message-ID (issue #126).
+  index("notification_recipients_email_message_id_idx").on(t.emailMessageId),
   // Il filtro «Roggia» dello Storico cerca per codice tratta.
   //
   // L'indice nasceva dalla migrazione a mano `0001_storico_notifiche.sql` e non
@@ -185,6 +192,43 @@ export const notificationRecipients = pgTable("notification_recipients", {
   // di farlo sopravvivere al prossimo push — non spostarlo di nuovo fuori.
   index("notification_recipients_keyroggia_idx").on(t.keyroggia),
 ]);
+
+/**
+ * Ogni messaggio esaminato nella casella dei bounce (issue #126), bounce o no.
+ *
+ * La casella si legge con `Mail.Read` e basta: non si può segnare un messaggio
+ * come letto né spostarlo. Questa tabella è l'unico modo di sapere cosa è già
+ * stato visto, così un bounce si conta una volta sola anche se la finestra di
+ * lettura si sovrappone. Si tengono anche i non-bounce, o ogni giro
+ * riscaricherebbe il MIME delle stesse risposte dei conduttori.
+ *
+ * `chiave` è l'`internetMessageId`, che resta uguale se qualcuno sposta il
+ * messaggio; l'id di Graph no.
+ */
+export const bounceMessaggi = pgTable("bounce_messaggi", {
+  id: serial("id").primaryKey(),
+  chiave: text("chiave").notNull().unique(),
+  ricevutoAt: timestamp("ricevuto_at").notNull(),
+  mittente: text("mittente"),
+  oggetto: text("oggetto"),
+  eBounce: boolean("e_bounce").notNull(),
+  codice: text("codice"),
+  tipo: text("tipo"),                  // TipoBounce; null se non è un bounce
+  diagnostica: text("diagnostica"),
+  destinatario: text("destinatario"),  // indirizzo che ha rifiutato la mail
+  messageIdOriginale: text("message_id_originale"),
+  // Null = non abbinato a nessuna comunicazione: resta visibile in Impostazioni.
+  recipientId: integer("recipient_id").references(() => notificationRecipients.id, { onDelete: "set null" }),
+  abbinamento: text("abbinamento"),    // "messageId" | "indirizzo" | null
+  esaminatoAt: timestamp("esaminato_at").notNull().defaultNow(),
+  // Quando è finito nel riepilogo via email; null = non ancora.
+  notificatoAt: timestamp("notificato_at"),
+}, (t) => [
+  index("bounce_messaggi_ricevuto_at_idx").on(t.ricevutoAt),
+]);
+
+export type BounceMessaggio = typeof bounceMessaggi.$inferSelect;
+export type InsertBounceMessaggio = typeof bounceMessaggi.$inferInsert;
 
 /**
  * Cosa è stato selezionato in una comunicazione: i codici, non i destinatari
@@ -524,14 +568,17 @@ export type NotificationRecipientDetail = {
   esitoEmail: EsitoInvio;
   /** Come sopra per l'SMS; null = nessun SMS partito per questa riga. */
   esitoSms: EsitoInvio | null;
+  /** «5.1.1 — Indirizzo inesistente» se la mail è tornata indietro (issue #126), altrimenti null. */
+  motivoMancatoRecapito: string | null;
 };
 
 /**
  * Cosa l'app sa davvero di un invio: se lo ha passato al server (SMTP o
- * piattaforma SMS) e quello lo ha accettato. Non dice nulla su consegna o
- * apertura, che non si tracciano.
+ * piattaforma SMS) e quello lo ha accettato. Della consegna sa una cosa sola,
+ * e solo per l'email: se è tornato un bounce (`nonRecapitato`, issue #126).
+ * Nessun bounce non vuol dire consegnata.
  */
-export type EsitoInvio = "inviato" | "nonInviato" | "inAttesa";
+export type EsitoInvio = "inviato" | "nonInviato" | "inAttesa" | "nonRecapitato";
 
 export type NotificationHistoryDetail = NotificationHistoryRow & {
   messaggio: string;

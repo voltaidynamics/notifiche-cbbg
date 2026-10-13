@@ -27,6 +27,7 @@ import { importConsorziati, importParcels, CSV_TEMPLATE_CONSORZIATI, CSV_TEMPLAT
 import rateLimit from "express-rate-limit";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
+import { rotteBounce } from "./bounce/rotte";
 import { requireAdmin, requireRole, autentica, rispostaLogin } from "./auth";
 import { dipendenzeAutenticazione } from "./ad";
 import { registerAdminRoutes } from "./adminRoutes";
@@ -1631,6 +1632,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/settings/ad", requireRole("superadmin"), ad.leggi);
   app.post("/api/settings/ad", requireRole("superadmin"), ad.salva);
   app.post("/api/settings/ad/test", requireRole("superadmin"), ad.prova);
+
+  // ---- Bounce dalla casella Microsoft 365 (issue #126) ----
+
+  const bounce = rotteBounce({ archivio: storage });
+  app.get("/api/settings/bounce", requireAdmin, bounce.leggi);
+  app.post("/api/settings/bounce", requireAdmin, bounce.salva);
+  app.post("/api/settings/bounce/test", requireAdmin, bounce.prova);
+  app.post("/api/settings/bounce/leggi", requireAdmin, bounce.leggiOra);
+  app.post("/api/settings/bounce/riepilogo-prova", requireAdmin, bounce.riepilogoProva);
+  app.get("/api/bounce", requireAdmin, bounce.elenco);
 
   // ---- Avvisi del caricamento notturno (issue #6) ----
 

@@ -3,6 +3,8 @@ import { storage } from "./storage";
 import nodemailer from "nodemailer";
 import { sendSMS, isSMSConfigured } from "./sms";
 import { eseguiSyncNotturno } from "./avviso-sync";
+import { leggiCasellaBounce, LetturaBounceInCorso } from "./bounce/lettura";
+import { inviaRiepilogoBounce } from "./bounce/riepilogo";
 import { snapshotConduttore } from "@shared/destinatari";
 
 function interpolate(template: string, vars: Record<string, string>): string {
@@ -130,6 +132,33 @@ export function startScheduler(): void {
   cron.schedule("0 3 * * *", () => {
     void eseguiSyncNotturno();
   });
+
+  // Bounce dalla casella Microsoft 365 (issue #126): lettura ogni 10 minuti,
+  // se accesa; riepilogo agli admin una volta al giorno, alle 7 di qui e non
+  // del server, che gira in UTC.
+  cron.schedule("*/10 * * * *", async () => {
+    try {
+      await leggiCasellaBounce({ archivio: storage });
+    } catch (err) {
+      // Un «Leggi ora» premuto in quel momento: il giro dopo recupera.
+      if (!(err instanceof LetturaBounceInCorso)) console.error("[bounce] Errore nella lettura pianificata:", err);
+    }
+  });
+  cron.schedule(
+    "0 7 * * *",
+    async () => {
+      try {
+        const esito = await inviaRiepilogoBounce({ archivio: storage });
+        if (esito.inviato) console.log(`[bounce] Riepilogo inviato: ${esito.bounce} bounce`);
+        else if (esito.motivo !== "Riepilogo spento" && esito.motivo !== "Niente da segnalare") {
+          console.error(`[bounce] Riepilogo non inviato: ${esito.motivo}`);
+        }
+      } catch (err) {
+        console.error("[bounce] Errore nel riepilogo:", err);
+      }
+    },
+    { timezone: "Europe/Rome" },
+  );
 
   console.log("[scheduler] Started — checking every minute for scheduled notifications");
 }

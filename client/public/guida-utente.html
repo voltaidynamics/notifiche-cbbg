@@ -777,6 +777,10 @@ riuscita a <strong>spedire</strong> ciascun messaggio:</p>
 <td>Il messaggio non è partito: manca l&#39;indirizzo o il numero, oppure il server lo ha rifiutato</td>
 </tr>
 <tr>
+<td><strong>Non recapitata</strong></td>
+<td>Solo per le email: il server l&#39;aveva accettata, ma la mail è tornata indietro. Sotto c&#39;è il motivo, ad esempio <em>5.1.1 — Indirizzo inesistente</em> o <em>Casella piena</em></td>
+</tr>
+<tr>
 <td><strong>In attesa</strong></td>
 <td>Solo per le email: la spedizione è ancora in corso</td>
 </tr>
@@ -786,9 +790,11 @@ riuscita a <strong>spedire</strong> ciascun messaggio:</p>
 </tr>
 </tbody></table></div>
 <p><strong>«Inviata» non vuol dire «arrivata» né «letta»</strong>: l&#39;app sa solo di aver
-consegnato il messaggio al server, che poi lo recapita per conto suo. Se
-consegna e lettura vanno verificate, per le email certificate fanno fede le
-ricevute della PEC.</p>
+consegnato il messaggio al server, che poi lo recapita per conto suo. Se la
+lettura dei bounce è attiva (la configura l&#39;amministratore), una mail che torna
+indietro diventa <strong>Non recapitata</strong> entro una decina di minuti dal ritorno; ma
+nessun ritorno non garantisce la consegna, e le PEC restano fuori. Per le email
+certificate fanno fede le ricevute della PEC.</p>
 <p>I messaggi partono <strong>uno alla volta</strong>: prima tutte le email, poi tutti gli SMS.
 Su un invio ampio ci vogliono minuti, e intanto le righe ancora da spedire
 restano <em>In attesa</em>. Finché la spedizione è in corso il dettaglio aperto <strong>si

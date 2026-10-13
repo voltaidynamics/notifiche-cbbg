@@ -27,7 +27,10 @@ import {
   codiciSpenti as codiciSpentiT,
   type MadreRoggia, type TrattaRoggia,
   type RoggiaMadreSelezionabile, type TrattaRoggiaSelezionabile,
+  bounceMessaggi,
+  type BounceMessaggio, type InsertBounceMessaggio,
 } from "@shared/schema";
+import { componiRigaBounce, segnaMancatoRecapito, tipoBounce, type AbbinamentoBounce, type RigaBounce } from "@shared/bounce";
 import { CATEGORIE_MADRE, type CategoriaMadre } from "@shared/categorie-madri";
 import { numeroDestinatario } from "@shared/destinatari";
 import { isTipoLegame, type TipoLegame } from "@shared/legame";
@@ -114,6 +117,26 @@ export interface IStorage {
   registraEsitoEmail(id: number, esito: { status: string; messageId?: string | null; sentAt?: Date }): Promise<void>;
   updateRecipientSmsStatus(id: number, status: string, deliveredAt?: Date): Promise<void>;
   getRecipientByEmailMessageId(messageId: string): Promise<NotificationRecipient | undefined>;
+
+  // Bounce dalla casella Microsoft 365 (issue #126)
+  /** Quali di queste chiavi (`internetMessageId`) sono già state esaminate. */
+  chiaviBounceEsaminate(chiavi: string[]): Promise<Set<string>>;
+  /**
+   * La mail a cui si riferisce un bounce: prima per Message-ID, poi — ripiego —
+   * l'ultima spedita a quell'indirizzo nei 7 giorni prima del bounce.
+   */
+  trovaDestinatarioDelBounce(q: { messageId: string | null; email: string | null; ricevutoAt: Date }):
+    Promise<{ recipientId: number; abbinamento: AbbinamentoBounce } | undefined>;
+  /**
+   * Registra un messaggio esaminato e, se è un bounce definitivo abbinato,
+   * segna la mail come non recapitata — tutto o niente. `false` se la chiave
+   * c'era già: in quel caso non tocca niente.
+   */
+  registraMessaggioBounce(m: InsertBounceMessaggio): Promise<boolean>;
+  elencoBounce(limite: number): Promise<RigaBounce[]>;
+  /** I bounce non ancora finiti in un riepilogo via email, dal più vecchio. */
+  bounceDaNotificare(): Promise<RigaBounce[]>;
+  segnaBounceNotificati(ids: number[], quando: Date): Promise<void>;
 
   // Stats
   getStats(): Promise<{
@@ -214,6 +237,31 @@ export interface IStorage {
 
 // ---- MemStorage ----
 
+// ---- Bounce (issue #126): regole comuni alle due implementazioni ----
+
+/** Stati di una mail effettivamente partita: solo queste possono tornare indietro. */
+const STATI_SPEDITA = ["sent", "opened", "bounced"];
+
+/**
+ * Il ripiego per indirizzo guarda solo gli invii dei 7 giorni prima del bounce:
+ * un server rinuncia entro qualche giorno, e senza limite un bounce di oggi
+ * finirebbe su una comunicazione di mesi fa allo stesso conduttore.
+ */
+const GIORNI_FINESTRA_BOUNCE = 7;
+
+function inizioFinestraBounce(ricevutoAt: Date): Date {
+  return new Date(ricevutoAt.getTime() - GIORNI_FINESTRA_BOUNCE * 86_400_000);
+}
+
+function dentroFinestraBounce(sentAt: Date, ricevutoAt: Date): boolean {
+  return sentAt <= ricevutoAt && sentAt >= inizioFinestraBounce(ricevutoAt);
+}
+
+/** Un ritardo temporaneo non cambia l'esito della mail: solo un bounce definitivo. */
+function daSegnare(b: { eBounce: boolean; tipo: string | null }): boolean {
+  return b.eBounce && segnaMancatoRecapito(tipoBounce(b.tipo));
+}
+
 export class MemStorage implements IStorage {
   private segments: Map<number, NetworkSegment> = new Map();
   private consorziatiMap: Map<number, Consorziato> = new Map();
@@ -242,6 +290,8 @@ export class MemStorage implements IStorage {
   private prossimaRichiestaId = 1;
   private utentiTestMap: Map<number, UtenteTest> = new Map();
   private prossimoUtenteTestId = 1;
+  private bounceMap: Map<number, BounceMessaggio> = new Map();
+  private prossimoBounceId = 1;
 
   private segmentIdSeq = 1;
   private consorziatiIdSeq = 1;
@@ -902,6 +952,9 @@ export class MemStorage implements IStorage {
       emailOpenedAt: data.emailOpenedAt ?? null,
       smsDeliveredAt: data.smsDeliveredAt ?? null,
       sentAt: data.sentAt ?? null,
+      emailBounceCodice: data.emailBounceCodice ?? null,
+      emailBounceTipo: data.emailBounceTipo ?? null,
+      emailBounceAt: data.emailBounceAt ?? null,
     };
     this.recipientsMap.set(id, r);
     return r;
@@ -939,6 +992,90 @@ export class MemStorage implements IStorage {
 
   async getRecipientByEmailMessageId(messageId: string): Promise<NotificationRecipient | undefined> {
     return Array.from(this.recipientsMap.values()).find(r => r.emailMessageId === messageId);
+  }
+
+  // Bounce (issue #126)
+  async chiaviBounceEsaminate(chiavi: string[]): Promise<Set<string>> {
+    const note = new Set(Array.from(this.bounceMap.values()).map((b) => b.chiave));
+    return new Set(chiavi.filter((c) => note.has(c)));
+  }
+
+  async trovaDestinatarioDelBounce(q: { messageId: string | null; email: string | null; ricevutoAt: Date }) {
+    const tutti = Array.from(this.recipientsMap.values());
+    if (q.messageId) {
+      const r = tutti.find((x) => x.emailMessageId === q.messageId);
+      if (r) return { recipientId: r.id, abbinamento: "messageId" as const };
+    }
+    if (q.email) {
+      const email = q.email.toLowerCase();
+      const r = tutti
+        .filter((x) => (x.email ?? "").toLowerCase() === email && x.sentAt !== null && STATI_SPEDITA.includes(x.emailStatus))
+        .filter((x) => dentroFinestraBounce(x.sentAt!, q.ricevutoAt))
+        .sort((a, b) => b.sentAt!.getTime() - a.sentAt!.getTime())[0];
+      if (r) return { recipientId: r.id, abbinamento: "indirizzo" as const };
+    }
+    return undefined;
+  }
+
+  async registraMessaggioBounce(m: InsertBounceMessaggio): Promise<boolean> {
+    if (Array.from(this.bounceMap.values()).some((b) => b.chiave === m.chiave)) return false;
+    const riga: BounceMessaggio = {
+      id: this.prossimoBounceId++,
+      chiave: m.chiave,
+      ricevutoAt: m.ricevutoAt,
+      mittente: m.mittente ?? null,
+      oggetto: m.oggetto ?? null,
+      eBounce: m.eBounce,
+      codice: m.codice ?? null,
+      tipo: m.tipo ?? null,
+      diagnostica: m.diagnostica ?? null,
+      destinatario: m.destinatario ?? null,
+      messageIdOriginale: m.messageIdOriginale ?? null,
+      recipientId: m.recipientId ?? null,
+      abbinamento: m.abbinamento ?? null,
+      esaminatoAt: new Date(),
+      notificatoAt: m.notificatoAt ?? null,
+    };
+    this.bounceMap.set(riga.id, riga);
+    const r = riga.recipientId !== null ? this.recipientsMap.get(riga.recipientId) : undefined;
+    if (r && daSegnare(riga)) {
+      this.recipientsMap.set(r.id, {
+        ...r,
+        emailStatus: "bounced",
+        emailBounceCodice: riga.codice,
+        emailBounceTipo: riga.tipo,
+        emailBounceAt: riga.ricevutoAt,
+      });
+    }
+    return true;
+  }
+
+  private rigaBounce(b: BounceMessaggio): RigaBounce {
+    const r = b.recipientId !== null ? this.recipientsMap.get(b.recipientId) : undefined;
+    const n = r ? this.notificationsMap.get(r.notificationId) : undefined;
+    return componiRigaBounce(b, r, n);
+  }
+
+  async elencoBounce(limite: number): Promise<RigaBounce[]> {
+    return Array.from(this.bounceMap.values())
+      .filter((b) => b.eBounce)
+      .sort((a, b) => b.ricevutoAt.getTime() - a.ricevutoAt.getTime() || b.id - a.id)
+      .slice(0, limite)
+      .map((b) => this.rigaBounce(b));
+  }
+
+  async bounceDaNotificare(): Promise<RigaBounce[]> {
+    return Array.from(this.bounceMap.values())
+      .filter((b) => b.eBounce && b.notificatoAt === null)
+      .sort((a, b) => a.ricevutoAt.getTime() - b.ricevutoAt.getTime() || a.id - b.id)
+      .map((b) => this.rigaBounce(b));
+  }
+
+  async segnaBounceNotificati(ids: number[], quando: Date): Promise<void> {
+    for (const id of ids) {
+      const b = this.bounceMap.get(id);
+      if (b) this.bounceMap.set(id, { ...b, notificatoAt: quando });
+    }
   }
 
   // Stats
@@ -1849,6 +1986,90 @@ export class PostgreSQLStorage implements IStorage {
   async getRecipientByEmailMessageId(messageId: string): Promise<NotificationRecipient | undefined> {
     const result = await db.select().from(notificationRecipients).where(eq(notificationRecipients.emailMessageId, messageId));
     return result[0];
+  }
+
+  // Bounce (issue #126)
+  async chiaviBounceEsaminate(chiavi: string[]): Promise<Set<string>> {
+    if (chiavi.length === 0) return new Set();
+    const righe = await db
+      .select({ chiave: bounceMessaggi.chiave })
+      .from(bounceMessaggi)
+      .where(inArray(bounceMessaggi.chiave, chiavi));
+    return new Set(righe.map((r) => r.chiave));
+  }
+
+  async trovaDestinatarioDelBounce(q: { messageId: string | null; email: string | null; ricevutoAt: Date }) {
+    if (q.messageId) {
+      const [r] = await db
+        .select({ id: notificationRecipients.id })
+        .from(notificationRecipients)
+        .where(eq(notificationRecipients.emailMessageId, q.messageId))
+        .limit(1);
+      if (r) return { recipientId: r.id, abbinamento: "messageId" as const };
+    }
+    if (q.email) {
+      const [r] = await db
+        .select({ id: notificationRecipients.id })
+        .from(notificationRecipients)
+        .where(and(
+          sql`lower(${notificationRecipients.email}) = ${q.email.toLowerCase()}`,
+          inArray(notificationRecipients.emailStatus, STATI_SPEDITA),
+          lte(notificationRecipients.sentAt, q.ricevutoAt),
+          sql`${notificationRecipients.sentAt} >= ${inizioFinestraBounce(q.ricevutoAt)}`,
+        ))
+        .orderBy(desc(notificationRecipients.sentAt))
+        .limit(1);
+      if (r) return { recipientId: r.id, abbinamento: "indirizzo" as const };
+    }
+    return undefined;
+  }
+
+  async registraMessaggioBounce(m: InsertBounceMessaggio): Promise<boolean> {
+    return await db.transaction(async (tx) => {
+      const [riga] = await tx.insert(bounceMessaggi).values(m).onConflictDoNothing().returning();
+      if (!riga) return false;
+      if (riga.recipientId !== null && daSegnare(riga)) {
+        await tx
+          .update(notificationRecipients)
+          .set({
+            emailStatus: "bounced",
+            emailBounceCodice: riga.codice,
+            emailBounceTipo: riga.tipo,
+            emailBounceAt: riga.ricevutoAt,
+          })
+          .where(eq(notificationRecipients.id, riga.recipientId));
+      }
+      return true;
+    });
+  }
+
+  private async righeBounce(dove: SQL | undefined, ordine: "recenti" | "vecchi", limite?: number): Promise<RigaBounce[]> {
+    const base = db
+      .select({ b: bounceMessaggi, r: notificationRecipients, n: { subject: notifications.subject } })
+      .from(bounceMessaggi)
+      .leftJoin(notificationRecipients, eq(bounceMessaggi.recipientId, notificationRecipients.id))
+      .leftJoin(notifications, eq(notificationRecipients.notificationId, notifications.id))
+      .where(and(eq(bounceMessaggi.eBounce, true), dove))
+      .orderBy(
+        ...(ordine === "recenti"
+          ? [desc(bounceMessaggi.ricevutoAt), desc(bounceMessaggi.id)]
+          : [bounceMessaggi.ricevutoAt, bounceMessaggi.id]),
+      );
+    const righe = limite === undefined ? await base : await base.limit(limite);
+    return righe.map(({ b, r, n }) => componiRigaBounce(b, r, r ? n : null));
+  }
+
+  async elencoBounce(limite: number): Promise<RigaBounce[]> {
+    return this.righeBounce(undefined, "recenti", limite);
+  }
+
+  async bounceDaNotificare(): Promise<RigaBounce[]> {
+    return this.righeBounce(sql`${bounceMessaggi.notificatoAt} is null`, "vecchi");
+  }
+
+  async segnaBounceNotificati(ids: number[], quando: Date): Promise<void> {
+    if (ids.length === 0) return;
+    await db.update(bounceMessaggi).set({ notificatoAt: quando }).where(inArray(bounceMessaggi.id, ids));
   }
 
   // Stats

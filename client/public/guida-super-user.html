@@ -123,10 +123,11 @@ si ripetono, se ne richiamano solo le implicazioni amministrative.</p>
 <li><a href="#8-impostazioni--webservice-le-anagrafiche-del-consorzio">Impostazioni → WebService (le anagrafiche del consorzio)</a></li>
 <li><a href="#9-impostazioni--active-directory">Impostazioni → Active Directory</a></li>
 <li><a href="#10-impostazioni--utenti-di-test">Impostazioni → Utenti di test</a></li>
-<li><a href="#11-cosa-deve-sapere-un-amministratore-sullinvio">Cosa deve sapere un amministratore sull&#39;invio</a></li>
-<li><a href="#12-manutenzione-ordinaria">Manutenzione ordinaria</a></li>
-<li><a href="#13-limiti-noti-e-cose-da-decidere">Limiti noti e cose da decidere</a></li>
-<li><a href="#14-diagnosi-rapida">Diagnosi rapida</a></li>
+<li><a href="#11-impostazioni--bounce-mail-non-recapitate">Impostazioni → Bounce (mail non recapitate)</a></li>
+<li><a href="#12-cosa-deve-sapere-un-amministratore-sullinvio">Cosa deve sapere un amministratore sull&#39;invio</a></li>
+<li><a href="#13-manutenzione-ordinaria">Manutenzione ordinaria</a></li>
+<li><a href="#14-limiti-noti-e-cose-da-decidere">Limiti noti e cose da decidere</a></li>
+<li><a href="#15-diagnosi-rapida">Diagnosi rapida</a></li>
 </ol>
 <hr>
 <h2 id="1-il-modello-dei-permessi">1. Il modello dei permessi</h2>
@@ -716,7 +717,65 @@ comunicazione con anche un solo conduttore vero fra i destinatari non viene
 mai toccata da questo pulsante, nemmeno se contiene anche utenti di test:
 non è considerata «di prova». L&#39;operazione non si può annullare.</p>
 <hr>
-<h2 id="11-cosa-deve-sapere-un-amministratore-sullinvio">11. Cosa deve sapere un amministratore sull&#39;invio</h2>
+<h2 id="11-impostazioni--bounce-mail-non-recapitate">11. Impostazioni → Bounce (mail non recapitate)</h2>
+<p>Una mail accettata dal server di posta può ancora tornare indietro: indirizzo
+inesistente, casella piena, rifiuto per spam. Il messaggio di ritorno (il
+<em>bounce</em>) arriva nella casella da cui le notifiche partono, ed è da lì che
+l&#39;applicazione lo legge, <strong>in sola lettura</strong>: non può spedire, spostare né
+cancellare niente in quella casella.</p>
+<p><strong>Cosa serve dal consorzio.</strong> Un&#39;app registrata in Entra ID con il solo
+permesso <em>Mail.Read</em>, ristretta a quella casella da una <em>Application Access
+Policy</em>. Ne vengono quattro dati da inserire nella scheda: <em>Tenant ID</em>,
+<em>Client ID</em>, <em>Client secret</em> (la colonna <strong>Value</strong>, non il <em>Secret ID</em>: la
+scheda rifiuta il secondo) e la <em>Casella da leggere</em>. Se la casella non è il
+mittente impostato nella scheda Email, la scheda lo segnala: i bounce tornano
+al mittente, non altrove.</p>
+<p><strong>La scadenza del secret si scrive a mano.</strong> Microsoft fa scadere il client
+secret (al massimo dopo 24 mesi) e l&#39;applicazione non ha il permesso di
+leggere quando. Inserita la data, la scheda avvisa da 30 giorni prima, e
+così il riepilogo via email. Quando scade, la lettura smette di funzionare: si
+genera un secret nuovo in Entra ID, lo si incolla qui, si salva. Il campo del
+secret resta vuoto anche quando è impostato: lasciato vuoto, il secret salvato
+non cambia.</p>
+<p><strong>Come funziona.</strong> Con l&#39;interruttore acceso, ogni 10 minuti l&#39;applicazione
+legge i messaggi arrivati dall&#39;ultima lettura, riconosce i bounce e li abbina
+alla comunicazione da cui sono partiti. Nel dettaglio dello Storico quella
+mail compare come <strong>Non recapitata</strong>, con il motivo (<em>5.1.1 — Indirizzo
+inesistente</em>). Le risposte dei conduttori finiscono nella stessa casella ma
+non vengono toccate né contate.</p>
+<ul>
+<li><strong>Prova accesso</strong> chiede l&#39;accesso a Microsoft e legge l&#39;elenco dei
+messaggi, senza registrare niente. Va usato dopo ogni modifica delle
+credenziali: dice in italiano cosa non va (secret sbagliato o scaduto,
+consenso mancante, policy non ancora attiva — dopo la creazione può servire
+mezz&#39;ora).</li>
+<li><strong>Leggi ora</strong> esegue subito una lettura vera, anche a interruttore spento.</li>
+<li>Sotto, l&#39;esito dell&#39;<strong>ultima lettura</strong>: se è rosso da ore, i bounce nuovi non
+vengono rilevati.</li>
+</ul>
+<p><strong>Un ritardo non è un bounce.</strong> Quando il server del destinatario non risponde,
+arriva prima un avviso di ritardo (codice che inizia per 4): compare
+nell&#39;elenco in grigio ma non cambia l&#39;esito della mail. Se il server rinuncia,
+arriva più tardi il bounce vero.</p>
+<p><strong>«Abbinata per indirizzo».</strong> Di norma il bounce si riconosce dall&#39;identificativo
+della mail originale, e l&#39;abbinamento è certo. Se il server del destinatario non
+lo riporta, l&#39;applicazione prende l&#39;ultima comunicazione spedita a quell&#39;indirizzo
+nei 7 giorni precedenti, e lo scrive. Un bounce senza alcuna comunicazione
+corrispondente resta nell&#39;elenco come <strong>Non abbinata</strong>.</p>
+<p><strong>Si segnala, non si esclude.</strong> Un indirizzo che rimbalza continua a ricevere
+le comunicazioni successive: l&#39;anagrafica è quella del consorzio, e va corretta
+lì. L&#39;elenco <em>Mail non recapitate</em> in fondo alla scheda, con <strong>Scarica CSV</strong>,
+serve proprio a girare gli indirizzi da correggere.</p>
+<p><strong>Riepilogo via email.</strong> Con il suo interruttore acceso e almeno un
+destinatario, ogni mattina alle 7 parte un riepilogo — ma <strong>solo se c&#39;è
+qualcosa da dire</strong>: mail non recapitate dal riepilogo precedente, una lettura
+della casella che non funziona, il secret vicino alla scadenza. Gli ultimi due
+si ripetono ogni giorno finché qualcuno non interviene. <strong>Invia un riepilogo di
+prova</strong> lo spedisce subito con gli ultimi bounce, senza segnarli come inviati.</p>
+<p>Le PEC sono fuori da questo meccanismo: i loro avvisi di mancata consegna
+arrivano alla casella PEC, che l&#39;applicazione non legge.</p>
+<hr>
+<h2 id="12-cosa-deve-sapere-un-amministratore-sullinvio">12. Cosa deve sapere un amministratore sull&#39;invio</h2>
 <p>Il flusso completo è nella <a href="/guida-utente.html#5-invia-notifica">Guida utente</a>.
 Qui i punti che generano segnalazioni.</p>
 <p><strong>La risposta arriva prima della fine della spedizione.</strong> La notifica viene
@@ -755,7 +814,7 @@ sé, e una tratta chiusa sia da sola sia con la madre conta una volta.</li>
 <p><strong>Chi ha inviato viene preso dalla sessione</strong>, non da quello che il client
 dichiara: nello Storico la firma non è modificabile.</p>
 <hr>
-<h2 id="12-manutenzione-ordinaria">12. Manutenzione ordinaria</h2>
+<h2 id="13-manutenzione-ordinaria">13. Manutenzione ordinaria</h2>
 <h3 id="controlli-periodici">Controlli periodici</h3>
 <div class="tabella"><table>
 <thead>
@@ -861,7 +920,7 @@ configura da <em>Impostazioni</em>.</li>
 <p>Un aggiornamento dell&#39;applicazione <strong>non risincronizza le anagrafiche</strong>: se
 l&#39;intervento riguardava il caricamento dei dati, va lanciato <em>Aggiorna ora</em>.</p>
 <hr>
-<h2 id="13-limiti-noti-e-cose-da-decidere">13. Limiti noti e cose da decidere</h2>
+<h2 id="14-limiti-noti-e-cose-da-decidere">14. Limiti noti e cose da decidere</h2>
 <p>Non sono dimenticanze: sono scelte prese o questioni aperte. Vale la pena
 conoscerle prima che diventino segnalazioni.</p>
 <ul>
@@ -896,7 +955,7 @@ tracciano.</li>
 niente HTML.</li>
 </ul>
 <hr>
-<h2 id="14-diagnosi-rapida">14. Diagnosi rapida</h2>
+<h2 id="15-diagnosi-rapida">15. Diagnosi rapida</h2>
 <p><strong>Un operatore dice che «Invia notifica» è quasi tutta vuota.</strong>
 Guardare <em>Anagrafiche</em>: quali entità risultano caricate e cosa dice il riquadro
 ambra. Poi <em>Impostazioni → WebService</em>: <strong>Prova</strong> su ogni entità, quindi

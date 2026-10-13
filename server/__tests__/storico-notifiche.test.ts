@@ -205,6 +205,7 @@ describe("toRecipientDetail", () => {
       mail: "mario.rossi@email.it",
       esitoEmail: "inviato",
       esitoSms: null,
+      motivoMancatoRecapito: null,
     });
   });
 });
@@ -216,6 +217,17 @@ describe("esito dell'invio nel dettaglio (issue #111)", () => {
     expect(esitoEmail("opened")).toBe("inviato");
     expect(esitoEmail("failed")).toBe("nonInviato");
     expect(esitoEmail("pending")).toBe("inAttesa");
+  });
+
+  it("una mail tornata indietro è «non recapitata», col motivo (issue #126)", () => {
+    expect(esitoEmail("bounced")).toBe("nonRecapitato");
+    const r = toRecipientDetail({
+      ...destinatario(),
+      emailStatus: "bounced",
+      emailBounceCodice: "5.2.2",
+      emailBounceTipo: "casellaPiena",
+    });
+    expect(r).toMatchObject({ esitoEmail: "nonRecapitato", motivoMancatoRecapito: "5.2.2 — Casella piena" });
   });
 
   it("un SMS mai partito non è «in attesa»: senza la spunta non partirà mai", () => {

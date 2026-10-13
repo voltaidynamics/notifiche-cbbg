@@ -625,13 +625,16 @@ riuscita a **spedire** ciascun messaggio:
 |---|---|
 | **Inviata / Inviato** | Il server di posta (o la piattaforma SMS) ha accettato il messaggio |
 | **Non inviata / Non inviato** | Il messaggio non è partito: manca l'indirizzo o il numero, oppure il server lo ha rifiutato |
+| **Non recapitata** | Solo per le email: il server l'aveva accettata, ma la mail è tornata indietro. Sotto c'è il motivo, ad esempio *5.1.1 — Indirizzo inesistente* o *Casella piena* |
 | **In attesa** | Solo per le email: la spedizione è ancora in corso |
 | **—** | Solo per gli SMS: per quella comunicazione nessun SMS è partito, di solito perché la spunta «Invia anche via SMS» non c'era |
 
 **«Inviata» non vuol dire «arrivata» né «letta»**: l'app sa solo di aver
-consegnato il messaggio al server, che poi lo recapita per conto suo. Se
-consegna e lettura vanno verificate, per le email certificate fanno fede le
-ricevute della PEC.
+consegnato il messaggio al server, che poi lo recapita per conto suo. Se la
+lettura dei bounce è attiva (la configura l'amministratore), una mail che torna
+indietro diventa **Non recapitata** entro una decina di minuti dal ritorno; ma
+nessun ritorno non garantisce la consegna, e le PEC restano fuori. Per le email
+certificate fanno fede le ricevute della PEC.
 
 I messaggi partono **uno alla volta**: prima tutte le email, poi tutti gli SMS.
 Su un invio ampio ci vogliono minuti, e intanto le righe ancora da spedire

@@ -8,6 +8,7 @@ import type {
   NotificationRecipientDetail,
 } from "@shared/schema";
 import { separaTratte } from "@shared/destinatari";
+import { descriviBounce, tipoBounce } from "@shared/bounce";
 
 /**
  * Logica pura dello Storico Notifiche.
@@ -36,6 +37,8 @@ export function dataNotifica(n: Pick<Notification, "sentAt" | "createdAt">): Dat
  */
 export function esitoEmail(status: string): EsitoInvio {
   if (status === "sent" || status === "opened") return "inviato";
+  // Accettata dal server SMTP e poi tornata indietro (issue #126).
+  if (status === "bounced") return "nonRecapitato";
   if (status === "failed") return "nonInviato";
   return "inAttesa";
 }
@@ -65,6 +68,8 @@ export function toRecipientDetail(r: NotificationRecipient): NotificationRecipie
     utenteTest: r.utenteTest,
     esitoEmail: esitoEmail(r.emailStatus),
     esitoSms: esitoSms(r.smsStatus),
+    motivoMancatoRecapito:
+      r.emailStatus === "bounced" ? descriviBounce(r.emailBounceCodice, tipoBounce(r.emailBounceTipo)) : null,
   };
 }
 

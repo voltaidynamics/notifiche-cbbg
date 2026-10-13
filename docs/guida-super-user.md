@@ -23,10 +23,11 @@ si ripetono, se ne richiamano solo le implicazioni amministrative.
 8. [Impostazioni → WebService (le anagrafiche del consorzio)](#8-impostazioni--webservice-le-anagrafiche-del-consorzio)
 9. [Impostazioni → Active Directory](#9-impostazioni--active-directory)
 10. [Impostazioni → Utenti di test](#10-impostazioni--utenti-di-test)
-11. [Cosa deve sapere un amministratore sull'invio](#11-cosa-deve-sapere-un-amministratore-sullinvio)
-12. [Manutenzione ordinaria](#12-manutenzione-ordinaria)
-13. [Limiti noti e cose da decidere](#13-limiti-noti-e-cose-da-decidere)
-14. [Diagnosi rapida](#14-diagnosi-rapida)
+11. [Impostazioni → Bounce (mail non recapitate)](#11-impostazioni--bounce-mail-non-recapitate)
+12. [Cosa deve sapere un amministratore sull'invio](#12-cosa-deve-sapere-un-amministratore-sullinvio)
+13. [Manutenzione ordinaria](#13-manutenzione-ordinaria)
+14. [Limiti noti e cose da decidere](#14-limiti-noti-e-cose-da-decidere)
+15. [Diagnosi rapida](#15-diagnosi-rapida)
 
 ---
 
@@ -599,7 +600,75 @@ non è considerata «di prova». L'operazione non si può annullare.
 
 ---
 
-## 11. Cosa deve sapere un amministratore sull'invio
+## 11. Impostazioni → Bounce (mail non recapitate)
+
+Una mail accettata dal server di posta può ancora tornare indietro: indirizzo
+inesistente, casella piena, rifiuto per spam. Il messaggio di ritorno (il
+*bounce*) arriva nella casella da cui le notifiche partono, ed è da lì che
+l'applicazione lo legge, **in sola lettura**: non può spedire, spostare né
+cancellare niente in quella casella.
+
+**Cosa serve dal consorzio.** Un'app registrata in Entra ID con il solo
+permesso *Mail.Read*, ristretta a quella casella da una *Application Access
+Policy*. Ne vengono quattro dati da inserire nella scheda: *Tenant ID*,
+*Client ID*, *Client secret* (la colonna **Value**, non il *Secret ID*: la
+scheda rifiuta il secondo) e la *Casella da leggere*. Se la casella non è il
+mittente impostato nella scheda Email, la scheda lo segnala: i bounce tornano
+al mittente, non altrove.
+
+**La scadenza del secret si scrive a mano.** Microsoft fa scadere il client
+secret (al massimo dopo 24 mesi) e l'applicazione non ha il permesso di
+leggere quando. Inserita la data, la scheda avvisa da 30 giorni prima, e
+così il riepilogo via email. Quando scade, la lettura smette di funzionare: si
+genera un secret nuovo in Entra ID, lo si incolla qui, si salva. Il campo del
+secret resta vuoto anche quando è impostato: lasciato vuoto, il secret salvato
+non cambia.
+
+**Come funziona.** Con l'interruttore acceso, ogni 10 minuti l'applicazione
+legge i messaggi arrivati dall'ultima lettura, riconosce i bounce e li abbina
+alla comunicazione da cui sono partiti. Nel dettaglio dello Storico quella
+mail compare come **Non recapitata**, con il motivo (*5.1.1 — Indirizzo
+inesistente*). Le risposte dei conduttori finiscono nella stessa casella ma
+non vengono toccate né contate.
+
+- **Prova accesso** chiede l'accesso a Microsoft e legge l'elenco dei
+  messaggi, senza registrare niente. Va usato dopo ogni modifica delle
+  credenziali: dice in italiano cosa non va (secret sbagliato o scaduto,
+  consenso mancante, policy non ancora attiva — dopo la creazione può servire
+  mezz'ora).
+- **Leggi ora** esegue subito una lettura vera, anche a interruttore spento.
+- Sotto, l'esito dell'**ultima lettura**: se è rosso da ore, i bounce nuovi non
+  vengono rilevati.
+
+**Un ritardo non è un bounce.** Quando il server del destinatario non risponde,
+arriva prima un avviso di ritardo (codice che inizia per 4): compare
+nell'elenco in grigio ma non cambia l'esito della mail. Se il server rinuncia,
+arriva più tardi il bounce vero.
+
+**«Abbinata per indirizzo».** Di norma il bounce si riconosce dall'identificativo
+della mail originale, e l'abbinamento è certo. Se il server del destinatario non
+lo riporta, l'applicazione prende l'ultima comunicazione spedita a quell'indirizzo
+nei 7 giorni precedenti, e lo scrive. Un bounce senza alcuna comunicazione
+corrispondente resta nell'elenco come **Non abbinata**.
+
+**Si segnala, non si esclude.** Un indirizzo che rimbalza continua a ricevere
+le comunicazioni successive: l'anagrafica è quella del consorzio, e va corretta
+lì. L'elenco *Mail non recapitate* in fondo alla scheda, con **Scarica CSV**,
+serve proprio a girare gli indirizzi da correggere.
+
+**Riepilogo via email.** Con il suo interruttore acceso e almeno un
+destinatario, ogni mattina alle 7 parte un riepilogo — ma **solo se c'è
+qualcosa da dire**: mail non recapitate dal riepilogo precedente, una lettura
+della casella che non funziona, il secret vicino alla scadenza. Gli ultimi due
+si ripetono ogni giorno finché qualcuno non interviene. **Invia un riepilogo di
+prova** lo spedisce subito con gli ultimi bounce, senza segnarli come inviati.
+
+Le PEC sono fuori da questo meccanismo: i loro avvisi di mancata consegna
+arrivano alla casella PEC, che l'applicazione non legge.
+
+---
+
+## 12. Cosa deve sapere un amministratore sull'invio
 
 Il flusso completo è nella [Guida utente](guida-utente.md#5-invia-notifica).
 Qui i punti che generano segnalazioni.
@@ -646,7 +715,7 @@ dichiara: nello Storico la firma non è modificabile.
 
 ---
 
-## 12. Manutenzione ordinaria
+## 13. Manutenzione ordinaria
 
 ### Controlli periodici
 
@@ -721,7 +790,7 @@ l'intervento riguardava il caricamento dei dati, va lanciato *Aggiorna ora*.
 
 ---
 
-## 13. Limiti noti e cose da decidere
+## 14. Limiti noti e cose da decidere
 
 Non sono dimenticanze: sono scelte prese o questioni aperte. Vale la pena
 conoscerle prima che diventino segnalazioni.
@@ -758,7 +827,7 @@ conoscerle prima che diventino segnalazioni.
 
 ---
 
-## 14. Diagnosi rapida
+## 15. Diagnosi rapida
 
 **Un operatore dice che «Invia notifica» è quasi tutta vuota.**
 Guardare *Anagrafiche*: quali entità risultano caricate e cosa dice il riquadro

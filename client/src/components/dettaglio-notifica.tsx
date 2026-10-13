@@ -70,11 +70,19 @@ const ESITO: Record<EsitoInvio, { email: string; sms: string; colore: string }> 
   inviato: { email: "Inviata", sms: "Inviato", colore: "text-green-700" },
   nonInviato: { email: "Non inviata", sms: "Non inviato", colore: "text-red-600 font-semibold" },
   inAttesa: { email: "In attesa", sms: "In attesa", colore: "text-gray-500" },
+  // Accettata dal server e poi tornata indietro: l'unico dato di consegna che
+  // l'app ha, letto dalla casella dei bounce (issue #126).
+  nonRecapitato: { email: "Non recapitata", sms: "Non recapitato", colore: "text-red-600 font-semibold" },
 };
 
-function Esito({ esito, canale }: { esito: EsitoInvio | null; canale: "email" | "sms" }) {
+function Esito({ esito, canale, motivo }: { esito: EsitoInvio | null; canale: "email" | "sms"; motivo?: string | null }) {
   if (esito === null) return <span className="text-gray-400">—</span>;
-  return <span className={ESITO[esito].colore}>{ESITO[esito][canale]}</span>;
+  return (
+    <span className={ESITO[esito].colore}>
+      {ESITO[esito][canale]}
+      {motivo && <span className="block text-[11px] font-normal text-gray-600">{motivo}</span>}
+    </span>
+  );
 }
 
 /** `notificaId` null = popup chiuso. ESC e il clic fuori chiudono: li gestisce Dialog. */
@@ -99,14 +107,14 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
     scaricaCsv(`dettaglio_${dettaglio.codice}.csv`, [
       ["ID Notifica", "Utente", "Data", "Tipo", "Classificazione", "Legame", "Codice Conduttore", "Descrizione Conduttore",
         "Codice Roggia", "Descrizione Roggia", "SMS", "Mail", "Canale", "Utente di test",
-        "Esito email", "Esito SMS"],
+        "Esito email", "Motivo mancato recapito", "Esito SMS"],
       ...dettaglio.destinatari.map((d) => [
         dettaglio.codice, dettaglio.utente, formatDateTime(dettaglio.data),
         etichetta(ETICHETTE_TIPO, dettaglio.tipo), etichetta(ETICHETTE_CLASSIFICAZIONE, dettaglio.classificazione),
         dettaglio.legame === null ? "" : etichetta(ETICHETTE_LEGAME, dettaglio.legame),
         d.codiceConduttore, d.descrizioneConduttore, d.codiceRoggia, d.descrizioneRoggia, d.sms, d.mail, d.canale,
         d.utenteTest ? "Si" : "No",
-        ESITO[d.esitoEmail].email, d.esitoSms === null ? "" : ESITO[d.esitoSms].sms,
+        ESITO[d.esitoEmail].email, d.motivoMancatoRecapito ?? "", d.esitoSms === null ? "" : ESITO[d.esitoSms].sms,
       ]),
     ]);
   };
@@ -214,7 +222,7 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
                   </div>
                   <div className="flex justify-between gap-2">
                     <span className="break-all">{d.mail ?? <span className="text-gray-400">Nessuna mail</span>}</span>
-                    <span className="whitespace-nowrap"><Esito esito={d.esitoEmail} canale="email" /></span>
+                    <span className="whitespace-nowrap"><Esito esito={d.esitoEmail} canale="email" motivo={d.motivoMancatoRecapito} /></span>
                   </div>
                   <div className="flex justify-between gap-2">
                     <span>{d.sms ?? <span className="text-gray-400">Nessun numero</span>}</span>
@@ -256,7 +264,7 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
                       <td className="px-3 py-2">{d.sms ?? <span className="text-gray-400">—</span>}</td>
                       <td className="px-3 py-2 whitespace-nowrap"><Esito esito={d.esitoSms} canale="sms" /></td>
                       <td className="px-3 py-2">{d.mail ?? <span className="text-gray-400">—</span>}</td>
-                      <td className="px-3 py-2 whitespace-nowrap"><Esito esito={d.esitoEmail} canale="email" /></td>
+                      <td className="px-3 py-2 whitespace-nowrap"><Esito esito={d.esitoEmail} canale="email" motivo={d.motivoMancatoRecapito} /></td>
                       {/* Per una PEC «da quale casella è partita» è la domanda
                           che conta: resta "—" sulle notifiche precedenti ai
                           due canali, che nessuno ha registrato. */}
