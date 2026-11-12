@@ -633,19 +633,27 @@ d&#39;ambiente</strong>: si configura solo da questa scheda.</p>
 </tr>
 <tr>
 <td><strong>URL dell&#39;endpoint di verifica</strong></td>
-<td><strong>Di solito si lascia vuoto</strong>: vale allora l&#39;<em>URL base</em> della scheda WebService più <code>/RestTabelle/RestTabelle.svc/getuserAD</code>, e se la base cambia l&#39;indirizzo la segue. Si compila solo se il servizio sta altrove. Deve iniziare con <code>http://</code> o <code>https://</code></td>
+<td><strong>Di solito si lascia vuoto</strong>: vale allora l&#39;<em>URL base</em> della scheda WebService più <code>/RestTabelle/RestTabelle.svc/getuserAD</code>, e se la base cambia l&#39;indirizzo la segue. Si compila solo se il servizio sta altrove, e si scrive <strong>senza</strong> <code>?user=…&amp;pwd=…</code>: quei due parametri li aggiunge l&#39;applicazione a ogni accesso. Deve iniziare con <code>http://</code> o <code>https://</code></td>
 </tr>
 <tr>
 <td><strong>Timeout (millisecondi)</strong></td>
 <td>Quanto aspettare la risposta prima di considerare il servizio irraggiungibile</td>
 </tr>
 </tbody></table></div>
-<p>Il servizio riceve <strong>la password dentro l&#39;indirizzo</strong> chiamato, e usa la stessa
-<em>Stringa di autenticazione</em> del WebService. Ne seguono due cose da sapere:</p>
+<p>Il servizio riceve username e password <strong>come parametri dell&#39;indirizzo</strong>
+chiamato, <code>user</code> e <code>pwd</code>. Con l&#39;URL base <code>http://192.168.0.100</code>, l&#39;accesso di
+<code>m.rossi</code> chiama:</p>
+<pre><code>http://192.168.0.100/RestTabelle/RestTabelle.svc/getuserAD?user=m.rossi&amp;pwd=&lt;password&gt;
+</code></pre>
+<p>I caratteri speciali della password (spazi, <code>&amp;</code>, <code>=</code>, <code>+</code>, <code>/</code>, <code>%</code>, <code>#</code>,
+lettere accentate) vengono codificati dall&#39;applicazione: arrivano al servizio
+identici a come sono stati digitati, e non serve fare nulla. La chiamata usa la
+stessa <em>Stringa di autenticazione</em> del WebService. Ne seguono due cose da sapere:</p>
 <ul>
 <li>la password di dominio finisce nei <strong>log di accesso del web service del
 consorzio</strong>: è il funzionamento che il consorzio ha scelto. Da parte
-dell&#39;applicazione non esce: nei suoi log e nelle prove compare mascherata;</li>
+dell&#39;applicazione non esce: nei suoi log e nelle prove compare mascherata,
+come <code>…/getuserAD?user=m.rossi&amp;pwd=***</code>;</li>
 <li>se l&#39;indirizzo è in <code>http://</code>, compare un avviso ambra: <strong>username e
 password del personale viaggiano in chiaro</strong> sulla rete fino al web service.</li>
 </ul>

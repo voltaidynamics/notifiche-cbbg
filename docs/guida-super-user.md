@@ -506,15 +506,26 @@ d'ambiente**: si configura solo da questa scheda.
 | Campo | Note |
 |---|---|
 | **Autenticazione Active Directory attiva** | L'interruttore generale |
-| **URL dell'endpoint di verifica** | **Di solito si lascia vuoto**: vale allora l'*URL base* della scheda WebService più `/RestTabelle/RestTabelle.svc/getuserAD`, e se la base cambia l'indirizzo la segue. Si compila solo se il servizio sta altrove. Deve iniziare con `http://` o `https://` |
+| **URL dell'endpoint di verifica** | **Di solito si lascia vuoto**: vale allora l'*URL base* della scheda WebService più `/RestTabelle/RestTabelle.svc/getuserAD`, e se la base cambia l'indirizzo la segue. Si compila solo se il servizio sta altrove, e si scrive **senza** `?user=…&pwd=…`: quei due parametri li aggiunge l'applicazione a ogni accesso. Deve iniziare con `http://` o `https://` |
 | **Timeout (millisecondi)** | Quanto aspettare la risposta prima di considerare il servizio irraggiungibile |
 
-Il servizio riceve **la password dentro l'indirizzo** chiamato, e usa la stessa
-*Stringa di autenticazione* del WebService. Ne seguono due cose da sapere:
+Il servizio riceve username e password **come parametri dell'indirizzo**
+chiamato, `user` e `pwd`. Con l'URL base `http://192.168.0.100`, l'accesso di
+`m.rossi` chiama:
+
+```
+http://192.168.0.100/RestTabelle/RestTabelle.svc/getuserAD?user=m.rossi&pwd=<password>
+```
+
+I caratteri speciali della password (spazi, `&`, `=`, `+`, `/`, `%`, `#`,
+lettere accentate) vengono codificati dall'applicazione: arrivano al servizio
+identici a come sono stati digitati, e non serve fare nulla. La chiamata usa la
+stessa *Stringa di autenticazione* del WebService. Ne seguono due cose da sapere:
 
 - la password di dominio finisce nei **log di accesso del web service del
   consorzio**: è il funzionamento che il consorzio ha scelto. Da parte
-  dell'applicazione non esce: nei suoi log e nelle prove compare mascherata;
+  dell'applicazione non esce: nei suoi log e nelle prove compare mascherata,
+  come `…/getuserAD?user=m.rossi&pwd=***`;
 - se l'indirizzo è in `http://`, compare un avviso ambra: **username e
   password del personale viaggiano in chiaro** sulla rete fino al web service.
 
