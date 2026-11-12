@@ -2,8 +2,9 @@
 //
 // Fino alla issue #14 la pagina leggeva l'anagrafica vera del consorzio ma non
 // spediva niente: `confermaInvio` mostrava un toast e finiva lì. Da qui parte
-// invece la comunicazione, e il «Titolo della comunicazione» è l'oggetto della
-// mail — che è precisamente quel che la issue #23 chiede di garantire.
+// invece la comunicazione, e il campo «Oggetto Email» (ex «Titolo della
+// comunicazione», issue #130) è l'oggetto della mail — che è precisamente quel
+// che la issue #23 chiede di garantire.
 //
 // Sta in un modulo suo, con le dipendenze iniettabili come in `avviso-sync.ts`,
 // perché in questo repo Express non è testabile: una funzione che decide se una
@@ -327,6 +328,10 @@ export async function preparaInvio(
     // ancora. Vuoto diventa null — «mai avuto un testo SMS» non è «testo SMS
     // vuoto».
     messageSms: richiesta.messaggioSms || null,
+    // La spunta, registrata com'era (issue #129): il testo SMS sopra si salva
+    // anche a spunta spenta, e uno 0 SMS inviati deve poter dire «non scelto»
+    // invece di sembrare un guasto.
+    invioSms: richiesta.inviaSms,
     status: "sending",
     recipientCount: totaleDestinatari,
     emailCount: totaleDestinatari,

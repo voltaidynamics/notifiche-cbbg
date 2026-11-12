@@ -1,9 +1,11 @@
 /**
  * Verifica delle credenziali di dominio tramite l'endpoint `getuserAD` del web
  * service del consorzio (issue #96). Il bind lo fa il consorzio: noi mandiamo
- * username e password nel percorso e leggiamo `[{"status":true|false}]`.
+ * username e password come parametri `user` e `pwd` della query string e
+ * leggiamo `[{"status":true|false}]`. Fino al 2026-11 erano due segmenti di
+ * percorso (`<url>/<username>/<password>`): il consorzio ha cambiato l'endpoint.
  *
- * La password viaggia nel percorso dell'URL: è il contratto del consorzio, non
+ * La password viaggia nell'URL: è il contratto del consorzio, non
  * una scelta nostra, e finisce nei log di accesso del loro web service. Quello
  * che possiamo garantire è che da qui non esca: nessun URL completo nei log,
  * nel `dettaglio` o nella risposta della prova.
@@ -24,14 +26,28 @@ function senzaBarraFinale(url: string): string {
   return url.replace(/\/+$/, "");
 }
 
-/** `<base>/<username>/<password>`, ciascun segmento codificato. */
+/**
+ * `?` se la base non ha ancora una query string, `&` se ne ha già una (un URL
+ * configurato a mano potrebbe portarne).
+ */
+function conQuery(base: string, query: string): string {
+  const b = senzaBarraFinale(base);
+  return `${b}${b.includes("?") ? "&" : "?"}${query}`;
+}
+
+/**
+ * `<base>?user=<username>&pwd=<password>`, ciascun valore codificato con
+ * `encodeURIComponent` — non `URLSearchParams`, che scrive lo spazio come `+`:
+ * `%20` lo decodifica qualunque server, `+` dipende da come IIS/WCF legge la
+ * query, e una password con uno spazio diventerebbe un'altra password.
+ */
 export function urlVerifica(base: string, username: string, password: string): string {
-  return `${senzaBarraFinale(base)}/${encodeURIComponent(username)}/${encodeURIComponent(password)}`;
+  return conQuery(base, `user=${encodeURIComponent(username)}&pwd=${encodeURIComponent(password)}`);
 }
 
 /** Lo stesso URL con `***` al posto della password: l'unica forma che può finire in un log. */
 function urlMascherato(base: string, username: string): string {
-  return `${senzaBarraFinale(base)}/${encodeURIComponent(username)}/***`;
+  return conQuery(base, `user=${encodeURIComponent(username)}&pwd=***`);
 }
 
 /** Toglie la password, in chiaro e codificata, da un testo che potrebbe citarla. */
@@ -45,11 +61,6 @@ function mascheraPassword(testo: string, password: string): string {
     if (forma !== "") r = r.split(forma).join("***");
   }
   return r;
-}
-
-/** «.» e «..» sono segmenti di percorso, non valori: l'URL li risolve. */
-function soloPunti(segmento: string): boolean {
-  return segmento === "." || segmento === "..";
 }
 
 /**
@@ -81,11 +92,11 @@ export class HttpVerificatoreAd implements VerificatoreAd {
 
   async verifica(username: string, password: string): Promise<EsitoAd> {
     const nome = username.trim();
-    // Prima di qualunque I/O: un segmento vuoto produrrebbe un URL di cui non
-    // conosciamo il comportamento, e un segmento «.» o «..» fetch lo collassa
-    // (anche codificato, %2e): con username «..» si chiamerebbe un altro
-    // endpoint del web service, con le nostre credenziali ws.auth.
-    if (nome === "" || passwordVuota(password) || soloPunti(nome) || soloPunti(password)) {
+    // Prima di qualunque I/O: un parametro vuoto produrrebbe una chiamata di
+    // cui non conosciamo il comportamento. (Il controllo su «.» e «..» non
+    // serve più: erano segmenti di percorso che fetch collassava, nella query
+    // string sono valori come gli altri.)
+    if (nome === "" || passwordVuota(password)) {
       return { esito: "credenzialiNonValide" };
     }
 

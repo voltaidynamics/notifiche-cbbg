@@ -26,22 +26,6 @@ export function selezionaTutte<T extends TrattaSelezionata>(tratte: T[]): Set<st
   return next;
 }
 
-/** Le sole tratte di una madre, lasciando intatto il resto della selezione. */
-export function toggleMadre<T extends TrattaSelezionata>(
-  sel: Set<string>,
-  tratte: T[],
-  codicemadre: string,
-): Set<string> {
-  const sue = tratte.filter((t) => t.codicemadre === codicemadre);
-  const tutteAccese = sue.length > 0 && sue.every((t) => sel.has(t.keyroggia));
-  const next = new Set(sel);
-  for (const t of sue) {
-    if (tutteAccese) next.delete(t.keyroggia);
-    else next.add(t.keyroggia);
-  }
-  return next;
-}
-
 /**
  * Le madri di cui sono spuntate *tutte* le tratte in elenco, in ordine.
  *

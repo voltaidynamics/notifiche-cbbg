@@ -101,3 +101,23 @@ export function validaClassificazioneInvio(raw: {
   }
   return { ok: true, tipo, classificazione };
 }
+
+/**
+ * L'«Oggetto Email» di Invia notifica, ricavato dai due assi (issue #130).
+ *
+ * Il consorzio vuole un oggetto fisso per ogni combinazione: straordinaria e
+ * inquinamento danno lo stesso oggetto, e con Tipo = Altro la classificazione
+ * non conta. Restituisce `""` finché mancano le scelte che servono: il campo
+ * resta vuoto invece di proporre un oggetto che potrebbe non corrispondere a
+ * quanto l'operatore sceglierà.
+ */
+export function oggettoDaClassificazione(
+  tipo: TipoNotifica | "",
+  classificazione: ClassificazioneNotifica | "",
+): string {
+  if (tipo === "altro") return "CBBG comunicazione importante";
+  if (tipo === "" || classificazione === "") return "";
+  const azione = tipo === "apertura" ? "Apertura" : "Chiusura";
+  const grado = classificazione === "ordinaria" ? "Ordinaria" : "Straordinaria";
+  return `CBBG comunicazione di ${azione} ${grado}`;
+}

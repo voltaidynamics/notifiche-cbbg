@@ -161,7 +161,7 @@ function TemplateForm({ defaultValues, onSubmit, isPending, onCancel }: Template
           name="bodyEmail"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Corpo Email *</FormLabel>
+              <FormLabel>Testo Email *</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Testo dell'email. Puoi usare variabili come {{nome_tratta}}, {{data}}, ecc."
@@ -364,8 +364,7 @@ export default function Templates() {
                       <tr>
                         {th("ID", "id", "w-20")}
                         {th("Nome", "name")}
-                        {th("Oggetto Mail", "subject")}
-                        {th("Messaggio", "bodyEmail")}
+                        {th("Oggetto Email", "subject")}
                         {th("Utente", "createdBy", "w-36")}
                         {th("Tipo", "tipoTemplate", "w-40")}
                         <th className="text-center text-[11px] uppercase tracking-wide text-gray-500 font-semibold px-3 py-2 border-b w-28">Azioni</th>
@@ -387,7 +386,6 @@ export default function Templates() {
                           <td className="px-3 py-2 font-mono text-xs text-gray-500">#{t.id}</td>
                           <td className="px-3 py-2 font-medium text-gray-800">{t.name}</td>
                           <td className="px-3 py-2 text-gray-600">{t.subject}</td>
-                          <td className="px-3 py-2 text-gray-500 max-w-xs truncate" title={t.bodyEmail}>{t.bodyEmail}</td>
                           <td className="px-3 py-2 text-gray-600">
                             {t.createdBy ?? <span className="text-gray-300">—</span>}
                           </td>
@@ -477,7 +475,7 @@ export default function Templates() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">ID</div>#{dettaglio.id}</div>
                 <div><div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">Nome</div>{dettaglio.name}</div>
-                <div><div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">Oggetto Mail</div>{dettaglio.subject}</div>
+                <div><div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">Oggetto Email</div>{dettaglio.subject}</div>
                 <div><div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">Tipo</div><TipoTemplateBadge tipo={dettaglio.tipoTemplate} /></div>
                 <div><div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">Utente</div>{dettaglio.createdBy ?? "—"}</div>
                 <div>
@@ -494,7 +492,7 @@ export default function Templates() {
               </div>
 
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-1">Corpo email</div>
+                <div className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold mb-1">Testo email</div>
                 <div className="bg-gray-50 rounded-lg p-3 whitespace-pre-wrap text-sm text-gray-800">{dettaglio.bodyEmail}</div>
               </div>
 

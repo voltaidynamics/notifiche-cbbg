@@ -27,7 +27,7 @@ export interface RichiestaInvioTratte {
    */
   madri: string[];
   destinatari: string[];
-  /** Titolo della comunicazione: è l'oggetto della mail (issue #23). */
+  /** L'«Oggetto Email» della pagina (issue #23, #130): è l'oggetto della mail. */
   titolo: string;
   messaggio: string;
   /**
@@ -77,7 +77,7 @@ const testo = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 /**
  * Valida la richiesta di invio interattivo.
  *
- * Il titolo è obbligatorio quanto i due assi: finisce dritto nell'oggetto della
+ * L'oggetto (`titolo`) è obbligatorio quanto i due assi: finisce dritto nell'oggetto della
  * mail, e una comunicazione del consorzio senza oggetto è la prima cosa che i
  * client di posta segnalano come sospetta (issue #23).
  */
@@ -97,7 +97,7 @@ export function validaRichiestaInvio(raw: {
   if (!esitoClassificazione.ok) return { ok: false, errore: esitoClassificazione.errore };
 
   const titolo = testo(raw.titolo);
-  if (!titolo) return { ok: false, errore: "Titolo della comunicazione mancante" };
+  if (!titolo) return { ok: false, errore: "Oggetto email mancante" };
 
   const messaggio = testo(raw.messaggio);
   if (!messaggio) return { ok: false, errore: "Messaggio mancante" };

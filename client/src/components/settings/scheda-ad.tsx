@@ -166,9 +166,9 @@ export function SchedaAd() {
           </p>
         )}
         <p className="text-xs text-gray-500">
-          L'app chiama <code>URL/username/password</code> e si aspetta{" "}
+          L'app chiama <code>URL?user=username&amp;pwd=password</code> e si aspetta{" "}
           <code>[{"{"}"status":true{"}"}]</code> o <code>[{"{"}"status":false{"}"}]</code>, con la
-          stessa autorizzazione del WebService. Stando nel percorso, la password finisce nei log di
+          stessa autorizzazione del WebService. Stando nell'indirizzo, la password finisce nei log di
           accesso del web service del consorzio.
         </p>
       </div>

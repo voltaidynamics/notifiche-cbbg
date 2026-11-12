@@ -52,7 +52,7 @@ scelgo cosa è successo  →  scelgo su quali tratte  →  scelgo con quale lega
                                           ↓
                              vedo l'elenco dei conduttori
                                           ↓
-              scrivo titolo, testo email e testo SMS  →  riepilogo  →  invio
+              scrivo oggetto, testo email e testo SMS  →  riepilogo  →  invio
                                           ↓
                               lo Storico registra tutto
 ```
@@ -312,17 +312,14 @@ invio rimane spento.
   pozzo — e quale sia lo indica il consorzio: **non si ricava dal codice**.
   Tratte con codici che iniziano allo stesso modo possono stare sotto impianti
   diversi.
-- In testa, in un riquadro verde, c'è **«Tutta la roggia» / «Tutto
-  l'impianto»**: una voce *Tutte le tratte di <codice>* per ciascuna madre
-  scelta che abbia almeno una tratta visibile con la ricerca in corso. È il modo per **avvisare tutti quelli di una madre**: spuntarla
-  accende tutte le sue tratte, anche quelle che la ricerca sta nascondendo; se
-  erano già tutte accese, le spegne. Spuntare le tratte una per una fino
-  all'ultima porta alla stessa selezione, e nessuno riceve la comunicazione due
-  volte.
 - Sotto, le singole tratte con codice, descrizione e badge **Chiusa** dove serve.
 - Il campo *Cerca codice…* cerca anche nella descrizione.
 - **Seleziona tutti / Deseleziona tutti** agiscono sull'elenco **filtrato dalla
   ricerca**: se si sta cercando `D010`, «Seleziona tutti» spunta solo quelle.
+  Per **avvisare tutti quelli di una madre** si svuota la ricerca e si preme
+  «Seleziona tutti»: spuntare tutte le tratte di una madre, in un colpo o una
+  per una, porta alla stessa selezione, e nessuno riceve la comunicazione due
+  volte.
 - Il contatore dice `<spuntate> / <visibili> selezionate`.
 
 ### Passo 4 — «Mostra Conduttori» e la scelta del legame
@@ -406,18 +403,31 @@ metà non ha un numero censito.
 Nella tabella non compaiono i **conduttori cessati**: chi non è più attivo
 nell'anagrafica del consorzio non riceve mai una comunicazione.
 
-### Passo 6 — Titolo e testi
+### Passo 6 — Oggetto e testi
 
 Sotto la tabella:
 
-- **Titolo della comunicazione** — diventa **l'oggetto dell'email**. Parte già
-  compilato con *«CBBG - Comunicazione Importante»*, si può cambiare. Non può
-  restare vuoto.
+- **Oggetto Email** — l'oggetto dell'email. Si compila da solo in base a
+  Tipo e Classificazione:
+
+  | Tipo | Classificazione | Oggetto |
+  |---|---|---|
+  | Apertura | Ordinaria | *CBBG comunicazione di Apertura Ordinaria* |
+  | Apertura | Straordinaria o Inquinamento | *CBBG comunicazione di Apertura Straordinaria* |
+  | Chiusura | Ordinaria | *CBBG comunicazione di Chiusura Ordinaria* |
+  | Chiusura | Straordinaria o Inquinamento | *CBBG comunicazione di Chiusura Straordinaria* |
+  | Altro | qualunque | *CBBG comunicazione importante* |
+
+  Resta vuoto finché Tipo e Classificazione non sono scelti (con Tipo = Altro
+  basta il Tipo). Si può correggere a mano, ma **ogni cambio di Tipo o
+  Classificazione lo riscrive**: le correzioni vanno fatte dopo l'ultima
+  scelta. Non può restare vuoto.
 - **Testo email** — il corpo del messaggio. Obbligatorio.
 - **Carica template** — la tendina accanto al testo email: carica un modello
-  già pronto e riempie in un colpo solo oggetto, testo email e testo SMS. I
-  template si gestiscono nella sezione [Template](#8-template). *Un template
-  senza testo SMS non cancella quello eventualmente già scritto a mano.*
+  già pronto e riempie in un colpo solo testo email e testo SMS. **L'oggetto
+  non lo tocca**: lo decidono Tipo e Classificazione. I template si gestiscono
+  nella sezione [Template](#8-template). *Un template senza testo SMS non
+  cancella quello eventualmente già scritto a mano.*
 - **Testo SMS** — **obbligatorio** finché «Invia anche via SMS», qui sotto, è
   accesa; togliendo la spunta diventa facoltativo. Sotto al campo c'è un contatore
   `nn/160 caratteri`: oltre i 160 il messaggio potrebbe essere spezzato in più
@@ -453,7 +463,7 @@ tre le condizioni, e il motivo è scritto accanto:
   test in ricezione (vedi sotto: con almeno uno attivo, si può inviare anche
   senza aver spuntato nessun conduttore);
 - Tipo e Classificazione scelti (*«Scegli Tipo e Classificazione»*);
-- titolo e testo email scritti (*«Scrivi titolo e messaggio»*), e anche il
+- oggetto e testo email scritti (*«Scrivi oggetto e messaggio»*), e anche il
   testo SMS se si è spuntato «Invia anche via SMS» (*«Scrivi il testo SMS»*).
 
 Se c'è almeno un **utente di test** attivo e raggiungibile — li censisce un
@@ -472,7 +482,7 @@ occasione per annullare. Contiene:
 
 | Voce | Che cosa dice |
 |---|---|
-| **Titolo** | L'oggetto dell'email, con i badge di Tipo e Classificazione |
+| **Oggetto email** | L'oggetto dell'email, con i badge di Tipo e Classificazione |
 | **Codici interessati** | L'elenco completo dei codici, non il numero. `(tutte)` segnala una madre presa per intero |
 | **Tipo di legame** | Live o Stagione irrigua |
 | **Dati del consorzio aggiornati al** | In ambra se più vecchi di 24 ore: è il momento buono per annullare e chiedere un aggiornamento |
@@ -739,7 +749,7 @@ I messaggi preimpostati che si caricano in *Invia notifica*.
 
 ### L'elenco
 
-Colonne *ID*, *Nome*, *Oggetto Mail*, *Messaggio*, *Utente*, *Tipo*, *Azioni* —
+Colonne *ID*, *Nome*, *Oggetto Email*, *Utente*, *Tipo*, *Azioni* —
 tutte ordinabili. Sopra la tabella:
 
 - **Cerca template…** — testo libero;
@@ -747,7 +757,7 @@ tutte ordinabili. Sopra la tabella:
 - **Tutti gli utenti** — filtra per chi l'ha creato (c'è anche *Non indicato*).
 
 Cliccando una riga si apre il **dettaglio**: nome, tipo, utente, data di
-creazione, ultima modifica (chi e quando), oggetto e corpo per intero. Dal
+creazione, ultima modifica (chi e quando), oggetto e testo email per intero. Dal
 dettaglio si passa direttamente alla modifica.
 
 ### Creare o modificare un template
@@ -758,9 +768,9 @@ Pulsante **Nuovo Template**, oppure l'icona matita sulla riga.
 |---|---|
 | **Nome** * | Come comparirà nella tendina di *Invia notifica* |
 | **Tipo** * | Apertura, Chiusura o Altro. Serve **solo a filtrare l'elenco**: non decide se una roggia risulta aperta o chiusa — quello lo fa il Tipo scelto al momento dell'invio |
-| **Oggetto Email** * | Diventa il titolo proposto quando si carica il template |
-| **Corpo Email** * | Il testo, che parte **esattamente com'è scritto**. Non ci sono variabili: una scritta come `{{data}}` arriverebbe al conduttore così, con le parentesi. Anche i tag HTML arrivano come testo; gli a capo invece si conservano |
-| **Testo SMS** * | La versione corta, precaricata in *Invia notifica* insieme a titolo e testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS» |
+| **Oggetto Email** * | Resta nel template, ma *Invia notifica* non lo usa più: lì l'oggetto lo decidono Tipo e Classificazione |
+| **Testo Email** * | Il testo, che parte **esattamente com'è scritto**. Non ci sono variabili: una scritta come `{{data}}` arriverebbe al conduttore così, con le parentesi. Anche i tag HTML arrivano come testo; gli a capo invece si conservano |
+| **Testo SMS** * | La versione corta, precaricata in *Invia notifica* insieme al testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS» |
 
 Alla prima installazione non c'è nessun template, e in *Invia notifica* la
 tendina dice *«Nessun template»*: non ci sono testi di partenza precaricati, i
@@ -778,7 +788,6 @@ tocca le comunicazioni già inviate**: il loro testo resta nello Storico.
 | **Conduttore** | Chi deriva acqua da una tratta: il destinatario delle comunicazioni |
 | **Madre** | La roggia, l'impianto o il pozzo sotto cui stanno le tratte (es. `IM44A`, `S45`). Le madri si dividono in tre categorie — Rogge, Impianti, Pozzi — e sia la categoria sia le tratte di ogni madre le indica il consorzio |
 | **Tratta** (nelle Anagrafiche *roggia figlia*) | Un tratto di canale da cui i conduttori derivano acqua, con un codice di 9 caratteri (es. `R34D02S01`). **A quale madre appartenga lo dice il consorzio**, non le prime lettere del codice |
-| **Tutte le tratte di …** | La voce di *Invia notifica* che spunta in un colpo tutte le tratte di una madre. Per i pozzi non serve: si sceglie direttamente il pozzo |
 | **Non classificata** | Una madre creata dall'applicazione per raccogliere i codici che il consorzio lega a dei conduttori ma non ha ancora assegnato a nessun impianto. Non esiste nell'anagrafica del consorzio |
 | **Legame live** | Uno dei due elenchi con cui il consorzio associa conduttori e tratte |
 | **Legame stagione irrigua** | L'altro elenco |
@@ -809,7 +818,7 @@ rifà con *Mostra Conduttori*.
 
 **Il pulsante «Invia notifica» resta spento.**
 Accanto al pulsante c'è scritto perché: mancano Tipo e Classificazione, oppure
-titolo e testo (testo SMS compreso, se «Invia anche via SMS» è spuntata),
+oggetto e testo (testo SMS compreso, se «Invia anche via SMS» è spuntata),
 oppure non c'è nessun destinatario — nessun conduttore spuntato e nessun
 utente di test in ricezione.
 
@@ -837,8 +846,9 @@ Un amministratore l'ha spento in *Gestione Codici* (capitolo 5, *Codici che
 non compaiono*). Le comunicazioni già inviate restano nello Storico.
 
 **«Troppi codici selezionati: N, il massimo è 500».**
-La selezione è troppo ampia per l'anteprima. Quando si vogliono tutte le tratte
-di una madre, si usa la voce *Tutte le tratte di …*: conta come un codice solo.
+La selezione è troppo ampia per l'anteprima. Una madre di cui sono spuntate
+tutte le tratte conta come un codice solo: per avvisarla per intero, svuotare
+la ricerca e premere «Seleziona tutti».
 
 **Le voci «Gestione Utenti» e «Gestione Codici» non ci sono.**
 Sono riservate ad Admin e Super Admin. Le altre voci si vedono tutte.

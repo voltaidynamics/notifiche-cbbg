@@ -129,6 +129,11 @@ export const notifications = pgTable("notifications", {
   // partito. Oggi nessuno la spedisce — si registra per quando il canale ci
   // sarà.
   messageSms: text("message_sms"),
+  // Se chi ha spedito ha acceso «Invia anche via SMS» (issue #129). Il testo
+  // SMS non lo dice: è prevalorizzato dal template e si salva anche a spunta
+  // spenta. Null sulle notifiche precedenti alla migrazione 0019: per quelle
+  // lo ricava `invioSmsAttivo()` in shared/storico-notifiche.ts dagli esiti.
+  invioSms: boolean("invio_sms"),
   status: text("status").notNull().default("pending"), // "pending" | "sending" | "sent" | "scheduled" | "failed"
   scheduledAt: timestamp("scheduled_at"),
   sentAt: timestamp("sent_at"),
@@ -584,6 +589,12 @@ export type NotificationHistoryDetail = NotificationHistoryRow & {
   messaggio: string;
   /** Testo SMS registrato con la notifica (issue #28): null se non c'è mai stato. */
   messaggioSms: string | null;
+  /**
+   * Se è partita con la spunta «Invia anche via SMS» (issue #129); null = non si
+   * sa (notifica precedente alla 0019 senza destinatari, o ancora in corso).
+   * Vedi `invioSmsAttivo()`.
+   */
+  invioSms: boolean | null;
   destinatari: NotificationRecipientDetail[];
   /** Mail accettate dal server SMTP, su `destinatari.length` (issue #111). */
   emailInviate: number;

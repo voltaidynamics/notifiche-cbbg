@@ -44,7 +44,7 @@ describe("validaRichiestaInvio", () => {
       const esito = validaRichiestaInvio({ ...buona, titolo });
       expect(esito.ok).toBe(false);
       if (esito.ok) return;
-      expect(esito.errore).toContain("Titolo");
+      expect(esito.errore).toContain("Oggetto email");
     }
   });
 
@@ -183,7 +183,7 @@ describe("validaRichiestaInvio", () => {
     const esito = validaRichiestaInvio({ ...buona, titolo: "", tratte: [], destinatari: [] });
     expect(esito.ok).toBe(false);
     if (esito.ok) return;
-    expect(esito.errore).toContain("Titolo");
+    expect(esito.errore).toContain("Oggetto email");
   });
 
   it("rifiuta una richiesta senza legame", () => {

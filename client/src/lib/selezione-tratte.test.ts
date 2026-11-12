@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toggleTratta, toggleMadre, selezionaTutte, madriComplete, comprimiPerAnteprima, madriDellaSezione } from "./selezione-tratte";
+import { toggleTratta, selezionaTutte, madriComplete, comprimiPerAnteprima, madriDellaSezione } from "./selezione-tratte";
 
 const TRATTE = [
   { keyroggia: "R01D01000", codicemadre: "R01" },
@@ -28,38 +28,6 @@ describe("toggleTratta", () => {
     const sel = new Set(["R01D01000"]);
     toggleTratta(sel, "R02D01000");
     expect(Array.from(sel)).toEqual(["R01D01000"]);
-  });
-});
-
-describe("toggleMadre", () => {
-  it("accende tutte le tratte della madre", () => {
-    const next = toggleMadre(new Set(), TRATTE, "R01");
-    expect(Array.from(next).sort()).toEqual(["R01D01000", "R01D02000"]);
-  });
-  it("se erano già tutte accese, le spegne", () => {
-    const sel = new Set(["R01D01000", "R01D02000"]);
-    const next = toggleMadre(sel, TRATTE, "R01");
-    expect(Array.from(next)).toEqual([]);
-  });
-  it("non tocca le tratte di un'altra madre", () => {
-    const sel = new Set(["R02D01000"]);
-    const next = toggleMadre(sel, TRATTE, "R01");
-    expect(Array.from(next).sort()).toEqual(["R01D01000", "R01D02000", "R02D01000"]);
-  });
-  it("accende solo le tratte già accese di una madre non le spegne del tutto: parziale conta come 'non tutte'", () => {
-    const sel = new Set(["R01D01000"]);
-    const next = toggleMadre(sel, TRATTE, "R01");
-    expect(Array.from(next).sort()).toEqual(["R01D01000", "R01D02000"]);
-  });
-  it("una madre senza tratte in elenco non fa nulla", () => {
-    const sel = new Set(["R01D01000"]);
-    const next = toggleMadre(sel, TRATTE, "R99");
-    expect(Array.from(next)).toEqual(["R01D01000"]);
-  });
-  it("non muta l'insieme in ingresso", () => {
-    const sel = new Set(["R02D01000"]);
-    toggleMadre(sel, TRATTE, "R01");
-    expect(Array.from(sel)).toEqual(["R02D01000"]);
   });
 });
 

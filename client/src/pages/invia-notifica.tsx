@@ -28,7 +28,6 @@ import type {
 import type { CategoriaMadre } from "@shared/categorie-madri";
 import {
   toggleTratta as applicaToggleTratta,
-  toggleMadre as applicaToggleMadre,
   selezionaTutte,
   madriComplete,
   comprimiPerAnteprima,
@@ -41,6 +40,7 @@ import {
   ETICHETTE_TIPO, ETICHETTE_CLASSIFICAZIONE,
   COLORI_TIPO, COLORI_CLASSIFICAZIONE,
   type TipoNotifica, type ClassificazioneNotifica,
+  oggettoDaClassificazione,
 } from "@shared/classificazione";
 import {
   TIPI_LEGAME, ETICHETTE_LEGAME, COLORI_LEGAME, type TipoLegame,
@@ -88,10 +88,6 @@ const NESSUNA_TRATTA: TrattaSelezionabile[] = [];
 const NESSUNA_ROGGIA_MADRE: RoggiaMadreSelezionabile[] = [];
 const NESSUNA_TRATTA_ROGGIA: TrattaRoggiaSelezionabile[] = [];
 
-// Il titolo della comunicazione diventerà l'oggetto della mail; questo è il
-// valore da cui si parte, come chiesto nella issue #13.
-const TITOLO_PREDEFINITO = "CBBG - Comunicazione Importante";
-
 export default function InviaNotifica() {
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -129,7 +125,9 @@ export default function InviaNotifica() {
   };
   const [sortKey, setSortKey] = useState<SortKey>("descrizione");
   const [sortAsc, setSortAsc] = useState(true);
-  const [titolo, setTitolo] = useState(TITOLO_PREDEFINITO);
+  // L'«Oggetto Email» (issue #130): parte vuoto e lo scrivono Tipo e
+  // Classificazione, vedi `scegliTipo`/`scegliClassificazione`.
+  const [titolo, setTitolo] = useState("");
   const [messaggio, setMessaggio] = useState("");
   // Il testo SMS vive accanto a quello della mail, con le sue stesse regole:
   // a invio partito si svuota la tabella dei conduttori, non i testi scritti
@@ -148,6 +146,20 @@ export default function InviaNotifica() {
   const { accesa: inviaSms, disponibile: smsSelezionabile } = spuntaSms(statoSms?.configurato, sceltaSms);
   const [tipo, setTipo] = useState<TipoNotifica | "">("");
   const [classificazione, setClassificazione] = useState<ClassificazioneNotifica | "">("");
+  // L'oggetto si riscrive a ogni cambio di Tipo o Classificazione (issue #130),
+  // anche sopra una modifica a mano: l'oggetto deve dire ciò che la
+  // classificazione dice, e uno ritoccato prima di cambiarla mentirebbe. Resta
+  // editabile, quindi un ritocco fatto *dopo* l'ultima scelta parte com'è. Il
+  // template non lo tocca più: riempie solo i testi, o caricarne uno dopo aver
+  // scelto il Tipo sostituirebbe l'oggetto voluto dal consorzio.
+  const scegliTipo = (t: TipoNotifica) => {
+    setTipo(t);
+    setTitolo(oggettoDaClassificazione(t, classificazione));
+  };
+  const scegliClassificazione = (c: ClassificazioneNotifica) => {
+    setClassificazione(c);
+    setTitolo(oggettoDaClassificazione(tipo, c));
+  };
   const [riepilogoOpen, setRiepilogoOpen] = useState(false);
 
   const catCorrente = SEZIONI.find((c) => c.key === sezione)!;
@@ -219,10 +231,10 @@ export default function InviaNotifica() {
     [utentiTestAttivi, inviaSms],
   );
 
-  // Il template porta con sé oggetto, corpo mail e testo SMS: caricarne uno
-  // deve riempire tutti e tre i campi (issue #28). Solo i template del
-  // database: senza, la tendina resta vuota, niente modelli di ripiego (issue #94).
-  const templateOptions = dbTemplates.map((t) => ({ id: String(t.id), label: t.name, oggetto: t.subject, body: t.bodyEmail, sms: t.bodySms }));
+  // Il template riempie corpo mail e testo SMS (issue #28); il suo oggetto non
+  // si usa più, lo decidono Tipo e Classificazione (issue #130). Solo i template
+  // del database: senza, la tendina resta vuota, niente modelli di ripiego (issue #94).
+  const templateOptions = dbTemplates.map((t) => ({ id: String(t.id), label: t.name, body: t.bodyEmail, sms: t.bodySms }));
 
   // Le due gerarchie riempiono gli stessi due elenchi: da qui in giù la pagina
   // non sa più quale delle due sta mostrando, e non deve saperlo.
@@ -257,19 +269,6 @@ export default function InviaNotifica() {
       ),
     [figlieInElenco, searchFiglia],
   );
-  // Le madri selezionate che hanno almeno una tratta nell'elenco filtrato:
-  // sono quelle per cui ha senso offrire "tutte le tratte di X" come scorciatoia.
-  // Sostituisce l'omnicomprensiva (mai esistita nei dati veri, issue derivata dal
-  // modello a registro): "tutte le tratte" di una madre non è più un codice
-  // speciale da spuntare, ma un'azione che accende in blocco le sue tratte vere.
-  const madriConTratte = useMemo(
-    () =>
-      Array.from(madriSel)
-        .filter((m) => figlieFiltrate.some((f) => f.codicemadre === m))
-        .sort(),
-    [madriSel, figlieFiltrate],
-  );
-
   // keyroggia -> madre **dell'impianto**, per l'ereditarietà dello stato.
   // Nella gerarchia R la madre con cui si seleziona è un'altra cosa: chiudere
   // il pozzo IM27A chiude le sue tratte, ed è questo che il badge deve dire.
@@ -305,14 +304,6 @@ export default function InviaNotifica() {
   };
   const toggleFiglia = (keyroggia: string) => {
     setFiglieSel((prev) => applicaToggleTratta(prev, keyroggia));
-    azzeraConduttori();
-  };
-  // Accende o spegne in blocco tutte le tratte di una madre (riceve
-  // `figlieInElenco`, non filtrate: l'azione deve funzionare anche su quelle
-  // che la ricerca sta nascondendo). Sostituisce l'omnicomprensiva come modo
-  // di dire "tutte le tratte di X".
-  const toggleTratteMadre = (codicemadre: string) => {
-    setFiglieSel((prev) => applicaToggleMadre(prev, figlieInElenco, codicemadre));
     azzeraConduttori();
   };
   // «Seleziona tutti» resta sull'elenco filtrato, come prima.
@@ -554,10 +545,11 @@ export default function InviaNotifica() {
   //
   // "Tutte" non si legge più da un codice omnicomprensivo (sparito col
   // modello a registro): è una copertura reale, verificata confrontando le
-  // tratte scelte con tutte le tratte vere della madre. Funziona sia che
-  // l'operatore sia arrivato lì con la scorciatoia "Tutte le tratte di X"
-  // sia spuntando una per una — a differenza del vecchio comportamento, che
-  // se ne accorgeva solo passando dal codice fittizio.
+  // tratte scelte con tutte le tratte vere della madre, comunque l'operatore
+  // ci sia arrivato («Seleziona tutti» o spuntando una per una) — a differenza
+  // del vecchio comportamento, che se ne accorgeva solo passando dal codice
+  // fittizio. La scorciatoia «Tutte le tratte di X» è stata tolta (issue #128):
+  // spuntava anche le tratte nascoste dalla ricerca.
   //
   // La copertura è `madriComplete`, la stessa regola con cui le anteprime
   // decidono quali madri mandare al posto delle tratte.
@@ -585,7 +577,7 @@ export default function InviaNotifica() {
   // I due assi sono obbligatori (issue #12): il server rifiuta con 400 un invio
   // senza, e una notifica non classificata sparirebbe da ogni filtro dello Storico.
   const classificazioneCompleta = tipo !== "" && classificazione !== "";
-  // Il titolo diventa l'oggetto della mail (issue #23): vuoto, il consorzio
+  // L'oggetto della mail (issue #23, #130): vuoto, il consorzio
   // spedirebbe una comunicazione senza oggetto. Il server rifiuta comunque —
   // qui il bottone si spegne prima, con il motivo scritto accanto.
   const testoCompleto =
@@ -745,35 +737,6 @@ export default function InviaNotifica() {
         className="mb-3"
         disabled={madriSel.size === 0}
       />
-      {madriConTratte.length > 0 && (
-        <div className="border-2 border-primary/40 bg-green-50/60 rounded-lg p-2 mb-2">
-          <h3 className="text-[10px] font-bold uppercase tracking-wide text-primary mb-1 px-1">
-            {sezione === "impianti" ? "Tutto l'impianto" : "Tutta la roggia"}
-          </h3>
-          <ul className="divide-y divide-primary/15 max-h-40 overflow-y-auto scrollbar-visibile">
-            {madriConTratte.map((m) => {
-              const sueTratte = figlieInElenco.filter((f) => f.codicemadre === m);
-              const tutteAccese = sueTratte.length > 0 && sueTratte.every((f) => figlieSel.has(f.keyroggia));
-              return (
-                <li
-                  key={m}
-                  onClick={() => toggleTratteMadre(m)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={keyActivate(() => toggleTratteMadre(m))}
-                  className={cn(
-                    "px-2 py-2 text-sm cursor-pointer hover:bg-green-100/60 rounded flex items-center gap-2",
-                    tutteAccese && "text-primary font-semibold",
-                  )}
-                >
-                  <Checkbox checked={tutteAccese} className="pointer-events-none" />
-                  <span>Tutte le tratte di {m}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
       {listaFiglie}
     </>
   );
@@ -836,7 +799,7 @@ export default function InviaNotifica() {
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                     Tipo <span className="text-red-600">*</span>
                   </span>
-                  <Select value={tipo} onValueChange={(v) => setTipo(v as TipoNotifica)}>
+                  <Select value={tipo} onValueChange={(v) => scegliTipo(v as TipoNotifica)}>
                     <SelectTrigger className={cn(tipo === "" && "border-amber-500")}>
                       <SelectValue placeholder="Seleziona…" />
                     </SelectTrigger>
@@ -851,7 +814,7 @@ export default function InviaNotifica() {
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                     Classificazione <span className="text-red-600">*</span>
                   </span>
-                  <Select value={classificazione} onValueChange={(v) => setClassificazione(v as ClassificazioneNotifica)}>
+                  <Select value={classificazione} onValueChange={(v) => scegliClassificazione(v as ClassificazioneNotifica)}>
                     <SelectTrigger className={cn(classificazione === "" && "border-amber-500")}>
                       <SelectValue placeholder="Seleziona…" />
                     </SelectTrigger>
@@ -1056,17 +1019,17 @@ export default function InviaNotifica() {
                   </table>
                 </div>
 
-                {/* Il titolo diventa l'oggetto della mail (issue #13): sta
-                    subito prima del messaggio perché è la prima cosa che il
-                    destinatario legge, e parte già compilato. */}
+                {/* L'oggetto della mail (issue #13, #130): sta subito prima
+                    del messaggio perché è la prima cosa che il destinatario
+                    legge, e lo compilano Tipo e Classificazione. */}
                 <label className="flex flex-col gap-1 mt-5">
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-                    Titolo della comunicazione
+                    Oggetto Email
                   </span>
                   <Input
                     value={titolo}
                     onChange={(e) => setTitolo(e.target.value)}
-                    placeholder={TITOLO_PREDEFINITO}
+                    placeholder="Si compila scegliendo Tipo e Classificazione"
                   />
                 </label>
 
@@ -1091,11 +1054,12 @@ export default function InviaNotifica() {
                     <Select disabled={templateOptions.length === 0} onValueChange={(id) => {
                       const t = templateOptions.find((o) => o.id === id);
                       if (!t) return;
+                      // L'oggetto no (issue #130): lo decidono Tipo e
+                      // Classificazione, vedi `scegliTipo`.
                       setMessaggio(t.body);
-                      if (t.oggetto) setTitolo(t.oggetto);
-                      // Solo se il template ne ha uno, come già si fa con
-                      // l'oggetto: un template senza testo SMS non deve
-                      // cancellare quello appena scritto a mano.
+                      // Solo se il template ne ha uno: un template senza
+                      // testo SMS non deve cancellare quello appena scritto
+                      // a mano.
                       if (t.sms) setMessaggioSms(t.sms);
                     }}>
                       <SelectTrigger>
@@ -1173,7 +1137,7 @@ export default function InviaNotifica() {
                     <span className="text-xs text-amber-700">
                       {inviaSms && titolo.trim() !== "" && messaggio.trim() !== ""
                         ? "Scrivi il testo SMS"
-                        : "Scrivi titolo e messaggio"}
+                        : "Scrivi oggetto e messaggio"}
                     </span>
                   )}
                   {/* Il secondo caso conta quanto il primo: chi manda una
@@ -1256,9 +1220,9 @@ export default function InviaNotifica() {
           </DialogHeader>
           <div className="space-y-2 text-sm overflow-y-auto pr-1 scrollbar-visibile">
             <div className="border-b pb-2">
-              <div className="text-gray-500 mb-1">Titolo</div>
+              <div className="text-gray-500 mb-1">Oggetto email</div>
               <div className="font-medium text-gray-800">
-                {titolo.trim() || <span className="text-gray-400">(nessun titolo)</span>}
+                {titolo.trim() || <span className="text-gray-400">(nessun oggetto)</span>}
               </div>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {tipo && (

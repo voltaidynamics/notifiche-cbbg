@@ -19,7 +19,7 @@ export interface VerificatoreAd {
 
 /**
  * Una password vuota non arriva mai all'endpoint: produrrebbe un URL con un
- * segmento vuoto (`…/getuserAD/m.rossi/`), di cui non conosciamo il
+ * parametro vuoto (`…/getuserAD?user=m.rossi&pwd=`), di cui non conosciamo il
  * comportamento. Era anche la regola più pericolosa del bind LDAP, dove il
  * bind con password vuota riesce.
  */

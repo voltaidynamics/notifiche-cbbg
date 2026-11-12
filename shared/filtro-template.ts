@@ -19,7 +19,7 @@ export interface TemplateFiltrabile {
 }
 
 export type ChiaveOrdinamentoTemplate =
-  | "id" | "name" | "subject" | "bodyEmail" | "createdBy" | "tipoTemplate";
+  | "id" | "name" | "subject" | "createdBy" | "tipoTemplate";
 
 export interface CriteriTemplate {
   ricerca?: string;

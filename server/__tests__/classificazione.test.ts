@@ -6,6 +6,7 @@ import {
   COLORI_TIPO,
   isTipoTemplate,
   validaClassificazioneInvio,
+  oggettoDaClassificazione,
 } from "@shared/classificazione";
 import { notifications, insertNotificationSchema } from "@shared/schema";
 
@@ -112,5 +113,37 @@ describe("validaClassificazioneInvio", () => {
     expect(esito.errore).toContain("Apertura");
     expect(esito.errore).toContain("Chiusura");
     expect(esito.errore).toContain("Altro");
+  });
+});
+
+// Issue #130: l'oggetto della mail lo decidono Tipo e Classificazione, con i
+// testi esatti chiesti dal consorzio. Tabella completa: nessuna combinazione
+// lasciata al caso.
+describe("oggettoDaClassificazione", () => {
+  it.each([
+    ["apertura", "ordinaria", "CBBG comunicazione di Apertura Ordinaria"],
+    ["apertura", "straordinaria", "CBBG comunicazione di Apertura Straordinaria"],
+    ["apertura", "inquinamento", "CBBG comunicazione di Apertura Straordinaria"],
+    ["chiusura", "ordinaria", "CBBG comunicazione di Chiusura Ordinaria"],
+    ["chiusura", "straordinaria", "CBBG comunicazione di Chiusura Straordinaria"],
+    ["chiusura", "inquinamento", "CBBG comunicazione di Chiusura Straordinaria"],
+    ["altro", "ordinaria", "CBBG comunicazione importante"],
+    ["altro", "straordinaria", "CBBG comunicazione importante"],
+    ["altro", "inquinamento", "CBBG comunicazione importante"],
+  ] as const)("%s + %s → «%s»", (tipo, classificazione, atteso) => {
+    expect(oggettoDaClassificazione(tipo, classificazione)).toBe(atteso);
+  });
+
+  it("con Tipo = Altro basta il tipo", () => {
+    expect(oggettoDaClassificazione("altro", "")).toBe("CBBG comunicazione importante");
+  });
+
+  it("resta vuoto finché mancano le scelte necessarie", () => {
+    expect(oggettoDaClassificazione("", "")).toBe("");
+    expect(oggettoDaClassificazione("apertura", "")).toBe("");
+    expect(oggettoDaClassificazione("chiusura", "")).toBe("");
+    for (const c of ["ordinaria", "straordinaria", "inquinamento"] as const) {
+      expect(oggettoDaClassificazione("", c)).toBe("");
+    }
   });
 });

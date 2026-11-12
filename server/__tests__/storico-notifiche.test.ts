@@ -9,6 +9,9 @@ import {
   esitoEmail,
   esitoSms,
   buildHistoryDetail,
+  invioSmsAttivo,
+  etichettaInvioSms,
+  righeCsvDettaglio,
 } from "@shared/storico-notifiche";
 import type { Notification, NotificationRecipient } from "@shared/schema";
 
@@ -370,5 +373,107 @@ describe("riga di prova", () => {
   it("porta il marcatore anche sul dettaglio del destinatario", () => {
     expect(toRecipientDetail(destinatario(1, true)).utenteTest).toBe(true);
     expect(toRecipientDetail(destinatario(2, false)).utenteTest).toBe(false);
+  });
+});
+
+// ── Invio con SMS e CSV del dettaglio (issue #129) ─────────────────────────
+
+describe("invioSmsAttivo", () => {
+  it("vale la scelta registrata, quando c'è", () => {
+    // Anche contro gli esiti: la colonna è la verità, la derivazione un ripiego.
+    expect(invioSmsAttivo({ ...notifica(), invioSms: false }, [destinatario({ smsStatus: "sent" })])).toBe(false);
+    expect(invioSmsAttivo({ ...notifica(), invioSms: true }, [destinatario({ smsStatus: "pending" })])).toBe(true);
+  });
+
+  it("sulle notifiche vecchie: un esito SMS qualsiasi vuol dire spunta accesa", () => {
+    // Chi non ha numero esce dal giro SMS «failed», non «pending».
+    expect(invioSmsAttivo(notifica(), [destinatario({ phone: null, smsStatus: "failed" })])).toBe(true);
+    expect(invioSmsAttivo(notifica(), [destinatario({ smsStatus: "sent" })])).toBe(true);
+  });
+
+  it("sulle notifiche vecchie: tutti pending a spedizione finita vuol dire spunta spenta", () => {
+    expect(invioSmsAttivo(notifica({ status: "sent" }), [destinatario(), destinatario({ id: 2 })])).toBe(false);
+    expect(invioSmsAttivo(notifica({ status: "failed" }), [destinatario()])).toBe(false);
+  });
+
+  it("i percorsi legacy contano i numeri prima di spedire: smsCount > 0 è spunta accesa", () => {
+    expect(invioSmsAttivo(notifica({ smsCount: 2 }), [destinatario()])).toBe(true);
+  });
+
+  it("non inventa: senza destinatari o a spedizione in corso non si sa", () => {
+    expect(invioSmsAttivo(notifica(), [])).toBeNull();
+    expect(invioSmsAttivo(notifica({ status: "sending" }), [destinatario()])).toBeNull();
+  });
+
+  it("finisce nel dettaglio", () => {
+    expect(buildHistoryDetail({ ...notifica(), invioSms: false }, [destinatario()]).invioSms).toBe(false);
+    expect(buildHistoryDetail({ ...notifica(), invioSms: true }, [destinatario()]).invioSms).toBe(true);
+  });
+});
+
+describe("etichettaInvioSms", () => {
+  it("attivo / non attivo / vuoto se non si sa", () => {
+    expect(etichettaInvioSms(true)).toBe("attivo");
+    expect(etichettaInvioSms(false)).toBe("non attivo");
+    expect(etichettaInvioSms(null)).toBe("");
+  });
+});
+
+describe("righeCsvDettaglio", () => {
+  const formato = (iso: string) => `D:${iso}`;
+  const dettaglio = (invioSms: boolean, recipients: NotificationRecipient[]) =>
+    buildHistoryDetail(
+      { ...notifica({ subject: "Chiusura R01", message: "Riga 1\nRiga 2" }),
+        legame: "live", messageSms: "Roggia chiusa.", invioSms },
+      recipients,
+    );
+
+  it("apre con il blocco comune: oggetto, testo email, testo SMS e invio con SMS", () => {
+    const righe = righeCsvDettaglio(dettaglio(true, [destinatario()]), formato);
+    const [intestazione, valori, separatore, tabella] = righe;
+    expect(intestazione).toEqual(["ID Notifica", "Utente", "Data", "Tipo", "Classificazione", "Legame",
+      "Invio con SMS", "Oggetto Email", "Testo Email", "Testo SMS"]);
+    expect(valori).toEqual(["N00001", "mario.rossi", "D:2026-07-20T10:00:00.000Z", "Chiusura", "Ordinaria",
+      "Live", "attivo", "Chiusura R01", "Riga 1\nRiga 2", "Roggia chiusa."]);
+    expect(separatore).toEqual([]);
+    expect(tabella).toContain("Invio con SMS");
+    expect(righe).toHaveLength(5);
+  });
+
+  it("ogni destinatario porta la colonna «Invio con SMS»", () => {
+    const righe = righeCsvDettaglio(dettaglio(false, [destinatario()]), formato);
+    expect(righe[4][righe[3].indexOf("Invio con SMS")]).toBe("non attivo");
+  });
+
+  it("senza numero: SMS «assente» ed esito SMS vuoto, anche se il giro SMS l'ha segnato fallito", () => {
+    const righe = righeCsvDettaglio(dettaglio(true, [destinatario({ phone: null, smsStatus: "failed" })]), formato);
+    const h = righe[3];
+    expect(righe[4][h.indexOf("SMS")]).toBe("assente");
+    expect(righe[4][h.indexOf("Esito SMS")]).toBe("");
+  });
+
+  it("senza mail: Mail «assente», esito e motivo vuoti", () => {
+    const righe = righeCsvDettaglio(dettaglio(false, [destinatario({ email: "  ", emailStatus: "failed" })]), formato);
+    const h = righe[3];
+    expect(righe[4][h.indexOf("Mail")]).toBe("assente");
+    expect(righe[4][h.indexOf("Esito email")]).toBe("");
+    expect(righe[4][h.indexOf("Motivo mancato recapito")]).toBe("");
+  });
+
+  it("con i recapiti: valori ed esiti come nel popup", () => {
+    const righe = righeCsvDettaglio(
+      dettaglio(true, [destinatario({ emailStatus: "sent", smsStatus: "failed" })]),
+      formato,
+    );
+    const h = righe[3];
+    expect(righe[4][h.indexOf("SMS")]).toBe("331 1234567");
+    expect(righe[4][h.indexOf("Mail")]).toBe("mario.rossi@email.it");
+    expect(righe[4][h.indexOf("Esito email")]).toBe("Inviata");
+    expect(righe[4][h.indexOf("Esito SMS")]).toBe("Non inviato");
+  });
+
+  it("a spunta spenta l'esito SMS resta vuoto anche per chi ha il numero", () => {
+    const righe = righeCsvDettaglio(dettaglio(false, [destinatario()]), formato);
+    expect(righe[4][righe[3].indexOf("Esito SMS")]).toBe("");
   });
 });

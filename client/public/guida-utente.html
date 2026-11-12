@@ -145,7 +145,7 @@ non ce l&#39;ha non riceve l&#39;SMS, e lo si vede nel dettaglio dello Storico.<
                                           ↓
                              vedo l&#39;elenco dei conduttori
                                           ↓
-              scrivo titolo, testo email e testo SMS  →  riepilogo  →  invio
+              scrivo oggetto, testo email e testo SMS  →  riepilogo  →  invio
                                           ↓
                               lo Storico registra tutto
 </code></pre>
@@ -415,17 +415,14 @@ rogge madri a sinistra»</em>.</li>
 pozzo — e quale sia lo indica il consorzio: <strong>non si ricava dal codice</strong>.
 Tratte con codici che iniziano allo stesso modo possono stare sotto impianti
 diversi.</li>
-<li>In testa, in un riquadro verde, c&#39;è <strong>«Tutta la roggia» / «Tutto
-l&#39;impianto»</strong>: una voce <em>Tutte le tratte di <codice></em> per ciascuna madre
-scelta che abbia almeno una tratta visibile con la ricerca in corso. È il modo per <strong>avvisare tutti quelli di una madre</strong>: spuntarla
-accende tutte le sue tratte, anche quelle che la ricerca sta nascondendo; se
-erano già tutte accese, le spegne. Spuntare le tratte una per una fino
-all&#39;ultima porta alla stessa selezione, e nessuno riceve la comunicazione due
-volte.</li>
 <li>Sotto, le singole tratte con codice, descrizione e badge <strong>Chiusa</strong> dove serve.</li>
 <li>Il campo <em>Cerca codice…</em> cerca anche nella descrizione.</li>
 <li><strong>Seleziona tutti / Deseleziona tutti</strong> agiscono sull&#39;elenco <strong>filtrato dalla
-ricerca</strong>: se si sta cercando <code>D010</code>, «Seleziona tutti» spunta solo quelle.</li>
+ricerca</strong>: se si sta cercando <code>D010</code>, «Seleziona tutti» spunta solo quelle.
+Per <strong>avvisare tutti quelli di una madre</strong> si svuota la ricerca e si preme
+«Seleziona tutti»: spuntare tutte le tratte di una madre, in un colpo o una
+per una, porta alla stessa selezione, e nessuno riceve la comunicazione due
+volte.</li>
 <li>Il contatore dice <code>&lt;spuntate&gt; / &lt;visibili&gt; selezionate</code>.</li>
 </ul>
 <h3 id="passo-4--mostra-conduttori-e-la-scelta-del-legame">Passo 4 — «Mostra Conduttori» e la scelta del legame</h3>
@@ -500,26 +497,69 @@ contatti di prima proprio dopo averli aggiornati.</p>
 </blockquote>
 <p>Nella tabella non compaiono i <strong>conduttori cessati</strong>: chi non è più attivo
 nell&#39;anagrafica del consorzio non riceve mai una comunicazione.</p>
-<h3 id="passo-6--titolo-e-testi">Passo 6 — Titolo e testi</h3>
+<h3 id="passo-6--oggetto-e-testi">Passo 6 — Oggetto e testi</h3>
 <p>Sotto la tabella:</p>
 <ul>
-<li><strong>Titolo della comunicazione</strong> — diventa <strong>l&#39;oggetto dell&#39;email</strong>. Parte già
-compilato con <em>«CBBG - Comunicazione Importante»</em>, si può cambiare. Non può
-restare vuoto.</li>
-<li><strong>Testo email</strong> — il corpo del messaggio. Obbligatorio.</li>
-<li><strong>Carica template</strong> — la tendina accanto al testo email: carica un modello
-già pronto e riempie in un colpo solo oggetto, testo email e testo SMS. I
-template si gestiscono nella sezione <a href="#8-template">Template</a>. <em>Un template
-senza testo SMS non cancella quello eventualmente già scritto a mano.</em></li>
-<li><strong>Testo SMS</strong> — <strong>obbligatorio</strong> finché «Invia anche via SMS», qui sotto, è
+<li><p><strong>Oggetto Email</strong> — l&#39;oggetto dell&#39;email. Si compila da solo in base a
+Tipo e Classificazione:</p>
+<div class="tabella"><table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Classificazione</th>
+<th>Oggetto</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Apertura</td>
+<td>Ordinaria</td>
+<td><em>CBBG comunicazione di Apertura Ordinaria</em></td>
+</tr>
+<tr>
+<td>Apertura</td>
+<td>Straordinaria o Inquinamento</td>
+<td><em>CBBG comunicazione di Apertura Straordinaria</em></td>
+</tr>
+<tr>
+<td>Chiusura</td>
+<td>Ordinaria</td>
+<td><em>CBBG comunicazione di Chiusura Ordinaria</em></td>
+</tr>
+<tr>
+<td>Chiusura</td>
+<td>Straordinaria o Inquinamento</td>
+<td><em>CBBG comunicazione di Chiusura Straordinaria</em></td>
+</tr>
+<tr>
+<td>Altro</td>
+<td>qualunque</td>
+<td><em>CBBG comunicazione importante</em></td>
+</tr>
+</tbody></table></div>
+<p>Resta vuoto finché Tipo e Classificazione non sono scelti (con Tipo = Altro
+basta il Tipo). Si può correggere a mano, ma <strong>ogni cambio di Tipo o
+Classificazione lo riscrive</strong>: le correzioni vanno fatte dopo l&#39;ultima
+scelta. Non può restare vuoto.</p>
+</li>
+<li><p><strong>Testo email</strong> — il corpo del messaggio. Obbligatorio.</p>
+</li>
+<li><p><strong>Carica template</strong> — la tendina accanto al testo email: carica un modello
+già pronto e riempie in un colpo solo testo email e testo SMS. <strong>L&#39;oggetto
+non lo tocca</strong>: lo decidono Tipo e Classificazione. I template si gestiscono
+nella sezione <a href="#8-template">Template</a>. <em>Un template senza testo SMS non
+cancella quello eventualmente già scritto a mano.</em></p>
+</li>
+<li><p><strong>Testo SMS</strong> — <strong>obbligatorio</strong> finché «Invia anche via SMS», qui sotto, è
 accesa; togliendo la spunta diventa facoltativo. Sotto al campo c&#39;è un contatore
 <code>nn/160 caratteri</code>: oltre i 160 il messaggio potrebbe essere spezzato in più
-SMS.</li>
-<li><strong>Invia anche via SMS</strong> — la spunta che fa davvero partire l&#39;SMS, <strong>accesa
+SMS.</p>
+</li>
+<li><p><strong>Invia anche via SMS</strong> — la spunta che fa davvero partire l&#39;SMS, <strong>accesa
 di default</strong>. Se gli SMS non sono configurati resta spenta e non si può
 spuntare, con l&#39;avviso «SMS non configurati»: la mail parte lo stesso. Accesa, mostra quanti dei
 destinatari selezionati hanno un numero: solo a quelli arriverà, gli altri
-restano senza.</li>
+restano senza.</p>
+</li>
 </ul>
 <blockquote>
 <p><strong>Senza la spunta «Invia anche via SMS», l&#39;SMS non parte.</strong> Il testo si può
@@ -544,7 +584,7 @@ tre le condizioni, e il motivo è scritto accanto:</p>
 test in ricezione (vedi sotto: con almeno uno attivo, si può inviare anche
 senza aver spuntato nessun conduttore);</li>
 <li>Tipo e Classificazione scelti (<em>«Scegli Tipo e Classificazione»</em>);</li>
-<li>titolo e testo email scritti (<em>«Scrivi titolo e messaggio»</em>), e anche il
+<li>oggetto e testo email scritti (<em>«Scrivi oggetto e messaggio»</em>), e anche il
 testo SMS se si è spuntato «Invia anche via SMS» (<em>«Scrivi il testo SMS»</em>).</li>
 </ul>
 <p>Se c&#39;è almeno un <strong>utente di test</strong> attivo e raggiungibile — li censisce un
@@ -568,7 +608,7 @@ occasione per annullare. Contiene:</p>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Titolo</strong></td>
+<td><strong>Oggetto email</strong></td>
 <td>L&#39;oggetto dell&#39;email, con i badge di Tipo e Classificazione</td>
 </tr>
 <tr>
@@ -907,7 +947,7 @@ elenca persone e non codici.</p>
 <h2 id="8-template">8. Template</h2>
 <p>I messaggi preimpostati che si caricano in <em>Invia notifica</em>.</p>
 <h3 id="lelenco">L&#39;elenco</h3>
-<p>Colonne <em>ID</em>, <em>Nome</em>, <em>Oggetto Mail</em>, <em>Messaggio</em>, <em>Utente</em>, <em>Tipo</em>, <em>Azioni</em> —
+<p>Colonne <em>ID</em>, <em>Nome</em>, <em>Oggetto Email</em>, <em>Utente</em>, <em>Tipo</em>, <em>Azioni</em> —
 tutte ordinabili. Sopra la tabella:</p>
 <ul>
 <li><strong>Cerca template…</strong> — testo libero;</li>
@@ -915,7 +955,7 @@ tutte ordinabili. Sopra la tabella:</p>
 <li><strong>Tutti gli utenti</strong> — filtra per chi l&#39;ha creato (c&#39;è anche <em>Non indicato</em>).</li>
 </ul>
 <p>Cliccando una riga si apre il <strong>dettaglio</strong>: nome, tipo, utente, data di
-creazione, ultima modifica (chi e quando), oggetto e corpo per intero. Dal
+creazione, ultima modifica (chi e quando), oggetto e testo email per intero. Dal
 dettaglio si passa direttamente alla modifica.</p>
 <h3 id="creare-o-modificare-un-template">Creare o modificare un template</h3>
 <p>Pulsante <strong>Nuovo Template</strong>, oppure l&#39;icona matita sulla riga.</p>
@@ -936,15 +976,15 @@ dettaglio si passa direttamente alla modifica.</p>
 </tr>
 <tr>
 <td><strong>Oggetto Email</strong> *</td>
-<td>Diventa il titolo proposto quando si carica il template</td>
+<td>Resta nel template, ma <em>Invia notifica</em> non lo usa più: lì l&#39;oggetto lo decidono Tipo e Classificazione</td>
 </tr>
 <tr>
-<td><strong>Corpo Email</strong> *</td>
+<td><strong>Testo Email</strong> *</td>
 <td>Il testo, che parte <strong>esattamente com&#39;è scritto</strong>. Non ci sono variabili: una scritta come <code>{{data}}</code> arriverebbe al conduttore così, con le parentesi. Anche i tag HTML arrivano come testo; gli a capo invece si conservano</td>
 </tr>
 <tr>
 <td><strong>Testo SMS</strong> *</td>
-<td>La versione corta, precaricata in <em>Invia notifica</em> insieme a titolo e testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS»</td>
+<td>La versione corta, precaricata in <em>Invia notifica</em> insieme al testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS»</td>
 </tr>
 </tbody></table></div>
 <p>Alla prima installazione non c&#39;è nessun template, e in <em>Invia notifica</em> la
@@ -972,10 +1012,6 @@ tocca le comunicazioni già inviate</strong>: il loro testo resta nello Storico.
 <tr>
 <td><strong>Tratta</strong> (nelle Anagrafiche <em>roggia figlia</em>)</td>
 <td>Un tratto di canale da cui i conduttori derivano acqua, con un codice di 9 caratteri (es. <code>R34D02S01</code>). <strong>A quale madre appartenga lo dice il consorzio</strong>, non le prime lettere del codice</td>
-</tr>
-<tr>
-<td><strong>Tutte le tratte di …</strong></td>
-<td>La voce di <em>Invia notifica</em> che spunta in un colpo tutte le tratte di una madre. Per i pozzi non serve: si sceglie direttamente il pozzo</td>
 </tr>
 <tr>
 <td><strong>Non classificata</strong></td>
@@ -1032,7 +1068,7 @@ caricamento delle anagrafiche, oppure una comunicazione è appena partita. Si
 rifà con <em>Mostra Conduttori</em>.</p>
 <p><strong>Il pulsante «Invia notifica» resta spento.</strong>
 Accanto al pulsante c&#39;è scritto perché: mancano Tipo e Classificazione, oppure
-titolo e testo (testo SMS compreso, se «Invia anche via SMS» è spuntata),
+oggetto e testo (testo SMS compreso, se «Invia anche via SMS» è spuntata),
 oppure non c&#39;è nessun destinatario — nessun conduttore spuntato e nessun
 utente di test in ricezione.</p>
 <p><strong>L&#39;elenco dei conduttori è vuoto.</strong>
@@ -1055,8 +1091,9 @@ dice la colonna accanto, <em>Esito SMS</em>.</p>
 Un amministratore l&#39;ha spento in <em>Gestione Codici</em> (capitolo 5, <em>Codici che
 non compaiono</em>). Le comunicazioni già inviate restano nello Storico.</p>
 <p><strong>«Troppi codici selezionati: N, il massimo è 500».</strong>
-La selezione è troppo ampia per l&#39;anteprima. Quando si vogliono tutte le tratte
-di una madre, si usa la voce <em>Tutte le tratte di …</em>: conta come un codice solo.</p>
+La selezione è troppo ampia per l&#39;anteprima. Una madre di cui sono spuntate
+tutte le tratte conta come un codice solo: per avvisarla per intero, svuotare
+la ricerca e premere «Seleziona tutti».</p>
 <p><strong>Le voci «Gestione Utenti» e «Gestione Codici» non ci sono.</strong>
 Sono riservate ad Admin e Super Admin. Le altre voci si vedono tutte.</p>
 <p><strong>«Accesso non autorizzato» e vengo rimandato alla Dashboard.</strong>

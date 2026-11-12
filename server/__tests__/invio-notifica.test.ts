@@ -202,6 +202,20 @@ describe("inviaNotificaDaTratte", () => {
     const notifica = await s.getNotificationById(esito.notificationId);
     expect(notifica?.recipientCount).toBe(2);
     expect(notifica?.smsCount).toBe(1);
+    // La spunta è registrata com'era (issue #129).
+    expect(notifica?.invioSms).toBe(true);
+  });
+
+  // Il testo SMS è prevalorizzato dal template e si salva anche a spunta
+  // spenta: solo `invioSms` dice che l'SMS non è stato scelto (issue #129).
+  it("registra invioSms falso a spunta spenta, anche con un testo SMS scritto", async () => {
+    const esito = await invia({ ...RICHIESTA, inviaSms: false, messaggioSms: "Roggia chiusa." }, trasportoFinto());
+    if (!esito.ok) throw new Error(esito.errore);
+
+    const notifica = await s.getNotificationById(esito.notificationId);
+    expect(notifica?.messageSms).toBe("Roggia chiusa.");
+    expect(notifica?.invioSms).toBe(false);
+    expect(notifica?.smsCount).toBe(0);
   });
 
   it("spedisce un SMS a chi ha un numero e registra l'esito", async () => {

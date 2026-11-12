@@ -149,7 +149,7 @@ describe("rotteAd.prova", () => {
   it("una prova che esplode diventa 500, senza il messaggio dell'errore", async () => {
     const d = deps({
       prova: async () => {
-        throw new Error("fetch failed http://ws/getuserAD/m.rossi/segretissima");
+        throw new Error("fetch failed http://ws/getuserAD?user=m.rossi&pwd=segretissima");
       },
     });
     const { res, status, json } = resFinta();

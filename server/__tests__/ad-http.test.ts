@@ -59,20 +59,36 @@ describe("leggiStatus", () => {
 });
 
 describe("urlVerifica", () => {
-  it("toglie le barre finali della base", () => {
-    expect(urlVerifica(`${BASE}//`, "m.rossi", "pw")).toBe(`${BASE}/m.rossi/pw`);
+  it("manda username e password come parametri user e pwd", () => {
+    expect(urlVerifica(BASE, "m.rossi", "pw")).toBe(`${BASE}?user=m.rossi&pwd=pw`);
   });
 
-  it("codifica i caratteri riservati: sempre due segmenti, decodificabili identici", () => {
+  it("toglie le barre finali della base", () => {
+    expect(urlVerifica(`${BASE}//`, "m.rossi", "pw")).toBe(`${BASE}?user=m.rossi&pwd=pw`);
+  });
+
+  it("se la base ha gia' una query string, accoda con &", () => {
+    expect(urlVerifica(`${BASE}?x=1`, "m.rossi", "pw")).toBe(`${BASE}?x=1&user=m.rossi&pwd=pw`);
+  });
+
+  it("codifica i caratteri riservati: sempre due parametri, decodificabili identici", () => {
     const username = "m rossi/è";
     const password = "a/b%c?d#e+f g è&=:";
     const url = urlVerifica(BASE, username, password);
-    const coda = url.slice(BASE.length + 1);
-    const segmenti = coda.split("/");
-    expect(segmenti).toHaveLength(2);
-    expect(decodeURIComponent(segmenti[0])).toBe(username);
-    expect(decodeURIComponent(segmenti[1])).toBe(password);
-    expect(coda).not.toMatch(/[?#]/);
+    expect(url.startsWith(`${BASE}?`)).toBe(true);
+    const query = url.slice(BASE.length + 1);
+    expect(query).not.toMatch(/[?#/ +]/);
+    const coppie = query.split("&");
+    expect(coppie).toHaveLength(2);
+    const [k1, v1] = coppie[0].split("=");
+    const [k2, v2] = coppie[1].split("=");
+    expect([k1, k2]).toEqual(["user", "pwd"]);
+    expect(decodeURIComponent(v1)).toBe(username);
+    expect(decodeURIComponent(v2)).toBe(password);
+    // Anche un parser standard la rilegge identica (lo spazio e' %20, non +).
+    const letti = new URL(url).searchParams;
+    expect(letti.get("user")).toBe(username);
+    expect(letti.get("pwd")).toBe(password);
   });
 });
 
@@ -87,13 +103,13 @@ describe("HttpVerificatoreAd", () => {
   it("chiama l'URL giusto", async () => {
     const { f, chiamate } = fetchFinto({ corpo: '[{"status":true}]' });
     await new HttpVerificatoreAd(ENDPOINT, f).verifica("m.rossi", "segreto");
-    expect(chiamate[0].url).toBe(`${BASE}/m.rossi/segreto`);
+    expect(chiamate[0].url).toBe(`${BASE}?user=m.rossi&pwd=segreto`);
   });
 
   it("toglie gli spazi esterni dallo username, non dalla password", async () => {
     const { f, chiamate } = fetchFinto({ corpo: '[{"status":true}]' });
     await new HttpVerificatoreAd(ENDPOINT, f).verifica("  m.rossi ", " pw ");
-    expect(chiamate[0].url).toBe(`${BASE}/m.rossi/%20pw%20`);
+    expect(chiamate[0].url).toBe(`${BASE}?user=m.rossi&pwd=%20pw%20`);
   });
 
   it("manda Authorization solo se c'e'", async () => {
@@ -120,14 +136,16 @@ describe("HttpVerificatoreAd", () => {
     ["..", "pw"],
     ["m.rossi", "."],
     ["m.rossi", ".."],
-  ])("username %j o password %j fatti di soli punti: nessuna chiamata", async (username, password) => {
-    // fetch collassa i segmenti «.» e «..» (anche codificati come %2e): con
-    // username «..» si chiamerebbe un altro endpoint del web service, con le
-    // nostre credenziali ws.auth.
-    const { f, chiamate } = fetchFinto({ corpo: '[{"status":true}]' });
-    expect(await new HttpVerificatoreAd(ENDPOINT, f).verifica(username, password))
-      .toEqual({ esito: "credenzialiNonValide" });
-    expect(chiamate).toHaveLength(0);
+  ])("username %j o password %j fatti di soli punti arrivano all'endpoint come valori", async (username, password) => {
+    // Erano rifiutati quando stavano nel percorso, dove fetch collassa «.» e
+    // «..»; nella query string sono valori qualunque, e l'URL resta lo stesso endpoint.
+    const { f, chiamate } = fetchFinto({ corpo: '[{"status":false}]' });
+    await new HttpVerificatoreAd(ENDPOINT, f).verifica(username, password);
+    expect(chiamate).toHaveLength(1);
+    const letti = new URL(chiamate[0].url);
+    expect(`${letti.origin}${letti.pathname}`).toBe(BASE);
+    expect(letti.searchParams.get("user")).toBe(username);
+    expect(letti.searchParams.get("pwd")).toBe(password);
   });
 
   it.each<[string, Risposta]>([
@@ -165,7 +183,7 @@ describe("HttpVerificatoreAd", () => {
       const testo = JSON.stringify(e);
       for (const f of forme) expect(testo).not.toContain(f);
       // Ma dice dove ha chiamato, mascherato:
-      expect(testo).toContain(`${BASE}/m.rossi/***`);
+      expect(testo).toContain(`${BASE}?user=m.rossi&pwd=***`);
     });
   });
 });
@@ -186,7 +204,7 @@ describe("provaEndpoint", () => {
     expect(r.riuscita).toBe(true);
     expect(r.verifica).toBeUndefined();
     expect(chiamate).toHaveLength(1);
-    expect(chiamate[0].url).toContain("/verifica-app-");
+    expect(chiamate[0].url).toContain("?user=verifica-app-");
   });
 
   it("FALLISCE se l'endpoint accetta credenziali inventate", async () => {
@@ -202,7 +220,7 @@ describe("provaEndpoint", () => {
   });
 
   it("con le credenziali, dopo il primo controllo prova anche quelle", async () => {
-    const { f, chiamate } = fetchFinto((url) => ({ corpo: url.includes("/m.rossi/") ? vero : falso }));
+    const { f, chiamate } = fetchFinto((url) => ({ corpo: url.includes("user=m.rossi&") ? vero : falso }));
     const r = await provaEndpoint(ENDPOINT, { username: "m.rossi", password: "pw" }, f);
     expect(r.riuscita).toBe(true);
     expect(r.verifica).toEqual({ esito: "ok" });
@@ -219,7 +237,7 @@ describe("provaEndpoint", () => {
   it("la password di prova non torna nell'esito", async () => {
     const PASSWORD = "Segreta/123%";
     const { f } = fetchFinto((url) =>
-      url.includes("/m.rossi/") ? new Error(`fetch failed: ${url}`) : { corpo: falso },
+      url.includes("user=m.rossi&") ? new Error(`fetch failed: ${url}`) : { corpo: falso },
     );
     const r = await provaEndpoint(ENDPOINT, { username: "m.rossi", password: PASSWORD }, f);
     expect(r.verifica?.esito).toBe("nonRaggiungibile");

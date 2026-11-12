@@ -19,6 +19,7 @@ import {
   COLORI_TIPO, COLORI_CLASSIFICAZIONE,
 } from "@shared/classificazione";
 import { ETICHETTE_LEGAME, COLORI_LEGAME } from "@shared/legame";
+import { ETICHETTE_ESITO, righeCsvDettaglio } from "@shared/storico-notifiche";
 import type { EsitoInvio } from "@shared/schema";
 
 export const etichetta = (mappa: Record<string, string>, v: string) => mappa[v] ?? v;
@@ -31,10 +32,10 @@ export function formatDateTime(iso: string): string {
   });
 }
 
-/** Campo CSV con escaping di virgolette, virgole e a capo. */
+/** Campo CSV con escaping di virgolette, virgole e a capo (anche `\r`: i testi delle mail lo portano). */
 function csvField(v: string | number | null | undefined): string {
   const s = v === null || v === undefined ? "" : String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 export function scaricaCsv(nomeFile: string, righe: (string | number | null)[][]) {
@@ -64,22 +65,21 @@ export const badgeClassificazione = (v: string) => badge(v, COLORI_CLASSIFICAZIO
 export const badgeLegame = (v: string | null) =>
   v === null ? <span className="text-gray-400">—</span> : badge(v, COLORI_LEGAME, ETICHETTE_LEGAME);
 
-// «Inviata» = accettata dal server SMTP o dalla piattaforma SMS, non consegnata
-// né letta: è tutto quello che l'app sa (issue #111).
-const ESITO: Record<EsitoInvio, { email: string; sms: string; colore: string }> = {
-  inviato: { email: "Inviata", sms: "Inviato", colore: "text-green-700" },
-  nonInviato: { email: "Non inviata", sms: "Non inviato", colore: "text-red-600 font-semibold" },
-  inAttesa: { email: "In attesa", sms: "In attesa", colore: "text-gray-500" },
-  // Accettata dal server e poi tornata indietro: l'unico dato di consegna che
-  // l'app ha, letto dalla casella dei bounce (issue #126).
-  nonRecapitato: { email: "Non recapitata", sms: "Non recapitato", colore: "text-red-600 font-semibold" },
+// Le parole stanno in `ETICHETTE_ESITO` (@shared/storico-notifiche), le stesse
+// del CSV; qui solo i colori. «Non recapitata» è l'unico dato di consegna che
+// l'app ha, letto dalla casella dei bounce (issue #126).
+const COLORE_ESITO: Record<EsitoInvio, string> = {
+  inviato: "text-green-700",
+  nonInviato: "text-red-600 font-semibold",
+  inAttesa: "text-gray-500",
+  nonRecapitato: "text-red-600 font-semibold",
 };
 
 function Esito({ esito, canale, motivo }: { esito: EsitoInvio | null; canale: "email" | "sms"; motivo?: string | null }) {
   if (esito === null) return <span className="text-gray-400">—</span>;
   return (
-    <span className={ESITO[esito].colore}>
-      {ESITO[esito][canale]}
+    <span className={COLORE_ESITO[esito]}>
+      {ETICHETTE_ESITO[esito][canale]}
       {motivo && <span className="block text-[11px] font-normal text-gray-600">{motivo}</span>}
     </span>
   );
@@ -104,19 +104,9 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
 
   const esportaDettaglioCsv = () => {
     if (!dettaglio) return;
-    scaricaCsv(`dettaglio_${dettaglio.codice}.csv`, [
-      ["ID Notifica", "Utente", "Data", "Tipo", "Classificazione", "Legame", "Codice Conduttore", "Descrizione Conduttore",
-        "Codice Roggia", "Descrizione Roggia", "SMS", "Mail", "Canale", "Utente di test",
-        "Esito email", "Motivo mancato recapito", "Esito SMS"],
-      ...dettaglio.destinatari.map((d) => [
-        dettaglio.codice, dettaglio.utente, formatDateTime(dettaglio.data),
-        etichetta(ETICHETTE_TIPO, dettaglio.tipo), etichetta(ETICHETTE_CLASSIFICAZIONE, dettaglio.classificazione),
-        dettaglio.legame === null ? "" : etichetta(ETICHETTE_LEGAME, dettaglio.legame),
-        d.codiceConduttore, d.descrizioneConduttore, d.codiceRoggia, d.descrizioneRoggia, d.sms, d.mail, d.canale,
-        d.utenteTest ? "Si" : "No",
-        ESITO[d.esitoEmail].email, d.motivoMancatoRecapito ?? "", d.esitoSms === null ? "" : ESITO[d.esitoSms].sms,
-      ]),
-    ]);
+    // Prima il blocco comune (oggetto, testi, invio SMS), poi i destinatari:
+    // la forma la decide `righeCsvDettaglio` (issue #129).
+    scaricaCsv(`dettaglio_${dettaglio.codice}.csv`, righeCsvDettaglio(dettaglio, formatDateTime));
   };
 
   return (
@@ -166,9 +156,9 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
                 dal tester in issue #12. Scorre per conto suo, così un testo
                 lungo non spinge fuori schermo l'elenco dei destinatari. */}
             <div className="border rounded-lg p-3">
-              <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Oggetto</span>
+              <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Oggetto Email</span>
               <p className="text-sm font-medium mb-3 break-words">{dettaglio.subject}</p>
-              <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Messaggio inviato</span>
+              <span className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Testo Email</span>
               <div className="mt-1 max-h-[160px] overflow-y-auto text-sm whitespace-pre-wrap text-gray-700">
                 {dettaglio.messaggio || <span className="text-gray-400">—</span>}
               </div>
@@ -193,6 +183,12 @@ export function DettaglioNotifica({ notificaId, onClose }: { notificaId: number 
                 {" "}su {dettaglio.destinatari.length}
                 {" · "}
                 <span className="font-semibold">{dettaglio.smsInviati}</span> SMS inviati
+                {/* Lo 0 di una notifica partita solo per email è una scelta di
+                    chi l'ha spedita, non un guasto: va detto (issue #129). Con
+                    null (non si sa) non si scrive niente. */}
+                {dettaglio.invioSms === false && (
+                  <span className="text-gray-500"> (modalità di invio con sms non selezionata)</span>
+                )}
               </div>
               <Button variant="outline" size="sm" onClick={esportaDettaglioCsv} disabled={dettaglio.destinatari.length === 0}>
                 <Download size={14} className="mr-1.5" />Esporta dettaglio CSV

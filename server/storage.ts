@@ -879,6 +879,7 @@ export class MemStorage implements IStorage {
       subject: data.subject,
       message: data.message,
       messageSms: data.messageSms ?? null,
+      invioSms: data.invioSms ?? null,
       status: data.status ?? "pending",
       scheduledAt: data.scheduledAt ?? null,
       sentAt: null,

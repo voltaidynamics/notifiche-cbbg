@@ -954,6 +954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recipientCount: recipients.length,
         emailCount: sendEmail ? recipients.length : 0,
         smsCount: doSendSms ? recipients.filter(r => !!r.phone).length : 0,
+        invioSms: !!doSendSms,
         createdBy: createdBy || null,
       });
 
