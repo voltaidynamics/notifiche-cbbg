@@ -436,13 +436,17 @@ describe("righeCsvDettaglio", () => {
     expect(valori).toEqual(["N00001", "mario.rossi", "D:2026-07-20T10:00:00.000Z", "Chiusura", "Ordinaria",
       "Live", "attivo", "Chiusura R01", "Riga 1\nRiga 2", "Roggia chiusa."]);
     expect(separatore).toEqual([]);
-    expect(tabella).toContain("Invio con SMS");
+    expect(tabella[0]).toBe("Codice Conduttore");
     expect(righe).toHaveLength(5);
   });
 
-  it("ogni destinatario porta la colonna «Invio con SMS»", () => {
+  it("la tabella dei destinatari non ripete ciò che sta nel blocco comune", () => {
     const righe = righeCsvDettaglio(dettaglio(false, [destinatario()]), formato);
-    expect(righe[4][righe[3].indexOf("Invio con SMS")]).toBe("non attivo");
+    for (const comune of ["ID Notifica", "Utente", "Data", "Tipo", "Classificazione", "Legame", "Invio con SMS"]) {
+      expect(righe[3]).not.toContain(comune);
+    }
+    expect(righe[1][righe[0].indexOf("Invio con SMS")]).toBe("non attivo");
+    expect(righe[4]).toHaveLength(righe[3].length);
   });
 
   it("senza numero: SMS «assente» ed esito SMS vuoto, anche se il giro SMS l'ha segnato fallito", () => {

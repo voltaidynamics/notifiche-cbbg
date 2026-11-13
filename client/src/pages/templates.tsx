@@ -164,7 +164,7 @@ function TemplateForm({ defaultValues, onSubmit, isPending, onCancel }: Template
               <FormLabel>Testo Email *</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Testo dell'email. Puoi usare variabili come {{nome_tratta}}, {{data}}, ecc."
+                  placeholder="Testo dell'email: parte esattamente come lo scrivi qui."
                   rows={5}
                   {...field}
                 />

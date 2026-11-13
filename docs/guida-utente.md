@@ -421,11 +421,14 @@ Sotto la tabella:
   Resta vuoto finché Tipo e Classificazione non sono scelti (con Tipo = Altro
   basta il Tipo). Si può correggere a mano, ma **ogni cambio di Tipo o
   Classificazione lo riscrive**: le correzioni vanno fatte dopo l'ultima
-  scelta. Non può restare vuoto.
+  scelta. Se si carica un template, però, **comanda il template**: l'oggetto
+  diventa il suo, e da lì Tipo e Classificazione non lo cambiano più. Non può
+  restare vuoto.
 - **Testo email** — il corpo del messaggio. Obbligatorio.
 - **Carica template** — la tendina accanto al testo email: carica un modello
-  già pronto e riempie in un colpo solo testo email e testo SMS. **L'oggetto
-  non lo tocca**: lo decidono Tipo e Classificazione. I template si gestiscono
+  già pronto e riempie in un colpo solo oggetto, testo email e testo SMS.
+  L'oggetto del template prende il posto di quello ricavato da Tipo e
+  Classificazione. I template si gestiscono
   nella sezione [Template](#8-template). *Un template senza testo SMS non
   cancella quello eventualmente già scritto a mano.*
 - **Testo SMS** — **obbligatorio** finché «Invia anche via SMS», qui sotto, è
@@ -599,7 +602,7 @@ Si clicca una riga qualunque. Si apre una finestra con:
 
 - **Intestazione**: ID, utente, data e ora, badge Tipo, Classificazione e
   Legame.
-- **Oggetto** e **Messaggio inviato**: il testo *effettivamente spedito* per
+- **Oggetto Email** e **Testo Email**: il testo *effettivamente spedito* per
   quella comunicazione, non il template da cui derivava.
 - **Testo SMS**, se era stato scritto.
 - **La tabella dei destinatari**, una riga per persona:
@@ -617,7 +620,11 @@ Si clicca una riga qualunque. Si apre una finestra con:
 - Sopra la tabella, il conteggio **email inviate su destinatari** e **SMS
   inviati**.
 - **Esporta dettaglio CSV** scarica l'elenco completo dei destinatari di quella
-  notifica, esiti compresi.
+  notifica, esiti compresi. Il file si apre con una riga che vale per tutta la
+  comunicazione (ID, utente, data, tipo, classificazione, legame, «Invio con
+  SMS», oggetto, testo email e testo SMS); sotto, una riga per destinatario con
+  i soli dati che cambiano da persona a persona. Chi non ha numero o mail ha
+  «assente» e l'esito corrispondente vuoto.
 
 La stessa finestra si apre anche dalla **Dashboard**: da una riga delle *Ultime
 notifiche* o dalla data *«Chiusa dal …»* di una tratta chiusa.
@@ -768,7 +775,7 @@ Pulsante **Nuovo Template**, oppure l'icona matita sulla riga.
 |---|---|
 | **Nome** * | Come comparirà nella tendina di *Invia notifica* |
 | **Tipo** * | Apertura, Chiusura o Altro. Serve **solo a filtrare l'elenco**: non decide se una roggia risulta aperta o chiusa — quello lo fa il Tipo scelto al momento dell'invio |
-| **Oggetto Email** * | Resta nel template, ma *Invia notifica* non lo usa più: lì l'oggetto lo decidono Tipo e Classificazione |
+| **Oggetto Email** * | Caricando il template in *Invia notifica* diventa l'oggetto della mail, al posto di quello ricavato da Tipo e Classificazione |
 | **Testo Email** * | Il testo, che parte **esattamente com'è scritto**. Non ci sono variabili: una scritta come `{{data}}` arriverebbe al conduttore così, con le parentesi. Anche i tag HTML arrivano come testo; gli a capo invece si conservano |
 | **Testo SMS** * | La versione corta, precaricata in *Invia notifica* insieme al testo email quando si carica il template. Parte davvero solo se lì si spunta «Invia anche via SMS» |
 

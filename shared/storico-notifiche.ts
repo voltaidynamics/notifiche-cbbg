@@ -259,9 +259,10 @@ const etichettaDi = (mappa: Record<string, string>, v: string) => mappa[v] ?? v;
  * di valori; poi una riga vuota e la tabella dei destinatari. I due testi sono
  * lunghi e su più righe: ripetuti a ogni destinatario renderebbero il file
  * illeggibile in Excel (ogni riga alta come il messaggio) per un'informazione
- * che non cambia mai. La tabella tiene comunque le sue colonne comuni (ID, data,
- * tipo…), le stesse di prima: chi la filtra o la incolla altrove non perde
- * niente.
+ * che non cambia mai. Per lo stesso motivo la tabella dei destinatari porta
+ * solo ciò che cambia da persona a persona: ID, utente, data, tipo,
+ * classificazione, legame e «Invio con SMS» stanno una volta sola nel blocco
+ * comune (richiesta del consorzio nel collaudo della #129, 13/11/2026).
  *
  * Senza numero la colonna SMS dice «assente» e l'esito SMS resta vuoto: non è
  * un SMS fallito, è un SMS che non poteva partire. Idem per la mail.
@@ -282,14 +283,12 @@ export function righeCsvDettaglio(
     [d.codice, d.utente ?? "", data, tipo, classificazione, legame, invioSms,
       d.subject, d.messaggio, d.messaggioSms ?? ""],
     [],
-    ["ID Notifica", "Utente", "Data", "Tipo", "Classificazione", "Legame", "Invio con SMS",
-      "Codice Conduttore", "Descrizione Conduttore", "Codice Roggia", "Descrizione Roggia",
+    ["Codice Conduttore", "Descrizione Conduttore", "Codice Roggia", "Descrizione Roggia",
       "SMS", "Mail", "Canale", "Utente di test", "Esito email", "Motivo mancato recapito", "Esito SMS"],
     ...d.destinatari.map((r) => {
       const senzaNumero = vuoto(r.sms);
       const senzaMail = vuoto(r.mail);
       return [
-        d.codice, d.utente ?? "", data, tipo, classificazione, legame, invioSms,
         r.codiceConduttore ?? "", r.descrizioneConduttore ?? "", r.codiceRoggia ?? "", r.descrizioneRoggia ?? "",
         senzaNumero ? RECAPITO_ASSENTE : (r.sms as string),
         senzaMail ? RECAPITO_ASSENTE : (r.mail as string),

@@ -539,13 +539,16 @@ Tipo e Classificazione:</p>
 <p>Resta vuoto finché Tipo e Classificazione non sono scelti (con Tipo = Altro
 basta il Tipo). Si può correggere a mano, ma <strong>ogni cambio di Tipo o
 Classificazione lo riscrive</strong>: le correzioni vanno fatte dopo l&#39;ultima
-scelta. Non può restare vuoto.</p>
+scelta. Se si carica un template, però, <strong>comanda il template</strong>: l&#39;oggetto
+diventa il suo, e da lì Tipo e Classificazione non lo cambiano più. Non può
+restare vuoto.</p>
 </li>
 <li><p><strong>Testo email</strong> — il corpo del messaggio. Obbligatorio.</p>
 </li>
 <li><p><strong>Carica template</strong> — la tendina accanto al testo email: carica un modello
-già pronto e riempie in un colpo solo testo email e testo SMS. <strong>L&#39;oggetto
-non lo tocca</strong>: lo decidono Tipo e Classificazione. I template si gestiscono
+già pronto e riempie in un colpo solo oggetto, testo email e testo SMS.
+L&#39;oggetto del template prende il posto di quello ricavato da Tipo e
+Classificazione. I template si gestiscono
 nella sezione <a href="#8-template">Template</a>. <em>Un template senza testo SMS non
 cancella quello eventualmente già scritto a mano.</em></p>
 </li>
@@ -746,7 +749,7 @@ comunicazioni vere, mai dati di esempio.</p>
 <ul>
 <li><strong>Intestazione</strong>: ID, utente, data e ora, badge Tipo, Classificazione e
 Legame.</li>
-<li><strong>Oggetto</strong> e <strong>Messaggio inviato</strong>: il testo <em>effettivamente spedito</em> per
+<li><strong>Oggetto Email</strong> e <strong>Testo Email</strong>: il testo <em>effettivamente spedito</em> per
 quella comunicazione, non il template da cui derivava.</li>
 <li><strong>Testo SMS</strong>, se era stato scritto.</li>
 <li><strong>La tabella dei destinatari</strong>, una riga per persona:</li>
@@ -791,7 +794,11 @@ quella comunicazione, non il template da cui derivava.</li>
 <li>Sopra la tabella, il conteggio <strong>email inviate su destinatari</strong> e <strong>SMS
 inviati</strong>.</li>
 <li><strong>Esporta dettaglio CSV</strong> scarica l&#39;elenco completo dei destinatari di quella
-notifica, esiti compresi.</li>
+notifica, esiti compresi. Il file si apre con una riga che vale per tutta la
+comunicazione (ID, utente, data, tipo, classificazione, legame, «Invio con
+SMS», oggetto, testo email e testo SMS); sotto, una riga per destinatario con
+i soli dati che cambiano da persona a persona. Chi non ha numero o mail ha
+«assente» e l&#39;esito corrispondente vuoto.</li>
 </ul>
 <p>La stessa finestra si apre anche dalla <strong>Dashboard</strong>: da una riga delle <em>Ultime
 notifiche</em> o dalla data <em>«Chiusa dal …»</em> di una tratta chiusa.</p>
@@ -976,7 +983,7 @@ dettaglio si passa direttamente alla modifica.</p>
 </tr>
 <tr>
 <td><strong>Oggetto Email</strong> *</td>
-<td>Resta nel template, ma <em>Invia notifica</em> non lo usa più: lì l&#39;oggetto lo decidono Tipo e Classificazione</td>
+<td>Caricando il template in <em>Invia notifica</em> diventa l&#39;oggetto della mail, al posto di quello ricavato da Tipo e Classificazione</td>
 </tr>
 <tr>
 <td><strong>Testo Email</strong> *</td>

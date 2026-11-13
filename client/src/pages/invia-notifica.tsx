@@ -149,16 +149,18 @@ export default function InviaNotifica() {
   // L'oggetto si riscrive a ogni cambio di Tipo o Classificazione (issue #130),
   // anche sopra una modifica a mano: l'oggetto deve dire ciò che la
   // classificazione dice, e uno ritoccato prima di cambiarla mentirebbe. Resta
-  // editabile, quindi un ritocco fatto *dopo* l'ultima scelta parte com'è. Il
-  // template non lo tocca più: riempie solo i testi, o caricarne uno dopo aver
-  // scelto il Tipo sostituirebbe l'oggetto voluto dal consorzio.
+  // editabile, quindi un ritocco fatto *dopo* l'ultima scelta parte com'è.
+  // **Comanda il template** (collaudo della #130, 13/11/2026): caricarne uno
+  // scrive il suo oggetto, e da lì Tipo e Classificazione non lo toccano più,
+  // in qualunque ordine siano stati scelti.
+  const [oggettoDaTemplate, setOggettoDaTemplate] = useState(false);
   const scegliTipo = (t: TipoNotifica) => {
     setTipo(t);
-    setTitolo(oggettoDaClassificazione(t, classificazione));
+    if (!oggettoDaTemplate) setTitolo(oggettoDaClassificazione(t, classificazione));
   };
   const scegliClassificazione = (c: ClassificazioneNotifica) => {
     setClassificazione(c);
-    setTitolo(oggettoDaClassificazione(tipo, c));
+    if (!oggettoDaTemplate) setTitolo(oggettoDaClassificazione(tipo, c));
   };
   const [riepilogoOpen, setRiepilogoOpen] = useState(false);
 
@@ -231,10 +233,10 @@ export default function InviaNotifica() {
     [utentiTestAttivi, inviaSms],
   );
 
-  // Il template riempie corpo mail e testo SMS (issue #28); il suo oggetto non
-  // si usa più, lo decidono Tipo e Classificazione (issue #130). Solo i template
-  // del database: senza, la tendina resta vuota, niente modelli di ripiego (issue #94).
-  const templateOptions = dbTemplates.map((t) => ({ id: String(t.id), label: t.name, body: t.bodyEmail, sms: t.bodySms }));
+  // Il template riempie oggetto, corpo mail e testo SMS (issue #28, #130: il
+  // suo oggetto vince su Tipo e Classificazione). Solo i template del database:
+  // senza, la tendina resta vuota, niente modelli di ripiego (issue #94).
+  const templateOptions = dbTemplates.map((t) => ({ id: String(t.id), label: t.name, subject: t.subject, body: t.bodyEmail, sms: t.bodySms }));
 
   // Le due gerarchie riempiono gli stessi due elenchi: da qui in giù la pagina
   // non sa più quale delle due sta mostrando, e non deve saperlo.
@@ -1021,7 +1023,8 @@ export default function InviaNotifica() {
 
                 {/* L'oggetto della mail (issue #13, #130): sta subito prima
                     del messaggio perché è la prima cosa che il destinatario
-                    legge, e lo compilano Tipo e Classificazione. */}
+                    legge, e lo compilano Tipo e Classificazione — o il
+                    template, se ne è stato caricato uno. */}
                 <label className="flex flex-col gap-1 mt-5">
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                     Oggetto Email
@@ -1054,8 +1057,12 @@ export default function InviaNotifica() {
                     <Select disabled={templateOptions.length === 0} onValueChange={(id) => {
                       const t = templateOptions.find((o) => o.id === id);
                       if (!t) return;
-                      // L'oggetto no (issue #130): lo decidono Tipo e
-                      // Classificazione, vedi `scegliTipo`.
+                      // Comanda il template, anche sull'oggetto (#130):
+                      // vedi `scegliTipo`.
+                      if (t.subject.trim() !== "") {
+                        setTitolo(t.subject);
+                        setOggettoDaTemplate(true);
+                      }
                       setMessaggio(t.body);
                       // Solo se il template ne ha uno: un template senza
                       // testo SMS non deve cancellare quello appena scritto
