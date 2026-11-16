@@ -15,6 +15,9 @@
 #   2) Aggiorna             — backup, git pull, build, migrazioni, riavvio pm2
 #   3) Stato                — processo, porta, versione, ultimo backup
 #   4) Crea superadmin      — solo se non ne esiste nessuno
+#   5) Reset database       — backup, poi svuota notifiche, storico, template,
+#                             bounce, log, codici spenti, utenti di test e
+#                             richieste di accesso; tiene utenti e impostazioni
 #
 # Va lanciato da un terminale interattivo, dall'utente di sistema che farà
 # girare l'applicazione (non da root): pm2 e il backup appartengono a lui.
@@ -734,6 +737,68 @@ stato() {
   riepilogo
 }
 
+# Tabelle azzerate da «5) Reset database». Restano: app_users (utenti),
+# app_settings (WS, posta, PEC, SMS, AD, Bounce: senza, l'app non sa più a chi
+# collegarsi), session (chi è collegato resta dentro), il mirror del consorzio
+# (lo riscrive comunque il sync) e le tabelle legacy.
+# Le chiavi esterne fra queste tabelle restano tutte all'interno dell'elenco,
+# quindi il TRUNCATE va senza CASCADE: se un domani un'altra tabella ne
+# referenzia una, il reset fallisce invece di svuotare anche quella.
+TABELLE_RESET=(
+  notifications notification_recipients notification_targets bounce_messaggi
+  notification_templates
+  sync_logs import_logs
+  codici_spenti utenti_test
+  richieste_accesso
+)
+
+reset_database() {
+  carica_env
+  titolo "Reset database"
+  sql -c "SELECT 1" >/dev/null || errore "Database non raggiungibile con le credenziali di .env."
+
+  local t n
+  echo -e "${RED}${BOLD}Questa operazione cancella in modo definitivo:${NC}"
+  for t in "${TABELLE_RESET[@]}"; do
+    [[ "$(sql_valore "SELECT to_regclass('public.$t') IS NOT NULL")" == "t" ]] \
+      || errore "La tabella '$t' non esiste: il database non è allineato a questa versione (prima «2) Aggiorna»)."
+    n="$(sql_valore "SELECT count(*) FROM public.$t")"
+    printf "  %-26s %s righe\n" "$t" "$n"
+  done
+  echo ""
+  echo "  Si azzerano Storico, Dashboard, stato aperta/chiusa delle rogge, template,"
+  echo "  bounce, log dei sync, codici spenti (tornano tutti accesi), utenti di test"
+  echo "  e richieste di accesso."
+  echo "  Restano: utenti dell'app, Impostazioni, anagrafiche del consorzio."
+  echo ""
+
+  local in_corso
+  in_corso="$(sql_valore "SELECT count(*) FROM notifications WHERE status = 'sending'")"
+  [[ "$in_corso" -gt 0 ]] \
+    && warn "$in_corso notifiche risultano in invio: se una spedizione è davvero in corso, aspetta che finisca."
+
+  local risp
+  printf "Per confermare scrivi il nome del database (%s): " "$_DB_NAME"
+  read -r risp
+  [[ "$risp" == "$_DB_NAME" ]] || { info "Nome diverso: reset annullato, nessuna modifica."; return 0; }
+
+  # Senza una copia buona non si cancella niente: qui non si chiede di proseguire.
+  titolo "Backup prima del reset"
+  backup_ora || errore "Backup fallito: reset annullato, nessuna modifica."
+  local backup; backup="$(ls -1t "$APP_DIR"/backups/*.sql.gz 2>/dev/null | head -1)"
+
+  titolo "Cancellazione"
+  local elenco; elenco="$(printf 'public.%s, ' "${TABELLE_RESET[@]}")"; elenco="${elenco%, }"
+  # Una sola istruzione, quindi un'unica transazione: o si svuota tutto o niente.
+  # RESTART IDENTITY: la prossima notifica riparte dall'id 1.
+  sql -c "TRUNCATE TABLE $elenco RESTART IDENTITY;" \
+    || errore "Reset non riuscito: nessuna tabella è stata toccata."
+  info "Database azzerato (utenti e impostazioni conservati)."
+  echo "  Copia di prima del reset: $backup"
+  echo "  Ripristino: gunzip -c <file> | psql \"\$DATABASE_URL\" (su un database vuoto)"
+  echo "  I log dei sync ripartono dal prossimo caricamento: notturno alle 03:00, o manuale da Impostazioni."
+}
+
 attendi_app_una_volta() {
   local codice
   codice="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${APP_PORT}/" || true)"
@@ -762,6 +827,7 @@ main() {
   echo "  2) Aggiorna (git pull + build + riavvio)"
   echo "  3) Stato"
   echo "  4) Crea superadmin"
+  echo "  5) Reset database (cancella notifiche e storico, tiene utenti e impostazioni)"
   echo "  0) Esci"
   printf "Scelta: "
   local scelta; read -r scelta
@@ -771,6 +837,7 @@ main() {
     2) aggiorna ;;
     3) stato ;;
     4) carica_env; crea_superadmin ;;
+    5) reset_database ;;
     0) exit 0 ;;
     *) errore "Scelta non valida: '$scelta'" ;;
   esac
