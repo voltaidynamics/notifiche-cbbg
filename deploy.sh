@@ -15,10 +15,10 @@
 #   2) Aggiorna             — backup, git pull, build, migrazioni, riavvio pm2
 #   3) Stato                — processo, porta, versione, ultimo backup
 #   4) Crea superadmin      — solo se non ne esiste nessuno
-#   5) Reset database       — backup, poi svuota notifiche, storico, bounce,
-#                             log e richieste di accesso; tiene utenti,
-#                             impostazioni, anagrafiche, codici accesi/spenti,
-#                             utenti di test e template
+#   5) Reset database       — backup, poi svuota notifiche, storico, template,
+#                             bounce, log e richieste di accesso; tiene utenti,
+#                             impostazioni, anagrafiche, codici accesi/spenti
+#                             e utenti di test
 #
 # Va lanciato da un terminale interattivo, dall'utente di sistema che farà
 # girare l'applicazione (non da root): pm2 e il backup appartengono a lui.
@@ -741,14 +741,14 @@ stato() {
 # Tabelle azzerate da «5) Reset database». Restano: app_users (utenti),
 # app_settings (WS, posta, PEC, SMS, AD, Bounce: senza, l'app non sa più a chi
 # collegarsi), session (chi è collegato resta dentro), il mirror del consorzio
-# (lo riscrive comunque il sync), codici_spenti (Gestione Codici), utenti_test,
-# notification_templates e le tabelle legacy.
-# Nessuna tabella tenuta punta a una di queste (notifications → template va
-# nel verso opposto, ed è lecito), quindi il TRUNCATE va senza CASCADE: se un
-# domani una tabella esterna ne referenzia una, il reset fallisce invece di
-# svuotare anche quella.
+# (lo riscrive comunque il sync), codici_spenti (Gestione Codici), utenti_test
+# e le tabelle legacy.
+# Le chiavi esterne fra queste tabelle restano tutte all'interno dell'elenco,
+# quindi il TRUNCATE va senza CASCADE: se un domani una tabella esterna ne
+# referenzia una, il reset fallisce invece di svuotare anche quella.
 TABELLE_RESET=(
   notifications notification_recipients notification_targets bounce_messaggi
+  notification_templates
   sync_logs import_logs
   richieste_accesso
 )
@@ -767,10 +767,10 @@ reset_database() {
     printf "  %-26s %s righe\n" "$t" "$n"
   done
   echo ""
-  echo "  Si azzerano Storico, Dashboard, stato aperta/chiusa delle rogge, bounce,"
-  echo "  log dei sync e richieste di accesso."
+  echo "  Si azzerano Storico, Dashboard, stato aperta/chiusa delle rogge, template,"
+  echo "  bounce, log dei sync e richieste di accesso."
   echo "  Restano: utenti dell'app, Impostazioni, anagrafiche del consorzio, codici"
-  echo "  accesi/spenti di Gestione Codici, utenti di test, template."
+  echo "  accesi/spenti di Gestione Codici, utenti di test."
   echo ""
 
   local in_corso
