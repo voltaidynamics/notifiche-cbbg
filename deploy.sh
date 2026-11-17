@@ -790,9 +790,23 @@ reset_database() {
 
   titolo "Cancellazione"
   local elenco; elenco="$(printf 'public.%s, ' "${TABELLE_RESET[@]}")"; elenco="${elenco%, }"
-  # Una sola istruzione, quindi un'unica transazione: o si svuota tutto o niente.
+  # Un solo -c, quindi un'unica transazione: o si svuota tutto o niente.
   # RESTART IDENTITY: la prossima notifica riparte dall'id 1.
-  sql -c "TRUNCATE TABLE $elenco RESTART IDENTITY;" \
+  #
+  # bounce.letturaDal va all'ora del reset nella stessa transazione. Graph
+  # filtra con `receivedDateTime ge letturaDal`, quindi ogni giro rilegge
+  # l'ultimo messaggio già visto e lo salta solo perché la sua chiave è in
+  # bounce_messaggi: svuotata quella, il giro successivo (ogni 10 minuti) lo
+  # registrava di nuovo — un bounce orfano sopravvissuto al reset, visto in
+  # produzione. Senza la chiave, invece, il primo giro guarderebbe indietro di
+  # 7 giorni e reimporterebbe tutti i bounce di prima. Quei messaggi
+  # riguardano comunicazioni appena cancellate: non c'è niente da rileggere.
+  sql -c "TRUNCATE TABLE $elenco RESTART IDENTITY;
+    INSERT INTO public.app_settings (key, value, updated_at)
+    VALUES ('bounce.letturaDal',
+            to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'),
+            now())
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at;" \
     || errore "Reset non riuscito: nessuna tabella è stata toccata."
   info "Database azzerato (utenti e impostazioni conservati)."
   echo "  Copia di prima del reset: $backup"
